@@ -1,0 +1,29 @@
+# RamBooster Pro - Build Artifacts
+build/
+dist/
+*.spec
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Temp files
+*.log
+*.tmp
+sources/
+gen_html.py
+patch_html.py
+test_all.py
+
