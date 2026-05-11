@@ -24,6 +24,11 @@ from ram_booster.game_mode import (
 from ram_booster.network_optimizer import (
     full_network_optimize, flush_dns, renew_ip, get_network_info,
 )
+from ram_booster.power_monitor import (
+    detect_hardware, get_battery_status, get_power_plan,
+    set_power_plan, enable_smart_alert, disable_smart_alert,
+    is_alert_enabled,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger("RamBooster.WebApp")
@@ -88,6 +93,35 @@ class RamBoosterAPI:
     def network_info(self):
         try: return get_network_info()
         except: return {"interfaces": [], "dns_servers": []}
+
+    # ── Power & Battery ──
+    def power_detect(self):
+        try: return detect_hardware()
+        except: return {"type": "unknown", "has_battery": False}
+
+    def power_battery(self):
+        try: return get_battery_status()
+        except: return {"has_battery": False, "percent": -1}
+
+    def power_plan(self):
+        try: return get_power_plan()
+        except: return {"plan": "Unknown"}
+
+    def power_set_plan(self, plan_type):
+        try: return set_power_plan(plan_type)
+        except Exception as e: return {"success": False, "error": str(e)}
+
+    def power_alert_on(self, high=80, low=20):
+        try: return enable_smart_alert(high, low)
+        except Exception as e: return {"enabled": False, "error": str(e)}
+
+    def power_alert_off(self):
+        try: return disable_smart_alert()
+        except: return {"enabled": False}
+
+    def power_alert_status(self):
+        try: return is_alert_enabled()
+        except: return {"enabled": False}
 
     # ── System ──
     def is_admin(self):
