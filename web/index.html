@@ -76,6 +76,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--white);overflow:hi
 <button class="nav-btn" onclick="go('game')" id="nb_game" title="Game">▸</button><div class="nav-label">GAME | ألعاب</div>
 <button class="nav-btn" onclick="go('net')" id="nb_net" title="Network">◎</button><div class="nav-label">NET | شبكة</div>
 <button class="nav-btn" onclick="go('pwr')" id="nb_pwr" title="Power">⚡</button><div class="nav-label">PWR | طاقة</div>
+<button class="nav-btn" onclick="go('prv')" id="nb_prv" title="Privacy">◈</button><div class="nav-label">PRV | خصوصية</div>
+<button class="nav-btn" onclick="go('stp')" id="nb_stp" title="Startup">▸▸</button><div class="nav-label">STP | إقلاع</div>
 <div class="sidebar-footer"><div class="dev">Developed by<br><b>Bob</b></div></div>
 </div>
 <div class="main">
@@ -193,6 +195,45 @@ body{font-family:var(--font);background:var(--bg);color:var(--white);overflow:hi
 </div>
 </div></div>
 
+</div>
+
+<!-- PRIVACY SHIELD -->
+<div class="section" id="s_prv">
+<div class="grid2">
+<div class="glass">
+<div class="section-title">PRIVACY SHIELD | درع الخصوصية</div>
+<p style="color:var(--dim);font-size:11px;margin-bottom:16px">أوقف تتبع ويندوز والإعلانات وكورتانا لحماية خصوصيتك</p>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--glass2);border-radius:10px;border:1px solid var(--border)">
+<div><div style="font-size:12px;font-weight:600">Telemetry | التتبع</div><div style="font-size:9px;color:var(--muted)">DiagTrack, Data Collection</div></div>
+<div class="toggle" id="tglTel" onclick="togglePrivacy('telemetry',this)"><div class="knob"></div></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--glass2);border-radius:10px;border:1px solid var(--border)">
+<div><div style="font-size:12px;font-weight:600">Ads | الإعلانات</div><div style="font-size:9px;color:var(--muted)">Start Menu Suggestions, Tips</div></div>
+<div class="toggle" id="tglAds" onclick="togglePrivacy('ads',this)"><div class="knob"></div></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--glass2);border-radius:10px;border:1px solid var(--border)">
+<div><div style="font-size:12px;font-weight:600">Cortana</div><div style="font-size:9px;color:var(--muted)">Background Activity, Web Search</div></div>
+<div class="toggle" id="tglCor" onclick="togglePrivacy('cortana',this)"><div class="knob"></div></div></div>
+</div>
+<button class="btn btn-p" style="margin-top:16px" onclick="fullPrivacy()">› FULL PRIVACY SHIELD | حماية كاملة</button>
+</div>
+<div class="glass"><div class="section-title">SHIELD STATUS | حالة الحماية</div>
+<div id="prvRes" style="color:var(--muted);font-size:11px">فعّل الحماية لعرض النتائج</div></div>
+</div></div>
+
+<!-- STARTUP OPTIMIZER -->
+<div class="section" id="s_stp">
+<div style="display:flex;gap:12px;margin-bottom:12px">
+<div class="glass stat" style="flex:1"><div class="lbl">BOOT SPEED | سرعة الإقلاع</div><div class="val" id="bootRate" style="font-size:18px">--</div></div>
+<div class="glass stat" style="flex:1"><div class="lbl">ENABLED | مفعّل</div><div class="val" id="stpOn">--</div></div>
+<div class="glass stat" style="flex:1"><div class="lbl">TOTAL | المجموع</div><div class="val" id="stpAll">--</div></div>
+</div>
+<div class="glass">
+<div class="section-title">STARTUP PROGRAMS | برامج الإقلاع</div>
+<div id="stpList" style="max-height:350px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.08) transparent">
+<div style="color:var(--muted);font-size:11px">جاري التحميل...</div>
+</div>
+</div></div>
+
 </div></div></div>
 <div class="toast" id="toast"><span id="tI">●</span><span id="tM"></span></div>
 <script>
@@ -215,6 +256,11 @@ async function updateBat(){try{const b=await pywebview.api.power_battery();if(!b
 async function setPlan(p){showT('Setting power plan...','…','var(--accent)',0);try{const r=await pywebview.api.power_set_plan(p);showT(r.success?'Plan set: '+p:'Failed','›','var(--green)',3000);updatePlan();addLog('POWER: '+p)}catch(e){showT('Error','›','var(--red)')}}
 async function updatePlan(){try{const p=await pywebview.api.power_plan();document.getElementById('planName').textContent=p.plan}catch(e){}}
 async function toggleAlert(){const tgl=document.getElementById('alertTgl');if(tgl.classList.contains('on')){tgl.classList.remove('on');await pywebview.api.power_alert_off();document.getElementById('alertSt').textContent='Alert: OFF | التنبيه: مغلق';showT('Alert disabled','›','var(--muted)',2000)}else{const hi=parseInt(document.getElementById('alertHi').value)||80;const lo=parseInt(document.getElementById('alertLo').value)||20;tgl.classList.add('on');await pywebview.api.power_alert_on(hi,lo);document.getElementById('alertSt').textContent='Alert: ON ('+lo+'%-'+hi+'%) | التنبيه: مفعّل';showT('Smart alert enabled: '+lo+'%-'+hi+'%','›','var(--green)',3000)}}
-function boot(){if(!window.pywebview||!window.pywebview.api){setTimeout(boot,200);return}pywebview.api.get_icon_path().then(p=>{if(p){document.getElementById('anime-bg').style.backgroundImage='url('+p+')';document.getElementById('sLogo').src=p}});update();updateP();initPower();updatePlan();setInterval(update,2000);setInterval(updateP,4000);setInterval(updateBat,5000)}
+async function togglePrivacy(type,el){const isOn=el.classList.contains('on');showT((isOn?'Restoring':'Blocking')+' '+type+'...','…','var(--accent)',0);try{const r=await pywebview.api['privacy_'+type](isOn);el.classList.toggle('on');showT(isOn?type+' restored':type+' blocked!','›','var(--green)',3000);addLog('PRIVACY: '+type+' '+(isOn?'ON':'OFF'))}catch(e){showT('Error','›','var(--red)')}}
+async function fullPrivacy(){showT('Applying full privacy shield...','…','var(--accent)',0);try{const r=await pywebview.api.privacy_full();document.querySelectorAll('#tglTel,#tglAds,#tglCor').forEach(e=>e.classList.add('on'));const d=(r.telemetry?.details||[]).concat(r.ads?.details||[]).concat(r.cortana?.details||[]).map(x=>'<div class=detail-item><span class=v style=font-size:10px>'+x+'</span></div>').join('');document.getElementById('prvRes').innerHTML='<div class=detail-item><span class=k>Total Applied</span><span class=v style=color:var(--green)>'+r.total_applied+'</span></div><hr style=border-color:rgba(255,255,255,.05);margin:6px>'+d;showT('Privacy Shield active! '+r.total_applied+' rules applied','›','var(--green)',5000);addLog('PRIVACY: Full shield - '+r.total_applied+' rules')}catch(e){showT('Error','›','var(--red)')}}
+async function initPrivacy(){try{const s=await pywebview.api.privacy_status();if(s.telemetry&&!s.telemetry.enabled)document.getElementById('tglTel').classList.add('on');if(s.ads&&!s.ads.enabled)document.getElementById('tglAds').classList.add('on');if(s.cortana&&!s.cortana.enabled)document.getElementById('tglCor').classList.add('on')}catch(e){}}
+async function loadStartup(){try{const r=await pywebview.api.startup_info();const progs=r.programs||[];const rate=r.rating||{};document.getElementById('bootRate').textContent=rate.rating||'--';document.getElementById('bootRate').style.color=rate.color||'var(--white)';document.getElementById('stpOn').textContent=rate.enabled_count||0;document.getElementById('stpAll').textContent=rate.total||0;if(progs.length===0){document.getElementById('stpList').innerHTML='<div style=color:var(--muted);font-size:11px;text-align:center;padding:20px>No startup programs found</div>';return}document.getElementById('stpList').innerHTML=progs.map(p=>{const c=p.enabled?'var(--green)':'var(--muted)';const nm=p.name.length>25?p.name.substring(0,25)+'...':p.name;const pt=p.path.length>45?'...'+p.path.substring(p.path.length-42):p.path;return '<div style=display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;border-bottom:1px solid rgba(255,255,255,.04)><div style=flex:1;min-width:0><div style=font-size:11px;font-weight:600;color:'+c+'>'+nm+'</div><div style=font-size:8px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis>'+pt+'</div><div style=font-size:8px;color:var(--muted)>'+p.hive+'</div></div><div class=toggle'+(p.enabled?' on':'')+' onclick=toggleStartup("'+p.name.replace(/"/g,"'")+'","'+p.hive+'","'+p.registry_path.replace(/\\/g,"\\\\")+'",this,'+p.enabled+') style=flex-shrink:0;margin-left:8px><div class=knob></div></div></div>'}).join('')}catch(e){document.getElementById('stpList').innerHTML='<div style=color:var(--red);font-size:11px>Error loading startup programs</div>'}}
+async function toggleStartup(name,hive,regPath,el,isEnabled){showT((isEnabled?'Disabling':'Enabling')+' '+name+'...','…','var(--accent)',0);try{let r;if(isEnabled){r=await pywebview.api.startup_disable(name,hive,regPath)}else{r=await pywebview.api.startup_enable(name)}if(r.success){showT(name+' '+(isEnabled?'disabled':'enabled'),'›','var(--green)',3000);addLog('STARTUP: '+name+' '+(isEnabled?'OFF':'ON'));setTimeout(loadStartup,500)}else{showT('Failed: '+(r.error||''),'›','var(--red)',3000)}}catch(e){showT('Error','›','var(--red)')}}
+function boot(){if(!window.pywebview||!window.pywebview.api){setTimeout(boot,200);return}pywebview.api.get_icon_path().then(p=>{if(p){document.getElementById('anime-bg').style.backgroundImage='url('+p+')';document.getElementById('sLogo').src=p}});update();updateP();initPower();updatePlan();initPrivacy();loadStartup();setInterval(update,2000);setInterval(updateP,4000);setInterval(updateBat,5000)}
 setTimeout(boot,500);
 </script></body></html>
