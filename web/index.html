@@ -75,6 +75,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--white);overflow:hi
 <button class="nav-btn" onclick="go('disk')" id="nb_disk" title="Disk">◆</button><div class="nav-label">DISK | قرص</div>
 <button class="nav-btn" onclick="go('game')" id="nb_game" title="Game">▸</button><div class="nav-label">GAME | ألعاب</div>
 <button class="nav-btn" onclick="go('net')" id="nb_net" title="Network">◎</button><div class="nav-label">NET | شبكة</div>
+<button class="nav-btn" onclick="go('pwr')" id="nb_pwr" title="Power">⚡</button><div class="nav-label">PWR | طاقة</div>
 <div class="sidebar-footer"><div class="dev">Developed by<br><b>Bob</b></div></div>
 </div>
 <div class="main">
@@ -143,6 +144,55 @@ body{font-family:var(--font);background:var(--bg);color:var(--white);overflow:hi
 <div class="glass"><div class="section-title">OPTIMIZATION RESULTS</div><div id="netRes" style="color:var(--muted);font-size:11px">شغّل التحسين لعرض النتائج</div></div>
 </div></div>
 
+</div>
+
+<!-- POWER & BATTERY SECTION -->
+<div class="section" id="s_pwr">
+<div class="grid2">
+<div class="glass" style="text-align:center">
+<div class="section-title" style="text-align:left">POWER & BATTERY | الطاقة والبطارية</div>
+<div id="pwrIcon" style="margin:16px 0">
+<svg width="120" height="60" viewBox="0 0 120 60" id="batSvg">
+<rect x="2" y="8" width="100" height="44" rx="8" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="2"/>
+<rect x="102" y="20" width="8" height="20" rx="3" fill="rgba(255,255,255,.15)"/>
+<rect id="batFill" x="6" y="12" width="0" height="36" rx="5" fill="url(#batG)"/>
+<defs><linearGradient id="batG" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#6ee7b7"/><stop offset="100%" style="stop-color:#7c8aff"/></linearGradient></defs>
+</svg>
+</div>
+<div id="batPct" style="font-size:36px;font-weight:900;margin:8px 0">--%</div>
+<div id="batStatus" class="g-status" style="color:var(--green);border-color:var(--green)">--</div>
+<div id="batTime" style="font-size:10px;color:var(--muted);margin-top:8px">--</div>
+<div id="batPlugged" style="font-size:10px;color:var(--muted);margin-top:4px">--</div>
+</div>
+<div>
+<div class="glass">
+<div class="section-title">POWER PLAN | خطة الطاقة</div>
+<div id="curPlan" class="detail-item"><span class="k">Current Plan</span><span class="v" id="planName">--</span></div>
+<div style="display:flex;gap:8px;margin-top:12px">
+<button class="btn btn-s" style="flex:1" onclick="setPlan('saver')">Saver</button>
+<button class="btn btn-s" style="flex:1" onclick="setPlan('balanced')">Balanced</button>
+<button class="btn btn-p" style="flex:1" onclick="setPlan('high')">High</button>
+</div>
+</div>
+<div class="glass">
+<div class="section-title">SMART CHARGE ALERT | تنبيه الشحن الذكي</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+<span style="font-size:11px;color:var(--dim)">Enable Alert | تفعيل التنبيه</span>
+<div class="toggle" id="alertTgl" onclick="toggleAlert()"><div class="knob"></div></div>
+</div>
+<div class="detail-item"><span class="k">Max Charge | حد الشحن</span><span class="v"><input id="alertHi" type="number" value="80" min="50" max="100" style="width:50px;background:var(--glass2);border:1px solid var(--border2);color:var(--white);border-radius:5px;padding:3px 6px;font-size:11px;text-align:center">%</span></div>
+<div class="detail-item"><span class="k">Min Charge | حد التفريغ</span><span class="v"><input id="alertLo" type="number" value="20" min="5" max="50" style="width:50px;background:var(--glass2);border:1px solid var(--border2);color:var(--white);border-radius:5px;padding:3px 6px;font-size:11px;text-align:center">%</span></div>
+<div id="alertSt" style="font-size:10px;color:var(--muted);margin-top:8px;text-align:center">Alert: OFF | التنبيه: مغلق</div>
+</div>
+<div class="glass" id="desktopMsg" style="display:none;text-align:center">
+<div style="font-size:32px;opacity:0.15;margin:12px 0">⚡</div>
+<div style="font-size:14px;font-weight:700;color:var(--accent)">Desktop System Detected</div>
+<div style="font-size:11px;color:var(--muted);margin-top:4px">نظام مكتبي - وضع الطاقة المباشرة</div>
+<div style="font-size:11px;color:var(--muted);margin-top:2px">Direct Power Mode - No battery management needed</div>
+</div>
+</div>
+</div></div>
+
 </div></div></div>
 <div class="toast" id="toast"><span id="tI">●</span><span id="tM"></span></div>
 <script>
@@ -160,6 +210,11 @@ async function toggleGM(){showT('Toggling Game Mode...','…','var(--accent)',0)
 async function doNetFull(){const b=document.getElementById('bNO');b.disabled=true;b.textContent='◎ OPTIMIZING...';showT('Optimizing network...','…','#3b82f6',0);try{const r=await pywebview.api.network_optimize();b.disabled=false;b.textContent='◎ FULL OPTIMIZE';const d=(r.details||[]).map(x=>'<div class=detail-item><span class=v style=font-size:10px>'+x+'</span></div>').join('');document.getElementById('netRes').innerHTML='<div class=detail-item><span class=k>DNS Flush</span><span class=v style=color:'+(r.dns_flush?'var(--green)':'var(--red)')+'>'+(r.dns_flush?'✓':'✗')+'</span></div><div class=detail-item><span class=k>TCP Rules Applied</span><span class=v style=color:var(--green)>'+r.tcp_applied+'</span></div><hr style=border-color:rgba(255,255,255,.05);margin:6px>'+d;showT('Network optimized! '+r.tcp_applied+' rules applied','✓','var(--green)',5000);addLog('NET ▸ TCP:'+r.tcp_applied+' DNS:'+(r.dns_flush?'OK':'FAIL'))}catch(e){b.disabled=false;b.textContent='◎ FULL OPTIMIZE';showT('Error','✕','var(--red)')}}
 async function doFlush(){showT('Flushing DNS...','›','#3b82f6',0);try{const r=await pywebview.api.network_flush_dns();showT(r.success?'DNS flushed!':'DNS flush failed','✓','var(--green)',3000);addLog('DNS Flush: '+(r.success?'OK':'FAIL'))}catch(e){showT('Error','✕','var(--red)')}}
 async function doRenew(){showT('Renewing IP...','›','#3b82f6',0);try{const r=await pywebview.api.network_renew_ip();showT('IP renewed!','✓','var(--green)',3000);addLog('IP Renew: done')}catch(e){showT('Error','✕','var(--red)')}}
-function boot(){if(!window.pywebview||!window.pywebview.api){setTimeout(boot,200);return}pywebview.api.get_icon_path().then(p=>{if(p){document.getElementById('anime-bg').style.backgroundImage='url('+p+')';document.getElementById('sLogo').src=p}});update();updateP();setInterval(update,2000);setInterval(updateP,4000)}
+async function initPower(){try{const hw=await pywebview.api.power_detect();if(!hw.has_battery){document.getElementById('desktopMsg').style.display='block';return}updateBat()}catch(e){}}
+async function updateBat(){try{const b=await pywebview.api.power_battery();if(!b.has_battery)return;document.getElementById('batPct').textContent=b.percent+'%';const fill=document.getElementById('batFill');fill.setAttribute('width',Math.max(0,Math.min(92,b.percent*0.92)));const st=document.getElementById('batStatus');st.textContent=b.status;if(b.status==='Charging'||b.status==='Fully Charged'){st.style.color=st.style.borderColor='var(--green)'}else if(b.status==='Low Battery'||b.status==='Critical'){st.style.color=st.style.borderColor='var(--red)'}else{st.style.color=st.style.borderColor='var(--accent)'}document.getElementById('batTime').textContent=b.time_left;document.getElementById('batPlugged').textContent=b.plugged?'Plugged In | موصول بالشاحن':'On Battery | على البطارية'}catch(e){}}
+async function setPlan(p){showT('Setting power plan...','…','var(--accent)',0);try{const r=await pywebview.api.power_set_plan(p);showT(r.success?'Plan set: '+p:'Failed','›','var(--green)',3000);updatePlan();addLog('POWER: '+p)}catch(e){showT('Error','›','var(--red)')}}
+async function updatePlan(){try{const p=await pywebview.api.power_plan();document.getElementById('planName').textContent=p.plan}catch(e){}}
+async function toggleAlert(){const tgl=document.getElementById('alertTgl');if(tgl.classList.contains('on')){tgl.classList.remove('on');await pywebview.api.power_alert_off();document.getElementById('alertSt').textContent='Alert: OFF | التنبيه: مغلق';showT('Alert disabled','›','var(--muted)',2000)}else{const hi=parseInt(document.getElementById('alertHi').value)||80;const lo=parseInt(document.getElementById('alertLo').value)||20;tgl.classList.add('on');await pywebview.api.power_alert_on(hi,lo);document.getElementById('alertSt').textContent='Alert: ON ('+lo+'%-'+hi+'%) | التنبيه: مفعّل';showT('Smart alert enabled: '+lo+'%-'+hi+'%','›','var(--green)',3000)}}
+function boot(){if(!window.pywebview||!window.pywebview.api){setTimeout(boot,200);return}pywebview.api.get_icon_path().then(p=>{if(p){document.getElementById('anime-bg').style.backgroundImage='url('+p+')';document.getElementById('sLogo').src=p}});update();updateP();initPower();updatePlan();setInterval(update,2000);setInterval(updateP,4000);setInterval(updateBat,5000)}
 setTimeout(boot,500);
 </script></body></html>
