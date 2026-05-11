@@ -29,6 +29,15 @@ from ram_booster.power_monitor import (
     set_power_plan, enable_smart_alert, disable_smart_alert,
     is_alert_enabled,
 )
+from ram_booster.privacy_shield import (
+    disable_telemetry, enable_telemetry, get_telemetry_status,
+    disable_ads, enable_ads, get_ads_status,
+    disable_cortana, enable_cortana, get_cortana_status,
+    full_privacy_shield,
+)
+from ram_booster.startup_optimizer import (
+    get_startup_info, disable_startup, enable_startup, get_boot_rating,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger("RamBooster.WebApp")
@@ -122,6 +131,49 @@ class RamBoosterAPI:
     def power_alert_status(self):
         try: return is_alert_enabled()
         except: return {"enabled": False}
+
+    # ── Privacy Shield ──
+    def privacy_full(self):
+        try: return full_privacy_shield()
+        except Exception as e: return {"error": str(e)}
+
+    def privacy_telemetry(self, enable):
+        try: return enable_telemetry() if enable else disable_telemetry()
+        except Exception as e: return {"error": str(e)}
+
+    def privacy_ads(self, enable):
+        try: return enable_ads() if enable else disable_ads()
+        except Exception as e: return {"error": str(e)}
+
+    def privacy_cortana(self, enable):
+        try: return enable_cortana() if enable else disable_cortana()
+        except Exception as e: return {"error": str(e)}
+
+    def privacy_status(self):
+        try:
+            return {
+                "telemetry": get_telemetry_status(),
+                "ads": get_ads_status(),
+                "cortana": get_cortana_status(),
+            }
+        except: return {}
+
+    # ── Startup Optimizer ──
+    def startup_info(self):
+        try: return get_startup_info()
+        except Exception as e: return {"programs": [], "error": str(e)}
+
+    def startup_disable(self, name, hive, reg_path):
+        try: return disable_startup(name, hive, reg_path)
+        except Exception as e: return {"success": False, "error": str(e)}
+
+    def startup_enable(self, name):
+        try: return enable_startup(name)
+        except Exception as e: return {"success": False, "error": str(e)}
+
+    def startup_rating(self):
+        try: return get_boot_rating()
+        except: return {"rating": "Unknown"}
 
     # ── System ──
     def is_admin(self):
