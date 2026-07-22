@@ -236,6 +236,33 @@ body{font-family:var(--font);background:var(--bg);color:var(--white);overflow:hi
 </div>
 </div>
 
+<!-- JITTER & BUFFERBLOAT DIAGNOSTICS BANNER -->
+<div class="glass" style="background:linear-gradient(135deg,rgba(244,114,182,.18),rgba(129,140,248,.14));border:1.5px solid var(--accent2);margin-bottom:16px">
+<div class="section-title" style="font-size:12px;color:var(--accent2)">
+<span>JITTER & BUFFERBLOAT LATENCY ENGINE | فحص التذبذب وتقطيع الـ Ping تحت الضغط</span>
+<span class="badge-tag" style="background:var(--accent2);color:#000;font-weight:900">LATENCY DIAGNOSTICS</span>
+</div>
+<div style="display:flex;gap:10px;margin-bottom:12px">
+<button class="btn btn-p" id="bJitterTest" onclick="runJitterTest()" style="font-size:12px;padding:12px">إجراء اختبار الـ Jitter والـ Bufferbloat وتقييم الراوتر (Grade A+ to F)</button>
+</div>
+<div id="jitterRes" style="font-size:12px;color:var(--dim);background:rgba(0,0,0,.4);padding:12px;border-radius:12px;border:1px solid var(--border)">
+انقر على <b>إجراء اختبار الـ Jitter والـ Bufferbloat</b> لقياس تذبذب البنج بالمللي ثانية وتقييم استجابة الشبكة أثناء الضغط.
+</div>
+</div>
+
+<!-- NIC HARDWARE ACCELERATION & QOS GAMING PRIORITIZATION BANNER -->
+<div class="glass" style="background:linear-gradient(135deg,rgba(74,222,128,.16),rgba(59,130,246,.14));border:1.5px solid var(--green);margin-bottom:16px">
+<div class="section-title" style="font-size:12px;color:var(--green)">
+<span>NIC HARDWARE ACCELERATION & QOS GAMING PRIORITIZATION | تسريع كارت الشبكة وإعطاء الألعاب أولوية الـ DSCP 46</span>
+<span class="badge-tag" style="background:var(--green);color:#000;font-weight:900">HARDWARE & QOS</span>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+<button class="btn btn-g" onclick="tuneNicHardware()" style="font-size:12px;padding:12px">تفعيل وتسليم معالجة كارت الشبكة للعتاد (RSS & Checksum Offload)</button>
+<button class="btn btn-g" onclick="applyQosGaming()" style="font-size:12px;padding:12px">تفعيل أولوية حزم الألعاب القصوى (DSCP 46 Expedited Forwarding)</button>
+</div>
+<div id="nicQosRes" style="font-size:11px;color:var(--dim)">انقر لتفعيل تسريع كارت الشبكة وأولوية الألعاب في الراوتر وويندوز</div>
+</div>
+
 <!-- LAN DEVICE SCANNER & DEEP FINGERPRINTER BANNER -->
 <div class="glass" style="background:rgba(255,255,255,.04);border:1px solid var(--border2);margin-bottom:16px">
 <div class="section-title" style="font-size:12px;color:var(--accent)">
@@ -769,6 +796,82 @@ async function runDnsLeakCheck(){
     document.getElementById('dnsLeakRes').innerHTML='<div class="detail-item"><span class="k">DNS Security Status</span><span class="v" style="color:'+c+'">'+r.status_text+'</span></div><div class="detail-item"><span class="k">Configured DNS</span><span class="v">'+(r.configured_dns||[]).join(', ')+'</span></div><div class="detail-item"><span class="k">Active Resolver IP</span><span class="v" style="color:var(--accent)">'+((r.detected_resolvers&&r.detected_resolvers.length)?r.detected_resolvers[0].ip:'Local Gateway')+'</span></div><div class="detail-item"><span class="k">DNS-over-HTTPS (DoH)</span><span class="v" style="color:'+(r.doh_enabled?'var(--green)':'var(--dim)')+'">'+(r.doh_enabled?'ENABLED (Encrypted)':'DISABLED (Standard)')+'</span></div>';
     showT('DNS Security: '+r.status_text,c,4000);
   }catch(e){ showT('Error checking DNS leaks','var(--red)'); }
+}
+
+async function runJitterTest(){
+  const b=document.getElementById('bJitterTest');
+  b.disabled=true; b.textContent='MEASURING JITTER & BUFFERBLOAT...';
+  showT('Testing Ping Jitter & Bufferbloat under load...','var(--accent2)',0);
+  try{
+    const r=await pywebview.api.run_jitter_bufferbloat_test();
+    b.disabled=false; b.textContent='إجراء اختبار الـ Jitter والـ Bufferbloat وتقييم الراوتر (Grade A+ to F)';
+    document.getElementById('jitterRes').innerHTML='<div style="font-weight:900;font-size:14px;color:'+r.grade_color+';margin-bottom:6px">BUFFERBLOAT GRADE: '+r.grade+'</div><div class="detail-item"><span class="k">Idle Ping (Latency)</span><span class="v" style="color:var(--green)">'+r.idle_ping_ms+' ms</span></div><div class="detail-item"><span class="k">Ping Under Load</span><span class="v" style="color:var(--yellow)">'+r.loaded_ping_ms+' ms</span></div><div class="detail-item"><span class="k">Ping Jitter (Variance)</span><span class="v" style="color:var(--accent)">'+r.jitter_ms+' ms</span></div><div class="detail-item"><span class="k">Bufferbloat Queue Lag Delta</span><span class="v" style="color:'+r.grade_color+'">+'+r.bufferbloat_delta_ms+' ms</span></div>';
+    showT('Jitter & Bufferbloat test complete! Grade: '+r.grade, r.grade_color, 5000);
+    addLog('JITTER TEST -> Grade: '+r.grade);
+  }catch(e){
+    b.disabled=false; b.textContent='إجراء اختبار الـ Jitter والـ Bufferbloat وتقييم الراوتر (Grade A+ to F)';
+    showT('Jitter test error','var(--red)');
+  }
+}
+
+async function tuneNicHardware(){
+  showT('Enabling Receive Side Scaling & NIC Hardware Offloading...','var(--green)',0);
+  try{
+    const r=await pywebview.api.tune_nic_hardware_offloading();
+    if(r.success){
+      const h=(r.features||[]).map(f=>'<div class="detail-item"><span class="k">Feature</span><span class="v" style="color:var(--green)">'+f+'</span></div>').join('');
+      document.getElementById('nicQosRes').innerHTML=h;
+      showT('NIC Hardware Acceleration & Low-Latency Interrupts Active!','var(--green)',5000);
+      addLog('NIC HARDWARE -> RSS & Offloading Active');
+    }else{ showT('NIC Hardware tuning failed (Admin required)','var(--red)',4000); }
+  }catch(e){ showT('Error tuning NIC','var(--red)'); }
+}
+
+async function applyQosGaming(){
+  showT('Applying DSCP 46 Expedited Forwarding QoS rules for Games...','var(--accent)',0);
+  try{
+    const r=await pywebview.api.apply_qos_gaming_prioritization();
+    if(r.success){
+      const h=(r.applied||[]).map(f=>'<div class="detail-item"><span class="k">Rule</span><span class="v" style="color:var(--accent)">'+f+'</span></div>').join('');
+      document.getElementById('nicQosRes').innerHTML=h;
+      showT('QoS Gaming Packet Prioritization (DSCP 46) Active!','var(--green)',5000);
+      addLog('QoS GAMING -> DSCP 46 Active ('+r.rules_count+' games)');
+    }else{ showT('QoS rules failed (Admin required)','var(--red)',4000); }
+  }catch(e){ showT('Error applying QoS','var(--red)'); }
+}
+
+async function loadProcessBandwidth(){
+  showT('Auditing per-process network bandwidth...','var(--accent)',0);
+  try{
+    const list=await pywebview.api.get_per_process_bandwidth();
+    if(list && list.length){
+      const h=list.map(p=>'<div class="device-card"><div><div style="font-weight:800;font-size:12px;color:var(--white)">['+p.proto+'] '+p.name+' <span class="badge-tag">PID: '+p.pid+'</span></div><div style="font-size:11px;color:var(--dim);margin-top:2px">Local: '+p.local+' -> Remote: <b style="color:var(--accent)">'+p.remote+'</b></div></div><button class="proc-kill" onclick="killProc('+p.pid+',\''+p.name+'\')">End</button></div>').join('');
+      document.getElementById('procBwRes').innerHTML=h;
+      showT('Discovered '+list.length+' network-active processes','var(--green)',3000);
+    }else{ document.getElementById('procBwRes').textContent='No network-active processes detected'; }
+  }catch(e){ showT('Error auditing process bandwidth','var(--red)'); }
+}
+
+async function autoSelectFastestDns(){
+  showT('Benchmarking & auto-applying fastest DNS...','var(--yellow)',0);
+  try{
+    const r=await pywebview.api.auto_select_fastest_dns();
+    if(r.winner){
+      showT('Applied Fastest DNS: '+r.winner.name+' ('+r.winner.latency_ms+'ms)!','var(--green)',5000);
+      addLog('AUTO DNS -> Winner: '+r.winner.name+' ('+r.winner.latency_ms+'ms)');
+    }
+  }catch(e){ showT('Error auto selecting DNS','var(--red)'); }
+}
+
+async function tuneWifiPower(){
+  showT('Boosting Wi-Fi Transmit Power to 100% Maximum...','var(--green)',0);
+  try{
+    const r=await pywebview.api.optimize_wifi_tx_power_roaming();
+    if(r.success){
+      showT('Wi-Fi Tx Power set to 100% Maximum!','var(--green)',4000);
+      addLog('WIFI POWER -> 100% Maximum Tx Power Active');
+    }
+  }catch(e){ showT('Error tuning Wi-Fi power','var(--red)'); }
 }
 
 async function enableDohDns(){

@@ -38,7 +38,10 @@ from ram_booster.network_optimizer import (
     get_routing_table as _get_routing_table, get_adapter_diagnostics as _get_adapter_diagnostics,
     discover_path_mtu as _discover_path_mtu, analyze_wifi_spectrum as _analyze_wifi_spectrum,
     inspect_dns_leaks as _inspect_dns_leaks, enable_encrypted_doh as _enable_encrypted_doh,
-    trace_gaming_route as _trace_gaming_route,
+    trace_gaming_route as _trace_gaming_route, run_jitter_bufferbloat_test as _run_jitter_bufferbloat_test,
+    tune_nic_hardware_offloading as _tune_nic_hardware_offloading, apply_qos_gaming_prioritization as _apply_qos_gaming_prioritization,
+    get_per_process_bandwidth as _get_per_process_bandwidth, auto_select_fastest_dns as _auto_select_fastest_dns,
+    optimize_wifi_tx_power_roaming as _optimize_wifi_tx_power_roaming,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
@@ -216,6 +219,30 @@ class RamBoosterAPI:
     def trace_gaming_route(self, target="1.1.1.1"):
         try: return _trace_gaming_route(target)
         except Exception as e: return {"success": False, "error": str(e), "hops": []}
+
+    def run_jitter_bufferbloat_test(self, target="1.1.1.1"):
+        try: return _run_jitter_bufferbloat_test(target)
+        except Exception as e: return {"success": False, "error": str(e)}
+
+    def tune_nic_hardware_offloading(self):
+        try: return _tune_nic_hardware_offloading()
+        except Exception as e: return {"success": False, "error": str(e)}
+
+    def apply_qos_gaming_prioritization(self):
+        try: return _apply_qos_gaming_prioritization()
+        except Exception as e: return {"success": False, "error": str(e)}
+
+    def get_per_process_bandwidth(self):
+        try: return _get_per_process_bandwidth()
+        except Exception as e: return []
+
+    def auto_select_fastest_dns(self):
+        try: return _auto_select_fastest_dns()
+        except Exception as e: return {"success": False, "error": str(e)}
+
+    def optimize_wifi_tx_power_roaming(self):
+        try: return _optimize_wifi_tx_power_roaming()
+        except Exception as e: return {"success": False, "error": str(e)}
 
     # ── System Controls ──
     def kill_process(self, pid):
