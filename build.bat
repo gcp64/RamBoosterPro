@@ -1,7 +1,7 @@
 @echo off
-title RamBooster - Build Script
+title RamBooster Pro - Build Script
 echo ============================================
-echo    RamBooster EXE Builder
+echo    RamBooster Pro EXE Builder
 echo ============================================
 echo.
 
@@ -32,15 +32,17 @@ echo.
 pyinstaller --noconfirm ^
     --onefile ^
     --windowed ^
-    --name "RamBooster" ^
+    --name "RamBoosterPro" ^
     --add-data "ram_booster;ram_booster" ^
-    --hidden-import customtkinter ^
+    --add-data "web;web" ^
+    --hidden-import webview ^
     --hidden-import psutil ^
     --hidden-import PIL ^
+    --hidden-import customtkinter ^
     --collect-all customtkinter ^
     --icon "icon.ico" ^
     --clean ^
-    run.py
+    web_app.py
 
 if errorlevel 1 (
     echo.
@@ -53,15 +55,15 @@ echo.
 echo [3/3] Build complete!
 echo.
 echo ============================================
-echo    EXE Location: dist\RamBooster.exe
+echo    EXE Location: dist\RamBoosterPro.exe
 echo ============================================
 echo.
 
 :: Ask to run
 set /p RUN="Run the application now? (y/n): "
 if /i "%RUN%"=="y" (
-    echo Starting RamBooster...
-    start "" "dist\RamBooster.exe"
+    echo Starting RamBoosterPro...
+    start "" "dist\RamBoosterPro.exe"
 )
 
 pause

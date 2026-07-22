@@ -1,165 +1,1213 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RAM Booster Pro</title>
-<script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#050510;--glass:rgba(255,255,255,0.04);--glass2:rgba(255,255,255,0.07);--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--white:#f0f0f5;--dim:#a0a0b8;--muted:#6a6a80;--accent:#7c8aff;--accent2:#a78bfa;--green:#6ee7b7;--yellow:#fcd34d;--red:#fca5a5;--font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace}
+:root{--bg:#050510;--glass:rgba(255,255,255,0.05);--glass2:rgba(255,255,255,0.09);--border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.22);--white:#ffffff;--dim:#cbd5e1;--muted:#94a3b8;--accent:#818cf8;--accent2:#c084fc;--green:#4ade80;--yellow:#fde047;--red:#f87171;--font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--mono:"Consolas","Lucida Console","Courier New",monospace}
 body{font-family:var(--font);background:var(--bg);color:var(--white);overflow:hidden;height:100vh;width:100vw}
 #anime-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:.12;background-size:cover;background-position:center;filter:blur(3px) saturate(.5)}
-#tsparticles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1}
-#overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;background:radial-gradient(ellipse at 30% 20%,rgba(124,138,255,.08) 0%,transparent 60%),linear-gradient(180deg,rgba(5,5,16,.3),rgba(5,5,16,.85))}
+#ambient-glow{position:fixed;top:-50%;left:-50%;width:200%;height:200%;z-index:1;background:radial-gradient(circle at 30% 30%,rgba(129,140,248,.1) 0%,transparent 40%),radial-gradient(circle at 70% 70%,rgba(192,132,252,.08) 0%,transparent 40%);pointer-events:none}
+#overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;background:linear-gradient(180deg,rgba(5,5,16,.2),rgba(5,5,16,.85))}
 #app{position:relative;z-index:10;display:flex;height:100vh;width:100vw}
-.sidebar{width:72px;display:flex;flex-direction:column;align-items:center;padding:16px 0;background:var(--glass);backdrop-filter:blur(24px);border-right:1px solid var(--border);gap:4px}
-.sidebar .logo{width:40px;height:40px;border-radius:10px;border:2px solid var(--border2);object-fit:cover;margin-bottom:20px;cursor:pointer}
-.nav-btn{width:48px;height:48px;border:none;background:transparent;color:var(--muted);font-size:18px;border-radius:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.sidebar{width:86px;display:flex;flex-direction:column;align-items:center;padding:16px 0;background:var(--glass);backdrop-filter:blur(24px);border-right:1px solid var(--border);gap:6px}
+.sidebar .logo{width:46px;height:46px;border-radius:14px;border:2px solid var(--border2);object-fit:cover;margin-bottom:16px;cursor:pointer}
+.nav-btn{width:60px;height:48px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:800;border-radius:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
 .nav-btn:hover{background:var(--glass2);color:var(--white)}
-.nav-btn.active{background:rgba(124,138,255,.15);color:var(--accent);box-shadow:0 0 20px rgba(124,138,255,.1)}
-.nav-label{font-size:7px;color:var(--muted);margin-top:-2px;margin-bottom:6px;letter-spacing:.5px}
+.nav-btn.active{background:rgba(129,140,248,.22);color:var(--accent);box-shadow:0 0 20px rgba(129,140,248,.2);border:1.5px solid var(--accent)}
+.nav-label{font-size:10px;color:var(--dim);margin-top:-2px;margin-bottom:8px;letter-spacing:.5px;font-weight:700}
 .sidebar-footer{margin-top:auto;text-align:center;padding:10px 4px}
-.sidebar-footer .dev{font-size:7px;color:var(--muted);letter-spacing:.5px}
-.sidebar-footer .dev b{color:var(--accent);text-shadow:0 0 12px rgba(124,138,255,.6);font-weight:700}
+.sidebar-footer .dev{font-size:9px;color:var(--muted);letter-spacing:.5px}
+.sidebar-footer .dev b{color:var(--accent);text-shadow:0 0 12px rgba(129,140,248,.6);font-weight:800}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.header{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:var(--glass);backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
-.header h2{font-size:14px;font-weight:700;letter-spacing:1px}
-.header .badge{background:var(--accent);color:#000;font-size:7px;font-weight:800;padding:2px 7px;border-radius:3px;margin-left:8px}
-.header-r{display:flex;align-items:center;gap:12px;font-size:10px;color:var(--muted)}
-.dot-live{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.content{flex:1;overflow-y:auto;padding:16px 20px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.08) transparent}
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 26px;background:var(--glass);backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
+.header h2{font-size:16px;font-weight:800;letter-spacing:1px}
+.header .badge{background:var(--accent);color:#000;font-size:9px;font-weight:900;padding:3px 8px;border-radius:5px;margin-left:10px}
+.header-r{display:flex;align-items:center;gap:12px;font-size:12px;font-weight:700;color:var(--dim);font-family:var(--mono)}
+.content{flex:1;overflow-y:auto;padding:18px 22px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent}
 .section{display:none}.section.active{display:block}
-.glass{background:var(--glass);backdrop-filter:blur(24px) saturate(1.4);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.gauge-wrap{position:relative;width:180px;height:180px;margin:0 auto}
-.gauge-wrap svg{width:180px;height:180px;transform:rotate(-90deg)}
-.gauge-track{fill:none;stroke:rgba(255,255,255,.06);stroke-width:10;stroke-linecap:round}
-.gauge-fill{fill:none;stroke:url(#gG);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)}
+.glass{background:var(--glass);backdrop-filter:blur(24px) saturate(1.4);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.gauge-wrap{position:relative;width:190px;height:190px;margin:0 auto}
+.gauge-wrap svg{width:190px;height:190px;transform:rotate(-90deg)}
+.gauge-track{fill:none;stroke:rgba(255,255,255,.08);stroke-width:11;stroke-linecap:round}
+.gauge-fill{fill:none;stroke:url(#gG);stroke-width:11;stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)}
 .gauge-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
-.gauge-center .pct{font-size:42px;font-weight:900;line-height:1}
-.gauge-center .pct-sign{font-size:16px;color:var(--dim)}
-.gauge-center .sub{font-size:10px;color:var(--muted);margin-top:4px}
-.g-status{text-align:center;margin-top:10px;font-size:9px;font-weight:700;letter-spacing:2px;padding:3px 12px;border-radius:5px;border:1px solid;display:inline-block}
-.stat{text-align:center}.stat .lbl{font-size:8px;color:var(--muted);letter-spacing:1.5px;font-weight:600;margin-bottom:4px}.stat .val{font-size:20px;font-weight:800}
-.btn{border:none;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:700;letter-spacing:.5px;padding:14px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .3s;width:100%}
-.btn-p{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 20px rgba(124,138,255,.3)}
-.btn-p:hover{box-shadow:0 6px 30px rgba(124,138,255,.5);transform:translateY(-1px)}
+.gauge-center .pct{font-size:46px;font-weight:900;line-height:1}
+.gauge-center .pct-sign{font-size:18px;color:var(--dim)}
+.gauge-center .sub{font-size:12px;color:var(--dim);margin-top:6px;font-weight:600}
+.g-status{text-align:center;margin-top:12px;font-size:11px;font-weight:800;letter-spacing:2px;padding:4px 14px;border-radius:6px;border:1.5px solid;display:inline-block}
+.stat{text-align:center}.stat .lbl{font-size:10px;color:var(--muted);letter-spacing:1.5px;font-weight:700;margin-bottom:4px}.stat .val{font-size:20px;font-weight:800;color:var(--white)}
+.btn{border:none;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:800;letter-spacing:.5px;padding:12px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .3s;width:100%}
+.btn-p{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 20px rgba(129,140,248,.35)}
+.btn-p:hover{box-shadow:0 6px 30px rgba(129,140,248,.55);transform:translateY(-1px)}
 .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .btn-s{background:var(--glass2);color:var(--white);border:1px solid var(--border2)}
-.btn-s:hover{background:rgba(255,255,255,.08)}
+.btn-s:hover{background:rgba(255,255,255,.14)}
 .btn-s:disabled{opacity:.5;cursor:not-allowed}
-.btn-d{background:linear-gradient(135deg,#dc2626,#f87171);color:#fff}
-.btn-g{background:linear-gradient(135deg,var(--green),#34d399);color:#000}
+.btn-d{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
+.btn-g{background:linear-gradient(135deg,var(--green),#22c55e);color:#000;font-weight:900}
 .btn-n{background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff}
-.proc-row{display:grid;grid-template-columns:20px 6px 1fr 50px 55px;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;font-size:10px}.proc-row:hover{background:rgba(255,255,255,.03)}
-.proc-rank{color:var(--muted);font-family:var(--mono);font-size:9px;text-align:right}
-.proc-dot{width:4px;height:4px;border-radius:50%}
-.proc-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.proc-mem{font-family:var(--mono);font-size:9px;text-align:right}
-.log-box{font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.8;max-height:80px;overflow-y:auto}
-.toggle{width:52px;height:28px;border-radius:14px;border:2px solid var(--border2);background:var(--glass2);cursor:pointer;position:relative;transition:all .3s}
-.toggle.on{background:rgba(124,138,255,.3);border-color:var(--accent)}
-.toggle .knob{width:20px;height:20px;border-radius:50%;background:var(--white);position:absolute;top:2px;left:2px;transition:all .3s}
-.toggle.on .knob{left:26px;background:var(--accent)}
-.detail-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px}
-.detail-item .k{color:var(--muted)}.detail-item .v{color:var(--white);font-weight:600}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);z-index:100;background:rgba(10,10,30,.92);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:10px;padding:10px 20px;font-size:11px;display:flex;align-items:center;gap:8px;transition:transform .4s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.btn-dns{background:rgba(255,255,255,.06);border:1px solid var(--border2);color:var(--white);font-size:11px;font-weight:700;padding:10px;border-radius:10px;cursor:pointer;transition:all .2s;text-align:left;display:flex;justify-content:space-between;align-items:center}
+.btn-dns:hover{background:rgba(129,140,248,.2);border-color:var(--accent)}
+.proc-row{display:grid;grid-template-columns:22px 8px 1fr 70px 50px;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;font-size:12px;transition:background .2s}
+.proc-row:hover{background:rgba(255,255,255,.08)}
+.proc-rank{color:var(--muted);font-family:var(--mono);font-size:11px;text-align:right}
+.proc-dot{width:6px;height:6px;border-radius:50%}
+.proc-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+.proc-mem{font-family:var(--mono);font-size:11px;text-align:right;font-weight:700}
+.proc-kill{background:rgba(220,38,38,.25);color:#fca5a5;border:1px solid rgba(220,38,38,.5);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer;transition:all .2s;text-align:center}
+.proc-kill:hover{background:#dc2626;color:#fff}
+.search-input{width:100%;background:rgba(0,0,0,.45);border:1px solid var(--border2);color:var(--white);padding:10px 12px;border-radius:10px;font-size:12px;font-weight:600;outline:none;font-family:var(--font)}
+.search-input:focus{border-color:var(--accent)}
+.log-box{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.8;max-height:100px;overflow-y:auto;font-weight:600}
+.toggle{width:56px;height:30px;border-radius:15px;border:2px solid var(--border2);background:var(--glass2);cursor:pointer;position:relative;transition:all .3s}
+.toggle.on{background:rgba(129,140,248,.35);border-color:var(--accent)}
+.toggle .knob{width:22px;height:22px;border-radius:50%;background:var(--white);position:absolute;top:2px;left:2px;transition:all .3s}
+.toggle.on .knob{left:28px;background:var(--accent)}
+.detail-item{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px;font-weight:600}
+.detail-item .k{color:var(--dim)}.detail-item .v{color:var(--white);font-weight:700}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);z-index:100;background:rgba(15,15,35,.95);backdrop-filter:blur(20px);border:1.5px solid var(--border2);border-radius:12px;padding:12px 24px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:10px;transition:transform .4s cubic-bezier(.4,0,.2,1);pointer-events:none}
 .toast.show{transform:translateX(-50%) translateY(0);pointer-events:auto}
-.section-title{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:2px;margin-bottom:12px}
-.proc-list{max-height:300px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.08) transparent}
+.section-title{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:2px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.proc-list{max-height:300px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent}
+.badge-tag{background:rgba(74,222,128,.18);color:var(--green);border:1px solid rgba(74,222,128,.4);padding:3px 8px;border-radius:5px;font-size:10px;font-family:var(--mono);font-weight:800}
+.device-card{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;transition:background .2s}
+.device-card:hover{background:rgba(129,140,248,.14);border-color:var(--accent)}
 </style></head><body>
-<div id="anime-bg"></div><div id="tsparticles"></div><div id="overlay"></div>
+<div id="anime-bg"></div><div id="ambient-glow"></div><div id="overlay"></div><canvas id="pCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:3;pointer-events:none"></canvas>
 <div id="app">
 <div class="sidebar">
 <img class="logo" id="sLogo" src="" alt="RB">
-<button class="nav-btn active" onclick="go('ram')" id="nb_ram" title="RAM">◉</button><div class="nav-label">RAM | ذاكرة</div>
-<button class="nav-btn" onclick="go('disk')" id="nb_disk" title="Disk">◆</button><div class="nav-label">DISK | قرص</div>
-<button class="nav-btn" onclick="go('game')" id="nb_game" title="Game">▸</button><div class="nav-label">GAME | ألعاب</div>
-<button class="nav-btn" onclick="go('net')" id="nb_net" title="Network">◎</button><div class="nav-label">NET | شبكة</div>
+<button class="nav-btn active" onclick="go('ram')" id="nb_ram">RAM</button><div class="nav-label">ذاكرة</div>
+<button class="nav-btn" onclick="go('disk')" id="nb_disk">DISK</button><div class="nav-label">قرص</div>
+<button class="nav-btn" onclick="go('game')" id="nb_game">GAME</button><div class="nav-label">ألعاب</div>
+<button class="nav-btn" onclick="go('net')" id="nb_net">NET</button><div class="nav-label">شبكة</div>
+<button class="nav-btn" onclick="go('sys')" id="nb_sys">SYS</button><div class="nav-label">النظام</div>
+<button class="nav-btn" onclick="go('dev')" id="nb_dev">DEV</button><div class="nav-label">المطور</div>
 <div class="sidebar-footer"><div class="dev">Developed by<br><b>Bob</b></div></div>
 </div>
 <div class="main">
-<div class="header"><div style="display:flex;align-items:center"><h2 id="pageTitle">RAM BOOSTER | تعزيز الذاكرة</h2><span class="badge">PRO</span></div>
-<div class="header-r"><span id="admSt">○ USER</span><span>│</span><div class="dot-live"></div><span>LIVE</span><span>│</span><span id="clk">--:--:--</span></div></div>
+<div class="header">
+<div style="display:flex;align-items:center"><h2 id="pageTitle">RAM BOOSTER | تعزيز الذاكرة</h2><span class="badge">PRO</span></div>
+<div class="header-r"><span id="clk">--:--:--</span></div>
+</div>
 <div class="content">
 
 <!-- RAM SECTION -->
 <div class="section active" id="s_ram">
-<div class="grid2" style="grid-template-columns:340px 1fr">
+<div class="grid2" style="grid-template-columns:360px 1fr">
 <div>
 <div class="glass" style="text-align:center">
 <div class="section-title" style="text-align:left">MEMORY USAGE | استهلاك الذاكرة</div>
-<div class="gauge-wrap"><svg viewBox="0 0 200 200"><defs><linearGradient id="gG" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#6ee7b7"/><stop offset="50%" style="stop-color:#fcd34d"/><stop offset="100%" style="stop-color:#fca5a5"/></linearGradient></defs><circle class="gauge-track" cx="100" cy="100" r="85"/><circle class="gauge-fill" id="gF" cx="100" cy="100" r="85" stroke-dasharray="534" stroke-dashoffset="534"/></svg><div class="gauge-center"><div class="pct"><span id="pV">0</span><span class="pct-sign">%</span></div><div class="sub" id="mS">—</div></div></div>
+<div class="gauge-wrap"><svg viewBox="0 0 200 200"><defs><linearGradient id="gG" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#4ade80"/><stop offset="50%" style="stop-color:#fde047"/><stop offset="100%" style="stop-color:#f87171"/></linearGradient></defs><circle class="gauge-track" cx="100" cy="100" r="85"/><circle class="gauge-fill" id="gF" cx="100" cy="100" r="85" stroke-dasharray="534" stroke-dashoffset="534"/></svg><div class="gauge-center"><div class="pct"><span id="pV">0</span><span class="pct-sign">%</span></div><div class="sub" id="mS">—</div></div></div>
 <div id="gSt" class="g-status" style="color:var(--green);border-color:var(--green)">—</div></div>
-<div class="grid2" style="margin-bottom:12px">
-<div class="glass stat"><div class="lbl">◉ TOTAL</div><div class="val" id="sT">—</div></div>
-<div class="glass stat"><div class="lbl">▲ USED</div><div class="val" id="sU">—</div></div>
-<div class="glass stat"><div class="lbl">▼ FREE</div><div class="val" id="sF">—</div></div>
-<div class="glass stat"><div class="lbl">◆ DISK C:</div><div class="val" id="sD">—</div></div></div>
-<button class="btn btn-p" id="bC" onclick="doClean()">› ULTRA SMART CLEAN</button>
+<div class="grid2" style="margin-bottom:14px">
+<div class="glass stat"><div class="lbl">TOTAL</div><div class="val" id="sT">—</div></div>
+<div class="glass stat"><div class="lbl">USED</div><div class="val" id="sU">—</div></div>
+<div class="glass stat"><div class="lbl">FREE</div><div class="val" id="sF">—</div></div>
+<div class="glass stat"><div class="lbl">DISK C:</div><div class="val" id="sD">—</div></div></div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<button class="btn btn-p" id="bC" onclick="doClean()">ULTRA SMART CLEAN</button>
+<button class="btn btn-s" id="bB" onclick="doBoost()">FULL SYSTEM BOOST</button>
+</div>
 </div>
 <div>
-<div class="glass" style="flex:1"><div class="section-title">TOP PROCESSES | أعلى العمليات <span id="pCt" style="font-weight:400"></span></div><div class="proc-list" id="pL"></div></div>
+<div class="glass" style="flex:1">
+<div class="section-title"><span>TOP PROCESSES | أعلى العمليات</span><span id="pCt" style="font-weight:700;color:var(--accent)"></span></div>
+<input type="text" id="procSearch" class="search-input" placeholder="Search processes / بحث في العمليات..." oninput="renderProcesses()" style="margin-bottom:10px">
+<div class="proc-list" id="pL"></div>
+</div>
 <div class="glass"><div class="section-title">ACTIVITY LOG | سجل العمليات</div><div class="log-box" id="logE">لا توجد عمليات بعد | No operations yet.</div></div>
 </div></div></div>
 
-<!-- DISK SECTION -->
+<!-- SUPERCHARGED DISK SECTION -->
 <div class="section" id="s_disk">
-<div class="grid2">
-<div class="glass" style="text-align:center">
-<div class="section-title" style="text-align:left">DISK DEEP CLEAN | تنظيف القرص</div>
-<div style="font-size:40px;margin:14px 0;opacity:0.12"></div>
-<p style="color:var(--dim);font-size:12px;margin-bottom:20px">تنظيف ملفات النظام المؤقتة وكاش المتصفحات وبقايا التحديثات</p>
-<button class="btn btn-d" id="bDC" onclick="doDisk()">› DEEP CLEAN NOW</button>
+<!-- PARTITIONS & VOLUMES METRICS BANNER -->
+<div class="glass" style="background:linear-gradient(135deg,rgba(129,140,248,.18),rgba(74,222,128,.12));border:1.5px solid var(--accent);margin-bottom:16px">
+<div class="section-title" style="font-size:12px;color:var(--accent)">
+<span>MULTI-DRIVE PARTITIONS INSPECTOR | محركات الأقراص والتقسيمات (C:, D:, E:)</span>
+<span class="badge-tag" style="background:var(--accent);color:#000;font-weight:900">DRIVE SUITE</span>
 </div>
-<div class="glass"><div class="section-title">CLEAN RESULTS</div><div id="diskRes" style="color:var(--muted);font-size:11px">شغّل التنظيف العميق لعرض النتائج</div></div>
+<div id="partitionRes" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+<div class="glass stat" style="padding:10px"><div class="lbl">DRIVES</div><div class="val" style="font-size:13px;color:var(--muted)">Click DISK tab to scan drives...</div></div>
+</div>
+</div>
+
+<div class="grid2">
+<div>
+<!-- DEEP DISK CLEANER CARD -->
+<div class="glass" style="text-align:center">
+<div class="section-title" style="text-align:left">DEEP DISK CLEANER | تنظيف الكاش والملفات المؤقتة</div>
+<div style="font-size:24px;font-weight:900;letter-spacing:4px;margin:12px 0;color:var(--accent)">STORAGE CLEANER</div>
+<p style="color:var(--dim);font-size:12px;margin-bottom:16px">تنظيف ملفات Temp النظام، كاش المتصفحات، وبقايا Windows Update</p>
+<button class="btn btn-d" id="bDC" onclick="doDisk()">DEEP CLEAN NOW</button>
+<div id="diskRes" style="color:var(--dim);font-size:11px;margin-top:12px;text-align:left"></div>
+</div>
+
+<!-- FILE CATEGORIZER BREAKDOWN -->
+<div class="glass">
+<div class="section-title">STORAGE CATEGORIES | تصنيف وتوزيع الملفات</div>
+<button class="btn btn-s" onclick="loadDiskCategories()" style="margin-bottom:12px">ANALYZE STORAGE CATEGORIES</button>
+<div id="catRes" style="font-size:12px">
+<div style="color:var(--dim);font-size:11px">Click ANALYZING STORAGE CATEGORIES to calculate Music, Video, Photo, and Archive distribution</div>
+</div>
+</div>
+</div>
+
+<div>
+<!-- LARGE FILE FINDER & SPACE HOG ANALYZER -->
+<div class="glass">
+<div class="section-title">LARGE FILE FINDER (>30MB) | كاشف الملفات الضخمة والمساحات المستهلكة</div>
+<button class="btn btn-s" onclick="loadLargeFiles()" style="margin-bottom:10px">FIND LARGE FILES & SPACE HOGS</button>
+<div id="largeFileRes" style="font-size:11px;color:var(--dim);max-height:180px;overflow-y:auto">Click FIND LARGE FILES to list video files, archives, and giant installers</div>
+</div>
+
+<!-- INSTALLED APPLICATIONS UNINSTALLER -->
+<div class="glass">
+<div class="section-title">INSTALLED SOFTWARE UNINSTALLER | إزالة وحذف البرامج والتطبيقات</div>
+<input type="text" id="appSearch" class="search-input" placeholder="Search installed apps / بحث في البرامج..." oninput="renderApps()" style="margin-bottom:10px">
+<button class="btn btn-s" onclick="loadInstalledApps()" style="margin-bottom:10px">SCAN INSTALLED APPLICATIONS</button>
+<div id="appRes" style="font-size:11px;color:var(--dim);max-height:200px;overflow-y:auto">Click SCAN INSTALLED APPLICATIONS to view and uninstall software</div>
+</div>
+</div>
+
 </div></div>
 
 <!-- GAME SECTION -->
 <div class="section" id="s_game">
+<!-- ROBLOX & GENSHIN IMPACT SPECIALIZED BOOST BANNER -->
+<div class="glass" style="background:linear-gradient(135deg,rgba(129,140,248,.18),rgba(253,224,71,.14));border:1.5px solid var(--accent);margin-bottom:16px">
+<div class="section-title" style="font-size:12px;color:var(--yellow)">
+<span>ROBLOX & GENSHIN IMPACT ULTRA BOOST | تسريع الألعاب المخصص</span>
+<span class="badge-tag" style="background:var(--yellow);color:#000;font-weight:900">GAME EXCLUSIVE</span>
+</div>
+<p style="color:var(--white);font-size:12px;margin-bottom:12px">تخصيص أقصى قوة كارت الشاشة والمعالج وإلغاء تقطيع FPS لألعاب Roblox و Genshin Impact</p>
+<button class="btn btn-g" onclick="boostRobloxGenshin()" style="font-size:13px;padding:14px">تفعيل وضع FPS الأقصى لألعاب ROBLOX & GENSHIN IMPACT</button>
+<div id="rgBoostRes" style="margin-top:10px;font-size:11px;color:var(--dim)"></div>
+</div>
+
 <div class="grid2">
 <div class="glass" style="text-align:center">
 <div class="section-title" style="text-align:left">GAME MODE | وضع الألعاب</div>
-<div style="font-size:40px;margin:14px 0;opacity:0.12">▸</div>
-<p style="color:var(--dim);font-size:12px;margin-bottom:20px">إيقاف خدمات الخلفية وتعزيز أداء المعالج للألعاب</p>
-<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px">
-<span style="font-size:12px;color:var(--muted)">OFF</span>
+<div style="font-size:26px;font-weight:900;letter-spacing:4px;margin:16px 0;color:var(--accent)">BOOST</div>
+<p style="color:var(--dim);font-size:13px;margin-bottom:22px">إيقاف خدمات الخلفية وتعزيز أداء المعالج للألعاب</p>
+<div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px">
+<span style="font-size:13px;color:var(--dim);font-weight:700">OFF</span>
 <div class="toggle" id="gmTgl" onclick="toggleGM()"><div class="knob"></div></div>
-<span style="font-size:12px;color:var(--muted)">ON</span></div>
-<div id="gmSt" style="font-size:11px;color:var(--muted)">وضع الألعاب: مغلق | OFF</div>
+<span style="font-size:13px;color:var(--dim);font-weight:700">ON</span></div>
+<div id="gmSt" style="font-size:12px;color:var(--dim);font-weight:700">وضع الألعاب: مغلق | OFF</div>
 </div>
-<div class="glass"><div class="section-title">GAME MODE DETAILS</div><div id="gmRes" style="color:var(--muted);font-size:11px">فعّل وضع الألعاب لعرض التفاصيل</div></div>
+<div class="glass"><div class="section-title">GAME MODE DETAILS</div><div id="gmRes" style="color:var(--dim);font-size:12px">فعّل وضع الألعاب لعرض التفاصيل</div></div>
 </div></div>
 
-<!-- NETWORK SECTION -->
+<!-- NETWORK & TELECOM / IT SUITE SECTION -->
 <div class="section" id="s_net">
+<!-- CROWNING FEATURE: LIVE GAMING PINGPLOTTER & HOP TRACER -->
+<div class="glass" style="background:linear-gradient(135deg,rgba(129,140,248,.22),rgba(192,132,252,.14));border:1.5px solid var(--accent);margin-bottom:16px;box-shadow:0 0 30px rgba(129,140,248,.18)">
+<div class="section-title" style="font-size:12px;color:var(--accent)">
+<span>LIVE GAMING PINGPLOTTER & HOP TRACER | كاشف ومحلل مسار الألعاب والسيرفرات</span>
+<span class="badge-tag" style="background:var(--accent);color:#000;font-weight:900">CROWNING ENGINE</span>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+<button class="btn btn-s" style="font-size:11px;padding:8px" onclick="setTraceHost('api.roblox.com')">ROBLOX GAME</button>
+<button class="btn btn-s" style="font-size:11px;padding:8px" onclick="setTraceHost('8.209.112.1')">GENSHIN EU</button>
+<button class="btn btn-s" style="font-size:11px;padding:8px" onclick="setTraceHost('154.53.40.1')">FRANKFURT EU</button>
+<button class="btn btn-s" style="font-size:11px;padding:8px" onclick="setTraceHost('15.185.0.1')">MIDDLE EAST</button>
+</div>
+<div style="display:flex;gap:10px;margin-bottom:12px">
+<input type="text" id="traceTarget" class="search-input" value="api.roblox.com" placeholder="Server IP or Host (e.g. api.roblox.com)">
+<button class="btn btn-g" id="bTrace" onclick="runGamingTrace()" style="width:180px;font-size:12px">TRACE GAMING ROUTE</button>
+</div>
+<div id="traceRes" style="font-size:12px;color:var(--dim);max-height:200px;overflow-y:auto;scrollbar-width:thin;background:rgba(0,0,0,.4);padding:12px;border-radius:12px;border:1px solid var(--border)">
+انقر على <b>TRACE GAMING ROUTE</b> لكشف وتتبع مكان الـ Lag والـ Ping بالمللي ثانية في كل عقدة شبكة من جهازك إلى السيرفر.
+</div>
+</div>
+
+<!-- WI-FI SPECTRUM & CHANNEL ANALYZER BANNER -->
+<div class="glass" style="background:rgba(255,255,255,.04);border:1px solid var(--border2);margin-bottom:16px">
+<div class="section-title" style="font-size:12px;color:var(--green)">
+<span>WI-FI SPECTRUM & CHANNEL CONGESTION ANALYZER | محلل تشويش وقنوات الـ WI-FI</span>
+<span class="badge-tag">SPECTRUM ANALYZER</span>
+</div>
+<div style="margin-bottom:12px">
+<button class="btn btn-g" id="bWifiSpectrum" onclick="runWifiSpectrum()" style="font-size:12px;padding:12px">فحص التشويش وقوة إشارة الشبكات المجاورة وتوصية القناة الأفضل</button>
+</div>
+<div id="wifiRes" style="font-size:12px;color:var(--dim);max-height:140px;overflow-y:auto;scrollbar-width:thin;background:rgba(0,0,0,.4);padding:12px;border-radius:12px;border:1px solid var(--border)">
+انقر على <b>فحص التشويش وقوة إشارة الشبكات المجاورة</b> لقياس قوة الإشارة بـ dBm والتوصية بأقل القنوات ازدحاماً.
+</div>
+</div>
+
+<!-- LAN DEVICE SCANNER & DEEP FINGERPRINTER BANNER -->
+<div class="glass" style="background:rgba(255,255,255,.04);border:1px solid var(--border2);margin-bottom:16px">
+<div class="section-title" style="font-size:12px;color:var(--accent)">
+<span>LAN DEVICE INSPECTOR & FINGERPRINTER | كاشف ومحلل الأجهزة الذكي</span>
+<span class="badge-tag">DEEP SCANNER</span>
+</div>
+<div style="margin-bottom:12px">
+<button class="btn btn-s" id="bLanScan" onclick="runLanScan()" style="font-size:12px;padding:12px">كشف وتحديد أسماء وأنواع جميع الأجهزة المتصلة بالراوتر</button>
+</div>
+<div id="lanRes" style="font-size:12px;color:var(--dim);max-height:140px;overflow-y:auto;scrollbar-width:thin;background:rgba(0,0,0,.4);padding:12px;border-radius:12px;border:1px solid var(--border)">
+انقر على <b>كشف وتحديد أسماء وأنواع جميع الأجهزة المتصلة بالراوتر</b> لعرض جميع الأجهزة على الشبكة.
+</div>
+</div>
+
 <div class="grid2">
+<div>
+<!-- PUBLIC IP & ADAPTER INFO -->
 <div class="glass">
-<div class="section-title">NETWORK OPTIMIZER | تسريع الشبكة</div>
-<div style="display:flex;flex-direction:column;gap:8px">
-<button class="btn btn-n" id="bNO" onclick="doNetFull()">◎ FULL OPTIMIZE</button>
-<button class="btn btn-s" onclick="doFlush()">› FLUSH DNS</button>
-<button class="btn btn-s" onclick="doRenew()">› RENEW IP</button>
+<div class="section-title">PUBLIC IP & ISP INFO | العنوان العام للشبكة</div>
+<div id="pubIpDetails" style="font-size:12px">
+<div class="detail-item"><span class="k">Public IP Address</span><span class="v" id="pipVal" style="color:var(--accent)">Loading...</span></div>
+<div class="detail-item"><span class="k">ISP Provider</span><span class="v" id="pipIsp">—</span></div>
+<div class="detail-item"><span class="k">Location / Country</span><span class="v" id="pipLoc">—</span></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+<button class="btn btn-n" id="bNO" onclick="doNetFull()">OPTIMIZE TCP</button>
+<button class="btn btn-s" onclick="doRenew()">RELEASE / RENEW IP</button>
+</div>
+</div>
+
+<!-- LIVE SPEED TEST ENGINE -->
+<div class="glass">
+<div class="section-title">LIVE INTERNET SPEEDTEST | قياس سرعة الإنترنت المباشر</div>
+<button class="btn btn-g" id="bSpeed" onclick="runSpeedTest()" style="margin-bottom:12px">RUN SPEED TEST NOW</button>
+<div id="speedRes" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+<div class="glass stat" style="padding:10px"><div class="lbl">DOWNLOAD</div><div class="val" id="spDl" style="color:var(--green);font-size:16px">—</div></div>
+<div class="glass stat" style="padding:10px"><div class="lbl">UPLOAD</div><div class="val" id="spUl" style="color:var(--accent);font-size:16px">—</div></div>
+<div class="glass stat" style="padding:10px"><div class="lbl">PING</div><div class="val" id="spPing" style="color:var(--yellow);font-size:16px">—</div></div>
+</div>
+</div>
+
+<!-- ACTIVE NETSTAT PROCESS AUDITOR -->
+<div class="glass">
+<div class="section-title">ACTIVE SOCKET & NETSTAT AUDITOR | مراقب الاتصالات الحية</div>
+<button class="btn btn-s" onclick="loadNetstat()" style="margin-bottom:10px">AUDIT ACTIVE NETSTAT SOCKETS</button>
+<div id="netstatRes" style="font-size:11px;color:var(--dim);max-height:140px;overflow-y:auto">Click AUDIT ACTIVE NETSTAT SOCKETS to inspect live connections and process IDs</div>
+</div>
+
+<!-- REAL IP CONFIGURATOR (STATIC vs DHCP) -->
+<div class="glass">
+<div class="section-title">IP CONFIGURATOR | تغيير وخيارات الـ IP</div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
+<input type="text" id="cfgIp" class="search-input" placeholder="Static IPv4 (e.g. 192.168.1.150)">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<input type="text" id="cfgSubnet" class="search-input" value="255.255.255.0" placeholder="Subnet Mask">
+<input type="text" id="cfgGateway" class="search-input" placeholder="Gateway (e.g. 192.168.1.1)">
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<button class="btn btn-s" onclick="applyStaticIp()">SET STATIC IP</button>
+<button class="btn btn-s" onclick="applyDhcpIp()">SWITCH DHCP</button>
+</div>
+</div>
+
+<!-- MAC ADDRESS SPOOFER & PROXY CONFIGURATOR -->
+<div class="glass">
+<div class="section-title">MAC SPOOFER & PROXY | تزييف MAC ومخدم Proxy</div>
+<div style="display:flex;gap:8px;margin-bottom:10px">
+<input type="text" id="proxyServer" class="search-input" placeholder="Proxy IP:Port (e.g. 127.0.0.1:8080)">
+<button class="btn btn-s" onclick="applyProxy(true)" style="width:90px">ENABLE</button>
+<button class="btn btn-s" onclick="applyProxy(false)" style="width:90px">DISABLE</button>
+</div>
+<button class="btn btn-s" onclick="spoofMac()">SPOOF / RANDOMIZE MAC ADDRESS</button>
+</div>
+</div>
+
+<div>
+<!-- DNS LEAK & ENCRYPTED DOH INSPECTOR -->
+<div class="glass">
+<div class="section-title">DNS LEAK & DOH SECURITY INSPECTOR | كاشف تسريب وتشفير الـ DNS</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+<button class="btn btn-s" onclick="runDnsLeakCheck()">INSPECT DNS LEAKS</button>
+<button class="btn btn-s" onclick="enableDohDns()">ENABLE DOH ENCRYPTION</button>
+</div>
+<div id="dnsLeakRes" style="font-size:11px;color:var(--dim)">Click INSPECT DNS LEAKS to trace ISP DNS interception and DoH security status</div>
+</div>
+
+<!-- PATH MTU DISCOVERY OPTIMIZER -->
+<div class="glass">
+<div class="section-title">PMTU OPTIMIZER | حاسبة حزم البيانات ومُعالج التقطيع</div>
+<button class="btn btn-s" onclick="loadMtuCalc()" style="margin-bottom:10px">CALCULATE OPTIMAL PATH MTU</button>
+<div id="mtuRes" style="font-size:11px;color:var(--dim)">Click CALCULATE OPTIMAL PATH MTU to test ICMP DF bit packet limits</div>
+</div>
+
+<!-- SUBNET CALCULATOR (TELECOM / IT TOOL) -->
+<div class="glass">
+<div class="section-title">SUBNET CALCULATOR | حاسبة الشبكات الفرعية والـ IP</div>
+<div style="display:flex;gap:10px;margin-bottom:10px">
+<input type="text" id="subnetInput" class="search-input" value="192.168.1.100/24" placeholder="IP/CIDR (e.g. 10.0.0.1/16)">
+<button class="btn btn-s" onclick="runSubnetCalc()" style="width:120px">CALCULATE</button>
+</div>
+<div id="subnetRes" style="font-size:11px;color:var(--dim)">Enter IP/CIDR to calculate Netmask, Network IP, Broadcast IP, and Host limits</div>
+</div>
+
+<!-- REAL DNS CHANGER & BENCHMARK -->
+<div class="glass">
+<div class="section-title">DNS SWITCHER & BENCHMARK | تغيير وفحص DNS</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+<button class="btn-dns" onclick="changeDns('cloudflare')"><span>Cloudflare</span><span class="badge-tag">1.1.1.1</span></button>
+<button class="btn-dns" onclick="changeDns('google')"><span>Google</span><span class="badge-tag">8.8.8.8</span></button>
+<button class="btn-dns" onclick="changeDns('quad9')"><span>Quad9 Security</span><span class="badge-tag">9.9.9.9</span></button>
+<button class="btn-dns" onclick="changeDns('adguard')"><span>AdGuard</span><span class="badge-tag">AdBlock</span></button>
+<button class="btn-dns" onclick="changeDns('opendns')"><span>OpenDNS</span><span class="badge-tag">Family</span></button>
+<button class="btn-dns" onclick="changeDns('dhcp')"><span>Automatic DHCP</span><span class="badge-tag">Default</span></button>
+</div>
+<button class="btn btn-s" id="bBenchDns" onclick="benchDns()" style="margin-bottom:8px">BENCHMARK FASTEST DNS SERVERS</button>
+<div id="dnsBenchRes" style="font-size:11px;color:var(--dim)"></div>
+</div>
+
+<!-- PING & PACKET LOSS TESTER -->
+<div class="glass">
+<div class="section-title">PING & LATENCY TESTER | فحص زمن الاستجابة (Ping)</div>
+<div style="display:flex;gap:10px;margin-bottom:10px">
+<input type="text" id="pingTarget" class="search-input" value="google.com" placeholder="Host or IP (e.g. 8.8.8.8)">
+<button class="btn btn-s" onclick="runPingTest()" style="width:110px">PING TEST</button>
+</div>
+<div id="pingRes" style="font-size:12px;color:var(--dim)">Enter host and click PING TEST</div>
+</div>
+
+<!-- ROUTING TABLE INSPECTOR -->
+<div class="glass">
+<div class="section-title">IPV4 ROUTING TABLE INSPECTOR | جدول توجيه البيانات</div>
+<button class="btn btn-s" onclick="loadRoutingTable()" style="margin-bottom:10px">INSPECT ROUTING TABLE</button>
+<div id="routingRes" style="font-size:11px;color:var(--dim);max-height:120px;overflow-y:auto">Click INSPECT ROUTING TABLE to view network gateway metrics</div>
+</div>
+
+<!-- PORT SCANNER -->
+<div class="glass">
+<div class="section-title">TELECOM / IT PORT SCANNER | فحص المنافذ المفتوحة</div>
+<div style="display:flex;gap:10px;margin-bottom:10px">
+<input type="text" id="portTarget" class="search-input" value="127.0.0.1" placeholder="Target IP or Host">
+<button class="btn btn-s" id="bPortScan" onclick="runPortScan()" style="width:130px">SCAN PORTS</button>
+</div>
+<div id="portRes" style="font-size:11px;color:var(--dim);max-height:100px;overflow-y:auto">Click SCAN PORTS to check key services (SSH, Web, RDP, Database)</div>
+</div>
+</div>
+
 </div></div>
-<div class="glass"><div class="section-title">OPTIMIZATION RESULTS</div><div id="netRes" style="color:var(--muted);font-size:11px">شغّل التحسين لعرض النتائج</div></div>
-</div></div>
+
+<!-- ULTIMATE SYSTEM & DEEP HARDWARE SUITE SECTION -->
+<div class="section" id="s_sys">
+
+<div class="glass" style="background:linear-gradient(135deg,rgba(129,140,248,.22),rgba(192,132,252,.15));border:1.5px solid var(--accent);margin-bottom:16px;box-shadow:0 0 30px rgba(129,140,248,.18)">
+<div class="section-title" style="font-size:12px;color:var(--accent)">
+<span>DEEP HARDWARE & BIOS DIAGNOSTIC SUITE | الفحص الدقيق والمتقدم للقطع والبايوس</span>
+<span class="badge-tag" style="background:var(--accent);color:#000;font-weight:900">HWiNFO / CPU-Z SUITE</span>
+</div>
+<p style="color:var(--white);font-size:12px;margin-bottom:12px">قراءة وتحليل جميع مواصفات اللوحة الأم، البايوس، أذرع الرام بالتردد، الـ VRAM لكارت الشاشة وأقراص الـ NVMe</p>
+<button class="btn btn-g" onclick="loadDeepSysInfo()" style="font-size:13px;padding:12px">إجراء فحص دقيق وشامل للبايوس والقطع المعقدة</button>
+</div>
+
+<div class="grid2">
+<!-- BIOS & MOTHERBOARD -->
+<div class="glass">
+<div class="section-title">BIOS & MOTHERBOARD | البايوس واللوحة الأم</div>
+<div id="sysBios" style="font-size:12px">
+<div style="color:var(--dim)">Click button above to scan BIOS version, SMBIOS & UEFI Status...</div>
+</div>
+</div>
+
+<!-- CPU MICROARCHITECTURE & CACHE -->
+<div class="glass">
+<div class="section-title">CPU MICROARCHITECTURE & CACHE | تفاصيل المعالج والدقة</div>
+<div id="sysCpu" style="font-size:12px">
+<div style="color:var(--dim)">Click button above to inspect L2/L3 cache, cores & virtualization...</div>
+</div>
+</div>
+</div>
+
+<div class="grid2">
+<!-- RAM MEMORY STICKS & SLOTS -->
+<div class="glass">
+<div class="section-title">RAM MEMORY MODULES & SLOTS | منافذ الرام والتردد (MHz)</div>
+<div id="sysRam" style="font-size:12px">
+<div style="color:var(--dim)">Click button above to view per-slot RAM stick details...</div>
+</div>
+</div>
+
+<!-- GPU & DISPLAY RESOLUTION -->
+<div class="glass">
+<div class="section-title">GPU & DISPLAY ENGINE | كارت الشاشة والتردد Hz</div>
+<div id="sysGpu" style="font-size:12px">
+<div style="color:var(--dim)">Click button above to inspect VRAM, Driver version & Hz...</div>
+</div>
+</div>
+</div>
+
+<div class="grid2">
+<!-- STORAGE SSD/NVMe DISKS -->
+<div class="glass">
+<div class="section-title">STORAGE DISKS & NVMe BUS | الأقراص والـ NVMe</div>
+<div id="sysStorage" style="font-size:12px">
+<div style="color:var(--dim)">Click button above to inspect NVMe PCIe bus & SSD models...</div>
+</div>
+</div>
+
+<!-- WINDOWS SECURITY & KERNEL -->
+<div class="glass">
+<div class="section-title">WINDOWS KERNEL & TPM 2.0 | النظام والـ TPM</div>
+<div id="sysOs" style="font-size:12px">
+<div style="color:var(--dim)">Click button above to inspect Uptime & TPM 2.0 security chip...</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- DEVELOPER SECTION -->
+<div class="section" id="s_dev">
+
+<div class="grid2" style="max-width:850px;margin:40px auto 0">
+<!-- GITHUB PROFILE CARD -->
+<div class="glass" style="border:1.5px solid rgba(255,255,255,.18);background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(0,0,0,.5));text-align:center;padding:36px 24px">
+<div style="font-size:26px;font-weight:900;letter-spacing:2px;color:var(--white);margin-bottom:6px">GITHUB</div>
+<div style="font-size:15px;font-weight:800;color:var(--accent);margin-bottom:28px;font-family:var(--mono)">@gcp64</div>
+<button class="btn btn-s" onclick="openDevUrl('https://github.com/gcp64')" style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);font-size:13px;padding:14px;font-weight:900;letter-spacing:1px">
+صفحتي GITHUB
+</button>
+</div>
+
+<!-- INSTAGRAM PROFILE CARD -->
+<div class="glass" style="border:1.5px solid rgba(236,72,153,.4);background:linear-gradient(135deg,rgba(236,72,153,.12),rgba(239,68,68,.08));text-align:center;padding:36px 24px">
+<div style="font-size:26px;font-weight:900;letter-spacing:2px;color:#f472b6;margin-bottom:6px">INSTAGRAM</div>
+<div style="font-size:15px;font-weight:800;color:#f472b6;margin-bottom:28px;font-family:var(--mono)">@gcp_64</div>
+<button class="btn btn-p" onclick="openDevUrl('https://www.instagram.com/gcp_64/?hl=ar')" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;font-size:13px;padding:14px;font-weight:900;letter-spacing:1px">
+صفحتي INSTAGRAM
+</button>
+</div>
+</div>
+
+</div>
 
 </div></div></div>
-<div class="toast" id="toast"><span id="tI">●</span><span id="tM"></span></div>
+
+<div class="toast" id="toast"><span id="tM"></span></div>
 <script>
-tsParticles.load("tsparticles",{particles:{number:{value:50,density:{enable:true,area:900}},color:{value:["#7c8aff","#a78bfa","#6ee7b7","#fff"]},opacity:{value:{min:.1,max:.35},animation:{enable:true,speed:.8,minimumValue:.05}},size:{value:{min:1,max:3}},move:{enable:true,speed:{min:.3,max:.8}},links:{enable:true,distance:110,color:"#7c8aff",opacity:.06,width:1}},interactivity:{events:{onHover:{enable:true,mode:"grab"}},modes:{grab:{distance:140,links:{opacity:.15}}}},detectRetina:true});
-let logs=[];
-function go(s){document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));document.getElementById('s_'+s).classList.add('active');document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));document.getElementById('nb_'+s).classList.add('active');const t={ram:'RAM BOOSTER',disk:'DISK DEEP CLEAN',game:'GAME MODE',net:'NETWORK OPTIMIZER'};document.getElementById('pageTitle').textContent=t[s]||''}
-async function update(){try{const m=await pywebview.api.get_memory();if(!m)return;const p=m.percent;document.getElementById('pV').textContent=Math.round(p);document.getElementById('mS').textContent=m.used_gb+' / '+m.total_gb+' GB';document.getElementById('gF').style.strokeDashoffset=534-(p/100)*534;const gs=document.getElementById('gSt');if(p<40){gs.textContent='OPTIMAL';gs.style.color=gs.style.borderColor='var(--green)'}else if(p<65){gs.textContent='NORMAL';gs.style.color=gs.style.borderColor='var(--yellow)'}else if(p<85){gs.textContent='HIGH';gs.style.color=gs.style.borderColor='var(--red)'}else{gs.textContent='CRITICAL';gs.style.color=gs.style.borderColor='#ff4444'}
-document.getElementById('sT').textContent=m.total_gb+' GB';const su=document.getElementById('sU');su.textContent=m.used_gb+' GB';su.style.color=p<50?'var(--green)':p<75?'var(--yellow)':'var(--red)';document.getElementById('sF').textContent=m.available_gb+' GB';const d=await pywebview.api.get_disk();if(d)document.getElementById('sD').textContent=d.free_gb+' GB';document.getElementById('clk').textContent=new Date().toLocaleTimeString('en',{hour12:false});const a=await pywebview.api.is_admin();document.getElementById('admSt').textContent=a?'● ADMIN':'○ USER';document.getElementById('admSt').style.color=a?'var(--green)':'var(--muted)'}catch(e){}}
-async function updateP(){try{const ps=await pywebview.api.get_processes();if(!ps)return;document.getElementById('pCt').textContent='('+ps.length+')';document.getElementById('pL').innerHTML=ps.map((p,i)=>{const mb=p.memory_mb,c=mb>500?'var(--red)':mb>200?'var(--yellow)':mb>50?'var(--dim)':'var(--muted)',n=p.name||'PID:'+p.pid,ms=mb>=1024?(mb/1024).toFixed(1)+' GB':Math.round(mb)+' MB';return '<div class=proc-row><span class=proc-rank>'+(i+1)+'</span><div class=proc-dot style=background:'+c+'></div><span class=proc-name style=color:'+(mb>100?'var(--white)':'var(--dim)')+'>'+n+'</span><div></div><span class=proc-mem style=color:'+c+'>'+ms+'</span></div>'}).join('')}catch(e){}}
-function showT(m,i='●',c='var(--dim)',d=3000){const t=document.getElementById('toast');document.getElementById('tI').textContent=i;document.getElementById('tI').style.color=c;document.getElementById('tM').textContent=m;t.classList.add('show');if(d>0)setTimeout(()=>t.classList.remove('show'),d)}
-function addLog(t){const ts=new Date().toLocaleTimeString('en',{hour12:false});logs.unshift('['+ts+'] '+t);if(logs.length>5)logs=logs.slice(0,5);document.getElementById('logE').innerHTML=logs.map(l=>'<div>'+l+'</div>').join('')}
-async function doClean(){const b=document.getElementById('bC');b.disabled=true;b.textContent='… CLEANING...';showT('Cleaning memory...','…','var(--accent)',0);try{const r=await pywebview.api.smart_clean();b.disabled=false;b.textContent='› ULTRA SMART CLEAN';showT('Freed '+Math.round(r.freed_mb)+' MB — '+r.processes_trimmed+' trimmed','✓','var(--green)',5000);addLog('CLEAN ▸ '+Math.round(r.freed_mb)+' MB freed');update();updateP()}catch(e){b.disabled=false;b.textContent='› ULTRA SMART CLEAN';showT('Error','✕','var(--red)')}}
-async function doDisk(){const b=document.getElementById('bDC');b.disabled=true;b.textContent='› CLEANING...';showT('Deep cleaning disk...','…','var(--red)',0);try{const r=await pywebview.api.deep_clean();b.disabled=false;b.textContent='› DEEP CLEAN NOW';const h=Object.entries(r.sections||{}).map(([k,v])=>'<div class=detail-item><span class=k>'+k+'</span><span class=v>'+v+' MB</span></div>').join('');document.getElementById('diskRes').innerHTML='<div class=detail-item><span class=k>Files Deleted</span><span class=v style=color:var(--green)>'+r.files_deleted+'</span></div><div class=detail-item><span class=k>Total Freed</span><span class=v style=color:var(--green)>'+r.total_freed_mb+' MB</span></div><hr style=border-color:rgba(255,255,255,.05);margin:8px>'+h;showT('Freed '+r.total_freed_mb+' MB from disk!','✓','var(--green)',5000);addLog('DISK ▸ '+r.files_deleted+' files, '+r.total_freed_mb+' MB')}catch(e){b.disabled=false;b.textContent='› DEEP CLEAN NOW';showT('Error','✕','var(--red)')}}
-async function toggleGM(){showT('Toggling Game Mode...','…','var(--accent)',0);try{const r=await pywebview.api.toggle_game_mode();const tgl=document.getElementById('gmTgl');if(r.active){tgl.classList.add('on');document.getElementById('gmSt').innerHTML='<span style=color:var(--green)>Game Mode is ON</span>';document.getElementById('gmRes').innerHTML='<div class=detail-item><span class=k>Services Stopped</span><span class=v style=color:var(--green)>'+(r.services_stopped||0)+'</span></div><div class=detail-item><span class=k>Power Plan</span><span class=v>HIGH PERFORMANCE</span></div><div class=detail-item><span class=k>Priority</span><span class=v>BOOSTED</span></div>';showT('Game Mode ON! '+r.services_stopped+' services stopped','▸','var(--green)',4000);addLog('GAME ON ▸ '+r.services_stopped+' services stopped')}else{tgl.classList.remove('on');document.getElementById('gmSt').innerHTML='وضع الألعاب: مغلق | OFF';document.getElementById('gmRes').innerHTML='<div class=detail-item><span class=k>Services Restarted</span><span class=v>'+(r.services_restarted||0)+'</span></div><div class=detail-item><span class=k>Power Plan</span><span class=v>BALANCED</span></div>';showT('Game Mode OFF — services restored','✓','var(--accent)',4000);addLog('GAME OFF ▸ restored')}}catch(e){showT('Error','✕','var(--red)')}}
-async function doNetFull(){const b=document.getElementById('bNO');b.disabled=true;b.textContent='◎ OPTIMIZING...';showT('Optimizing network...','…','#3b82f6',0);try{const r=await pywebview.api.network_optimize();b.disabled=false;b.textContent='◎ FULL OPTIMIZE';const d=(r.details||[]).map(x=>'<div class=detail-item><span class=v style=font-size:10px>'+x+'</span></div>').join('');document.getElementById('netRes').innerHTML='<div class=detail-item><span class=k>DNS Flush</span><span class=v style=color:'+(r.dns_flush?'var(--green)':'var(--red)')+'>'+(r.dns_flush?'✓':'✗')+'</span></div><div class=detail-item><span class=k>TCP Rules Applied</span><span class=v style=color:var(--green)>'+r.tcp_applied+'</span></div><hr style=border-color:rgba(255,255,255,.05);margin:6px>'+d;showT('Network optimized! '+r.tcp_applied+' rules applied','✓','var(--green)',5000);addLog('NET ▸ TCP:'+r.tcp_applied+' DNS:'+(r.dns_flush?'OK':'FAIL'))}catch(e){b.disabled=false;b.textContent='◎ FULL OPTIMIZE';showT('Error','✕','var(--red)')}}
-async function doFlush(){showT('Flushing DNS...','›','#3b82f6',0);try{const r=await pywebview.api.network_flush_dns();showT(r.success?'DNS flushed!':'DNS flush failed','✓','var(--green)',3000);addLog('DNS Flush: '+(r.success?'OK':'FAIL'))}catch(e){showT('Error','✕','var(--red)')}}
-async function doRenew(){showT('Renewing IP...','›','#3b82f6',0);try{const r=await pywebview.api.network_renew_ip();showT('IP renewed!','✓','var(--green)',3000);addLog('IP Renew: done')}catch(e){showT('Error','✕','var(--red)')}}
-function boot(){if(!window.pywebview||!window.pywebview.api){setTimeout(boot,200);return}pywebview.api.get_icon_path().then(p=>{if(p){document.getElementById('anime-bg').style.backgroundImage='url('+p+')';document.getElementById('sLogo').src=p}});update();updateP();setInterval(update,2000);setInterval(updateP,4000)}
+let logs=[], rawProcesses=[], rawApps=[];
+
+function setTraceHost(h){ document.getElementById('traceTarget').value=h; }
+
+function openDevUrl(url){
+  try{ pywebview.api.open_url(url); }catch(e){}
+}
+
+async function loadDeepSysInfo(){
+  showT('Extracting deep BIOS & Hardware metrics...','var(--accent)',0);
+  try{
+    const d=await pywebview.api.get_deep_system_diagnostics();
+    if(!d) return;
+
+    // BIOS & Mobo
+    const b=d.bios||{}; const m=d.mobo||{};
+    const sb_col = (b.secure_boot||'').includes('ENABLED') ? 'var(--green)' : 'var(--yellow)';
+    document.getElementById('sysBios').innerHTML = `
+      <div class="detail-item"><span class="k">BIOS Vendor</span><span class="v" style="color:var(--accent)">${b.vendor}</span></div>
+      <div class="detail-item"><span class="k">BIOS Version</span><span class="v">${b.version} (${b.release_date})</span></div>
+      <div class="detail-item"><span class="k">Boot Mode</span><span class="v" style="color:var(--green)">${b.uefi_mode} Mode</span></div>
+      <div class="detail-item"><span class="k">Secure Boot</span><span class="v" style="color:${sb_col}">${b.secure_boot}</span></div>
+      <div class="detail-item"><span class="k">Motherboard</span><span class="v">${m.manufacturer}</span></div>
+      <div class="detail-item"><span class="k">Model / Product</span><span class="v" style="color:var(--yellow)">${m.product}</span></div>
+      <div class="detail-item"><span class="k">Serial Number</span><span class="v" style="font-family:var(--mono)">${m.serial}</span></div>
+    `;
+
+    // CPU
+    const c=d.cpu||{};
+    const v_col = (c.virtualization||'').includes('ENABLED') ? 'var(--green)' : 'var(--yellow)';
+    document.getElementById('sysCpu').innerHTML = `
+      <div class="detail-item"><span class="k">Processor Model</span><span class="v" style="color:var(--accent)">${c.name}</span></div>
+      <div class="detail-item"><span class="k">Cores / Threads</span><span class="v">${c.cores} Cores / ${c.threads} Threads</span></div>
+      <div class="detail-item"><span class="k">Max Clock Speed</span><span class="v" style="color:var(--green)">${c.clock_mhz}</span></div>
+      <div class="detail-item"><span class="k">L2 Cache</span><span class="v">${c.l2_cache}</span></div>
+      <div class="detail-item"><span class="k">L3 Cache</span><span class="v" style="color:var(--yellow)">${c.l3_cache}</span></div>
+      <div class="detail-item"><span class="k">Virtualization</span><span class="v" style="color:${v_col}">${c.virtualization}</span></div>
+    `;
+
+    // RAM Modules
+    const r=d.ram||{};
+    const mods = (r.modules||[]).map(m=>`
+      <div class="device-card" style="margin-top:6px">
+        <div>
+          <div style="font-weight:800;font-size:12px;color:var(--white)">[${m.slot}] ${m.manufacturer} ${m.type} <span class="badge-tag">${m.speed_mhz} MHz</span></div>
+          <div style="font-size:11px;color:var(--dim);margin-top:2px">Capacity: <b style="color:var(--green)">${m.capacity_gb} GB</b></div>
+        </div>
+      </div>
+    `).join('');
+    document.getElementById('sysRam').innerHTML = `
+      <div class="detail-item"><span class="k">Total Memory</span><span class="v" style="color:var(--accent)">${r.total_gb} GB ${r.type}</span></div>
+      <div class="detail-item"><span class="k">Frequency Speed</span><span class="v" style="color:var(--green)">${r.speed_mhz}</span></div>
+      <div class="detail-item"><span class="k">Slots Used</span><span class="v" style="color:var(--yellow)">${r.slots_used} of ${r.total_slots} Slots</span></div>
+      ${mods}
+    `;
+
+    // GPU
+    const gpus = (d.gpu||[]).map(g=>`
+      <div class="detail-item"><span class="k">GPU Model</span><span class="v" style="color:var(--accent)">${g.name}</span></div>
+      <div class="detail-item"><span class="k">Dedicated VRAM</span><span class="v" style="color:var(--green)">${g.vram}</span></div>
+      <div class="detail-item"><span class="k">Driver Version</span><span class="v">${g.driver}</span></div>
+      <div class="detail-item"><span class="k">Active Display</span><span class="v" style="color:var(--yellow)">${g.display}</span></div>
+    `).join('<hr style="border-color:rgba(255,255,255,.08);margin:8px">');
+    document.getElementById('sysGpu').innerHTML = gpus;
+
+    // Storage
+    const disks = (d.storage||[]).map(dk=>`
+      <div class="device-card" style="margin-top:6px">
+        <div>
+          <div style="font-weight:800;font-size:12px;color:var(--white)">[${dk.bus} ${dk.type}] ${dk.model}</div>
+          <div style="font-size:11px;color:var(--dim);margin-top:2px">Capacity: <b style="color:var(--green)">${dk.size_gb} GB</b></div>
+        </div>
+      </div>
+    `).join('');
+    document.getElementById('sysStorage').innerHTML = disks;
+
+    // OS & Security
+    const o=d.os_sec||{};
+    document.getElementById('sysOs').innerHTML = `
+      <div class="detail-item"><span class="k">Windows Edition</span><span class="v" style="color:var(--accent)">${o.os_build}</span></div>
+      <div class="detail-item"><span class="k">System Uptime</span><span class="v" style="color:var(--green)">${o.uptime}</span></div>
+      <div class="detail-item"><span class="k">TPM 2.0 Chip</span><span class="v" style="color:var(--yellow)">${o.tpm}</span></div>
+      <div class="detail-item"><span class="k">Antivirus Engine</span><span class="v">${o.antivirus}</span></div>
+    `;
+
+    showT('Deep Hardware & BIOS Inspection Complete!','var(--green)',4000);
+  }catch(e){
+    showT('Error scanning hardware','var(--red)');
+  }
+}
+
+async function loadDiskPartitions(){
+  try{
+    const list=await pywebview.api.get_drive_partitions();
+    if(list && list.length){
+      const h=list.map(p=>'<div class="glass stat" style="padding:10px"><div class="lbl">DRIVE ['+p.mountpoint+'] ('+p.fstype+')</div><div class="val" style="font-size:14px;color:'+(p.percent>85?'var(--red)':'var(--green)')+'">'+p.free_gb+' GB Free / '+p.total_gb+' GB</div></div>').join('');
+      document.getElementById('partitionRes').innerHTML=h;
+    }
+  }catch(e){}
+}
+
+async function loadDiskCategories(){
+  showT('Analyzing file categories...','var(--accent)',0);
+  try{
+    const r=await pywebview.api.analyze_disk_categories();
+    document.getElementById('catRes').innerHTML='<div class="detail-item"><span class="k">Videos & Movies</span><span class="v" style="color:var(--accent)">'+r.video_mb+' MB ('+r.video_pct+'%)</span></div><div class="detail-item"><span class="k">Music & Audio</span><span class="v" style="color:var(--green)">'+r.audio_mb+' MB ('+r.audio_pct+'%)</span></div><div class="detail-item"><span class="k">Pictures & Photos</span><span class="v" style="color:var(--yellow)">'+r.pictures_mb+' MB ('+r.pictures_pct+'%)</span></div><div class="detail-item"><span class="k">Archives & Installers</span><span class="v" style="color:var(--red)">'+r.archives_mb+' MB ('+r.archives_pct+'%)</span></div><div class="detail-item"><span class="k">Documents & PDF</span><span class="v">'+r.documents_mb+' MB ('+r.documents_pct+'%)</span></div>';
+    showT('Storage categorization complete','var(--green)',3000);
+  }catch(e){ showT('Error categorizing storage','var(--red)'); }
+}
+
+async function loadLargeFiles(){
+  showT('Scanning for space hogs...','var(--accent)',0);
+  try{
+    const list=await pywebview.api.find_large_files();
+    if(list && list.length){
+      const h=list.map(f=>'<div class="device-card"><div><div style="font-weight:800;font-size:12px;color:var(--white)">'+f.name+'</div><div style="font-size:11px;color:var(--dim);margin-top:2px">'+f.path+'</div></div><div style="display:flex;align-items:center;gap:10px"><span style="font-family:var(--mono);font-size:12px;color:var(--yellow);font-weight:800">'+f.size_mb+' MB</span><button class="proc-kill" onclick="deleteFile(\''+f.path.replace(/\\/g,'\\\\')+'\')">Delete</button></div></div>').join('');
+      document.getElementById('largeFileRes').innerHTML=h;
+      showT('Found '+list.length+' large files (>30MB)','var(--green)',3000);
+    }else{ document.getElementById('largeFileRes').textContent='No large files (>30MB) found in user directories'; }
+  }catch(e){ showT('Error finding large files','var(--red)'); }
+}
+
+async function deleteFile(fp){
+  if(!confirm('Permanently delete file: '+fp+'?')) return;
+  try{
+    const r=await pywebview.api.delete_specific_file(fp);
+    if(r.success){
+      showT('Deleted file! Freed '+r.freed_mb+' MB','var(--green)',4000);
+      loadLargeFiles();
+    }else{ showT('Failed to delete file: '+r.error,'var(--red)',4000); }
+  }catch(e){ showT('Error deleting file','var(--red)'); }
+}
+
+async function loadInstalledApps(){
+  showT('Scanning installed applications...','var(--accent)',0);
+  try{
+    const apps=await pywebview.api.get_installed_apps();
+    rawApps=apps||[];
+    renderApps();
+    showT('Scanned '+rawApps.length+' installed applications','var(--green)',3000);
+  }catch(e){ showT('Error scanning apps','var(--red)'); }
+}
+
+function renderApps(){
+  const query=(document.getElementById('appSearch').value||'').toLowerCase();
+  const filtered=rawApps.filter(a=>(a.name||'').toLowerCase().includes(query)||(a.publisher||'').toLowerCase().includes(query));
+  document.getElementById('appRes').innerHTML=filtered.map(a=>'<div class="device-card"><div><div style="font-weight:800;font-size:12px;color:var(--white)">'+a.name+' <span class="badge-tag">v'+a.version+'</span></div><div style="font-size:11px;color:var(--dim);margin-top:2px">Publisher: '+a.publisher+' '+(a.size_mb?('| Size: '+a.size_mb+' MB'):'')+'</div></div><button class="proc-kill" onclick="uninstallApp(\''+a.uninstall_cmd.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">Uninstall</button></div>').join('');
+}
+
+async function uninstallApp(cmd){
+  if(!cmd){ showT('No uninstaller command available for this software','var(--red)'); return; }
+  if(!confirm('Launch uninstaller for this app?')) return;
+  try{
+    const r=await pywebview.api.uninstall_app(cmd);
+    if(r.success){ showT('Uninstaller launched! Follow on-screen wizard','var(--green)',4000); }
+    else{ showT('Error launching uninstaller','var(--red)'); }
+  }catch(e){ showT('Error launching uninstaller','var(--red)'); }
+}
+
+async function boostRobloxGenshin(){
+  showT('Applying High Performance GPU/FPS preferences for Roblox & Genshin...','var(--yellow)',0);
+  try{
+    const r=await pywebview.api.boost_roblox_genshin();
+    if(r.success){
+      const h=(r.applied||[]).map(a=>'<div class="detail-item"><span class="k">Rule</span><span class="v" style="color:var(--green)">'+a+'</span></div>').join('');
+      document.getElementById('rgBoostRes').innerHTML=h;
+      showT('Roblox & Genshin Ultra FPS Boost Activated!','var(--green)',4000);
+      addLog('GAME OPTIMIZE -> Roblox & Genshin High-Perf Active');
+    }else{ showT('Boost error','var(--red)'); }
+  }catch(e){ showT('Error boosting games','var(--red)'); }
+}
+
+function go(s){
+  document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));
+  document.getElementById('s_'+s).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
+  document.getElementById('nb_'+s).classList.add('active');
+  const t={ram:'RAM BOOSTER | تعزيز الذاكرة',disk:'DISK & STORAGE SUITE | أدوات تنظيف وإدارة القرص',game:'GAME MODE | وضع الألعاب',net:'NETWORK & TELECOM SUITE | أدوات الشبكة والاتصالات',sys:'ULTIMATE HARDWARE & BIOS DIAGNOSTICS | أدوات وفحص العتاد واللوحة الأم',dev:'DEVELOPER PROFILE | ملف المطور وتواصل الشبكات'};
+  document.getElementById('pageTitle').textContent=t[s]||'';
+  if(s==='sys') loadDeepSysInfo();
+  if(s==='net') loadNetDetails();
+  if(s==='disk') loadDiskPartitions();
+}
+
+async function update(){
+  try{
+    const m=await pywebview.api.get_memory();
+    if(!m)return;
+    const p=m.percent;
+    document.getElementById('pV').textContent=Math.round(p);
+    document.getElementById('mS').textContent=m.used_gb+' / '+m.total_gb+' GB';
+    document.getElementById('gF').style.strokeDashoffset=534-(p/100)*534;
+    const gs=document.getElementById('gSt');
+    if(p<40){gs.textContent='OPTIMAL';gs.style.color=gs.style.borderColor='var(--green)'}
+    else if(p<65){gs.textContent='NORMAL';gs.style.color=gs.style.borderColor='var(--yellow)'}
+    else if(p<85){gs.textContent='HIGH';gs.style.color=gs.style.borderColor='var(--red)'}
+    else{gs.textContent='CRITICAL';gs.style.color=gs.style.borderColor='#ff4444'}
+
+    document.getElementById('sT').textContent=m.total_gb+' GB';
+    const su=document.getElementById('sU');
+    su.textContent=m.used_gb+' GB';
+    su.style.color=p<50?'var(--green)':p<75?'var(--yellow)':'var(--red)';
+    document.getElementById('sF').textContent=m.available_gb+' GB';
+
+    const d=await pywebview.api.get_disk();
+    if(d)document.getElementById('sD').textContent=d.free_gb+' GB';
+    document.getElementById('clk').textContent=new Date().toLocaleTimeString('en',{hour12:false});
+  }catch(e){}
+}
+
+async function updateP(){
+  try{
+    const ps=await pywebview.api.get_processes();
+    if(!ps)return;
+    rawProcesses=ps;
+    renderProcesses();
+  }catch(e){}
+}
+
+function renderProcesses(){
+  const query=(document.getElementById('procSearch').value||'').toLowerCase();
+  const filtered=rawProcesses.filter(p=>(p.name||'').toLowerCase().includes(query)||(p.pid+'').includes(query));
+  document.getElementById('pCt').textContent='('+filtered.length+')';
+  document.getElementById('pL').innerHTML=filtered.map((p,i)=>{
+    const mb=p.memory_mb,c=mb>500?'var(--red)':mb>200?'var(--yellow)':mb>50?'var(--dim)':'var(--muted)',n=p.name||'PID:'+p.pid,ms=mb>=1024?(mb/1024).toFixed(1)+' GB':Math.round(mb)+' MB';
+    return '<div class="proc-row"><span class="proc-rank">'+(i+1)+'</span><div class="proc-dot" style="background:'+c+'"></div><span class="proc-name" style="color:'+(mb>100?'var(--white)':'var(--dim)')+'" title="PID: '+p.pid+'">'+n+'</span><span class="proc-mem" style="color:'+c+'">'+ms+'</span><button class="proc-kill" onclick="killProc('+p.pid+',\''+n+'\')">End</button></div>'
+  }).join('');
+}
+
+async function killProc(pid, name){
+  if(!confirm('End process '+name+' (PID: '+pid+')?')) return;
+  try{
+    const r=await pywebview.api.kill_process(pid);
+    if(r.success){
+      showT('Ended process '+name, 'var(--green)', 3000);
+      addLog('KILLED -> '+name+' ('+pid+')');
+      updateP();
+    }else{
+      showT('Failed: '+r.error, 'var(--red)', 4000);
+    }
+  }catch(e){ showT('Error', 'var(--red)'); }
+}
+
+async function loadNetDetails(){
+  try{
+    const ip=await pywebview.api.get_public_ip();
+    if(ip){
+      document.getElementById('pipVal').textContent=ip.ip||'Offline';
+      document.getElementById('pipIsp').textContent=ip.isp||'—';
+      document.getElementById('pipLoc').textContent=(ip.city||'')+((ip.country)?', '+ip.country:'');
+    }
+  }catch(e){}
+}
+
+async function runGamingTrace(){
+  const target=document.getElementById('traceTarget').value.trim()||'api.roblox.com';
+  const b=document.getElementById('bTrace');
+  b.disabled=true; b.textContent='TRACING ROUTE...';
+  showT('Tracing network route to '+target+'...','var(--accent)',0);
+  try{
+    const r=await pywebview.api.trace_gaming_route(target);
+    b.disabled=false; b.textContent='TRACE GAMING ROUTE';
+    if(r.hops && r.hops.length){
+      const h=r.hops.map(hp=>{
+        const c=hp.status==='EXCELLENT'?'var(--green)':hp.status==='GOOD'?'var(--yellow)':'var(--red)';
+        return '<div class="device-card"><div><div style="font-weight:800;font-size:12px;color:var(--white)">[HOP '+hp.hop+'] '+hp.label+' <span class="badge-tag" style="background:'+(hp.status==='EXCELLENT'?'rgba(74,222,128,.2)':'rgba(248,113,113,.2)')+';color:'+c+'">'+hp.status+'</span></div><div style="font-size:11px;color:var(--dim);margin-top:2px">IP Node: <b style="color:var(--white)">'+hp.ip+'</b></div></div><div style="font-family:var(--mono);font-size:13px;font-weight:900;color:'+c+'">'+(hp.ms+(typeof hp.ms==='number'?' ms':''))+'</div></div>'
+      }).join('');
+      document.getElementById('traceRes').innerHTML='<div style="font-weight:800;color:var(--green);margin-bottom:8px">ANALYSIS: '+r.bottleneck+'</div>'+h;
+      showT('Route traced across '+r.total_hops+' hops!','var(--green)',4000);
+      addLog('PINGPLOTTER -> Traced '+r.target+' ('+r.total_hops+' hops)');
+    }else{
+      document.getElementById('traceRes').innerHTML='<div style="color:var(--dim)">Could not trace route to '+target+'</div>';
+    }
+  }catch(e){
+    b.disabled=false; b.textContent='TRACE GAMING ROUTE';
+    showT('Trace route error','var(--red)');
+  }
+}
+
+async function runDnsLeakCheck(){
+  showT('Inspecting DNS queries and DoH security status...','var(--accent)',0);
+  try{
+    const r=await pywebview.api.inspect_dns_leaks();
+    const c=r.has_leak?'var(--red)':r.doh_enabled?'var(--green)':'var(--yellow)';
+    document.getElementById('dnsLeakRes').innerHTML='<div class="detail-item"><span class="k">DNS Security Status</span><span class="v" style="color:'+c+'">'+r.status_text+'</span></div><div class="detail-item"><span class="k">Configured DNS</span><span class="v">'+(r.configured_dns||[]).join(', ')+'</span></div><div class="detail-item"><span class="k">Active Resolver IP</span><span class="v" style="color:var(--accent)">'+((r.detected_resolvers&&r.detected_resolvers.length)?r.detected_resolvers[0].ip:'Local Gateway')+'</span></div><div class="detail-item"><span class="k">DNS-over-HTTPS (DoH)</span><span class="v" style="color:'+(r.doh_enabled?'var(--green)':'var(--dim)')+'">'+(r.doh_enabled?'ENABLED (Encrypted)':'DISABLED (Standard)')+'</span></div>';
+    showT('DNS Security: '+r.status_text,c,4000);
+  }catch(e){ showT('Error checking DNS leaks','var(--red)'); }
+}
+
+async function enableDohDns(){
+  showT('Enabling Encrypted DNS-over-HTTPS (DoH)...','var(--yellow)',0);
+  try{
+    const r=await pywebview.api.enable_encrypted_doh();
+    if(r.success){
+      showT('DNS-over-HTTPS (DoH) Strict Encryption Enabled!','var(--green)',5000);
+      addLog('DNS SECURITY -> DoH Encryption Active');
+      runDnsLeakCheck();
+    }else{ showT('Failed to enable DoH (Run as Admin)','var(--red)',4000); }
+  }catch(e){ showT('Error enabling DoH','var(--red)'); }
+}
+
+async function runWifiSpectrum(){
+  const b=document.getElementById('bWifiSpectrum');
+  b.disabled=true; b.textContent='ANALYZING WI-FI SPECTRUM & CHANNELS...';
+  showT('Scanning surrounding Wi-Fi channels & RSSI...','var(--accent)',0);
+  try{
+    const res=await pywebview.api.analyze_wifi_spectrum();
+    b.disabled=false; b.textContent='فحص التشويش وقوة إشارة الشبكات المجاورة وتوصية القناة الأفضل';
+    if(res.networks && res.networks.length){
+      const h=res.networks.map(n=>'<div class="device-card"><div><div style="font-weight:800;font-size:13px;color:var(--white)">['+n.band+'] '+n.ssid+' <span class="badge-tag">Channel '+n.channel+'</span></div><div style="font-size:11px;color:var(--dim);margin-top:4px">BSSID: '+n.bssid+' | Signal: <b style="color:var(--green)">'+n.signal+'% ('+n.rssi_dbm+' dBm)</b> | Auth: '+n.auth+'</div></div><div style="font-family:var(--mono);font-size:11px;color:var(--dim)">'+n.radio+'</div></div>').join('');
+      document.getElementById('wifiRes').innerHTML='<div style="font-weight:800;color:var(--green);margin-bottom:8px">RECOMMENDATION: '+res.recommendation+'</div>'+h;
+      showT('Spectrum Analyzed! Recommended Channel: '+res.best_24ghz_channel,'var(--green)',4000);
+      addLog('WIFI SPECTRUM -> Analyzed '+res.networks_count+' networks');
+    }else{
+      document.getElementById('wifiRes').innerHTML='<div style="color:var(--dim)">No Wi-Fi networks found or Wi-Fi adapter is disabled</div>';
+    }
+  }catch(e){
+    b.disabled=false; b.textContent='فحص التشويش وقوة إشارة الشبكات المجاورة وتوصية القناة الأفضل';
+    showT('Error analyzing Wi-Fi spectrum','var(--red)');
+  }
+}
+
+async function runSpeedTest(){
+  const b=document.getElementById('bSpeed');
+  b.disabled=true; b.textContent='MEASURING SPEED...';
+  showT('Running speed test...','var(--yellow)',0);
+  try{
+    const r=await pywebview.api.run_speed_test();
+    b.disabled=false; b.textContent='RUN SPEED TEST NOW';
+    if(r.success){
+      document.getElementById('spDl').textContent=r.download_mbps+' Mbps';
+      document.getElementById('spUl').textContent=r.upload_mbps+' Mbps';
+      document.getElementById('spPing').textContent=r.latency_ms+' ms';
+      showT('Speedtest complete! Download: '+r.download_mbps+' Mbps','var(--green)',5000);
+      addLog('SPEEDTEST -> DL: '+r.download_mbps+' Mbps, UL: '+r.upload_mbps+' Mbps');
+    }else{ showT('Speedtest error','var(--red)'); }
+  }catch(e){
+    b.disabled=false; b.textContent='RUN SPEED TEST NOW';
+    showT('Speedtest error','var(--red)');
+  }
+}
+
+async function runSubnetCalc(){
+  const inp=document.getElementById('subnetInput').value.trim()||'192.168.1.100/24';
+  try{
+    const r=await pywebview.api.calculate_subnet(inp);
+    if(r.success){
+      document.getElementById('subnetRes').innerHTML='<div class="detail-item"><span class="k">Subnet Mask</span><span class="v" style="color:var(--green)">'+r.netmask+'</span></div><div class="detail-item"><span class="k">Network IP</span><span class="v">'+r.network+'</span></div><div class="detail-item"><span class="k">Broadcast IP</span><span class="v">'+r.broadcast+'</span></div><div class="detail-item"><span class="k">Host Range</span><span class="v">'+r.first_host+' — '+r.last_host+'</span></div><div class="detail-item"><span class="k">Usable Hosts</span><span class="v" style="color:var(--accent)">'+r.total_usable_hosts+'</span></div>';
+    }
+  }catch(e){}
+}
+
+async function runLanScan(){
+  const b=document.getElementById('bLanScan');
+  b.disabled=true; b.textContent='SCANNING & INSPECTING DEVICES...';
+  showT('Performing deep device inspection...','var(--accent)',0);
+  try{
+    const list=await pywebview.api.get_lan_devices();
+    b.disabled=false; b.textContent='كشف وتحديد أسماء وأنواع جميع الأجهزة المتصلة بالراوتر';
+    if(list && list.length){
+      const h=list.map(d=>'<div class="device-card"><div><div style="font-weight:800;font-size:13px;color:var(--white)">['+(d.category||'DEVICE').toUpperCase()+'] '+(d.hostname||d.ip)+' <span class="badge-tag">'+d.vendor+'</span></div><div style="font-size:11px;color:var(--dim);margin-top:4px">Vendor: <b style="color:var(--accent)">'+d.vendor+'</b> | IP: <b style="color:var(--green)">'+d.ip+'</b> | Services: '+(d.services||[]).join(', ')+'</div></div><div style="font-family:var(--mono);font-size:11px;color:var(--dim)">'+d.mac+'</div></div>').join('');
+      document.getElementById('lanRes').innerHTML='<div style="font-weight:800;color:var(--green);margin-bottom:8px">Discovered & Fingerprinted '+list.length+' Active Devices:</div>'+h;
+      showT('Fingerprinted '+list.length+' active devices!','var(--green)',4000);
+      addLog('LAN INSPECT -> '+list.length+' devices analyzed');
+    }else{ document.getElementById('lanRes').textContent='No LAN devices found'; }
+  }catch(e){ b.disabled=false; b.textContent='كشف وتحديد أسماء وأنواع جميع الأجهزة المتصلة بالراوتر'; }
+}
+
+async function loadNetstat(){
+  showT('Auditing active socket connections...','var(--accent)',0);
+  try{
+    const list=await pywebview.api.get_active_connections();
+    if(list && list.length){
+      const h=list.map(c=>'<div class="detail-item"><span class="k">['+c.proto+'] '+c.process+' (PID: '+c.pid+')</span><span class="v" style="font-family:var(--mono);color:var(--accent)">'+c.local+' -> '+c.remote+'</span></div>').join('');
+      document.getElementById('netstatRes').innerHTML=h;
+      showT('Audited '+list.length+' active connections','var(--green)',3000);
+    }else{ document.getElementById('netstatRes').textContent='No active established connections found'; }
+  }catch(e){ showT('Error auditing netstat','var(--red)'); }
+}
+
+async function loadRoutingTable(){
+  showT('Inspecting IPv4 Routing table...','var(--accent)',0);
+  try{
+    const list=await pywebview.api.get_routing_table();
+    if(list && list.length){
+      const h=list.map(r=>'<div class="detail-item"><span class="k">'+r.destination+' via '+r.gateway+'</span><span class="v" style="color:var(--green)">Metric: '+r.metric+' ('+r.interface+')</span></div>').join('');
+      document.getElementById('routingRes').innerHTML=h;
+      showT('Routing table loaded','var(--green)',3000);
+    }else{ document.getElementById('routingRes').textContent='No custom routing table entries'; }
+  }catch(e){ showT('Error inspecting routing table','var(--red)'); }
+}
+
+async function loadMtuCalc(){
+  showT('Discovering optimal Path MTU...','var(--yellow)',0);
+  try{
+    const r=await pywebview.api.discover_path_mtu();
+    document.getElementById('mtuRes').innerHTML='<div class="detail-item"><span class="k">Target Server</span><span class="v">'+r.target+'</span></div><div class="detail-item"><span class="k">Optimal MTU Size</span><span class="v" style="color:var(--green)">'+r.optimal_mtu+' Bytes</span></div><div class="detail-item"><span class="k">Packet Fragmentation</span><span class="v" style="color:var(--accent)">DISABLED (Zero Fragmentation)</span></div>';
+    showT('Optimal MTU calculated: '+r.optimal_mtu+' Bytes','var(--green)',4000);
+  }catch(e){ showT('Error calculating MTU','var(--red)'); }
+}
+
+async function applyStaticIp(){
+  const ip=document.getElementById('cfgIp').value.trim();
+  const sub=document.getElementById('cfgSubnet').value.trim()||'255.255.255.0';
+  const gw=document.getElementById('cfgGateway').value.trim();
+  if(!ip){ showT('Please enter a valid IP address','var(--red)'); return; }
+  showT('Setting Static IP '+ip+'...','var(--accent)',0);
+  try{
+    const r=await pywebview.api.set_static_ip(ip, sub, gw);
+    if(r.success){
+      showT('Static IP set to '+ip,'var(--green)',4000);
+      addLog('IP CONFIG -> Static '+ip);
+    }else{ showT('Failed to set Static IP (Admin required)','var(--red)',4000); }
+  }catch(e){ showT('Error setting IP','var(--red)'); }
+}
+
+async function applyDhcpIp(){
+  showT('Switching adapter to DHCP...','var(--accent)',0);
+  try{
+    const r=await pywebview.api.set_dhcp_ip();
+    if(r.success){
+      showT('Switched to Dynamic DHCP IP','var(--green)',4000);
+      addLog('IP CONFIG -> DHCP Dynamic');
+    }else{ showT('Failed to switch to DHCP','var(--red)',4000); }
+  }catch(e){ showT('Error switching DHCP','var(--red)'); }
+}
+
+async function applyProxy(enable){
+  const p=document.getElementById('proxyServer').value.trim()||'127.0.0.1:8080';
+  showT((enable?'Enabling':'Disabling')+' system proxy...','var(--accent)',0);
+  try{
+    const r=await pywebview.api.set_system_proxy(enable, p);
+    if(r.success){
+      showT('Proxy '+(enable?'Enabled ('+p+')':'Disabled'),'var(--green)',3000);
+      addLog('PROXY -> '+(enable?p:'Disabled'));
+    }else{ showT('Proxy config failed','var(--red)'); }
+  }catch(e){ showT('Error setting proxy','var(--red)'); }
+}
+
+async function spoofMac(){
+  if(!confirm('Spoof / Randomize Network MAC Address? Adapter will restart.')) return;
+  showT('Spoofing MAC Address...','var(--yellow)',0);
+  try{
+    const r=await pywebview.api.change_mac_address();
+    if(r.success){
+      showT('MAC Spoofed: '+r.mac,'var(--green)',4000);
+      addLog('MAC SPOOF -> '+r.mac);
+    }else{ showT('MAC Spoof failed: '+r.error,'var(--red)',4000); }
+  }catch(e){ showT('Error spoofing MAC','var(--red)'); }
+}
+
+async function changeDns(preset){
+  showT('Changing DNS to '+preset.toUpperCase()+'...','var(--accent)',0);
+  try{
+    const r=await pywebview.api.set_dns(preset);
+    if(r.success){
+      showT('DNS switched to '+r.preset+' successfully!','var(--green)',4000);
+      addLog('DNS -> Switched to '+r.preset);
+    }else{
+      showT('DNS change failed (Run as Admin)','var(--red)',4000);
+    }
+  }catch(e){ showT('Error changing DNS','var(--red)'); }
+}
+
+async function benchDns(){
+  const b=document.getElementById('bBenchDns');
+  b.disabled=true; b.textContent='BENCHMARKING DNS...';
+  showT('Pinging DNS servers...','var(--yellow)',0);
+  try{
+    const list=await pywebview.api.benchmark_dns();
+    b.disabled=false; b.textContent='BENCHMARK FASTEST DNS SERVERS';
+    if(list && list.length){
+      const h=list.map((d,i)=>{
+        const c=i===0?'var(--green)':d.latency_ms<60?'var(--yellow)':'var(--dim)';
+        return '<div class="detail-item"><span class="k">#'+(i+1)+' '+d.name+' ('+d.ip+')</span><span class="v" style="color:'+c+'">'+d.latency_ms+' ms</span></div>'
+      }).join('');
+      document.getElementById('dnsBenchRes').innerHTML=h;
+      showT('Fastest DNS: '+list[0].name+' ('+list[0].latency_ms+'ms)','var(--green)',5000);
+      addLog('DNS BENCH -> Winner: '+list[0].name);
+    }
+  }catch(e){
+    b.disabled=false; b.textContent='BENCHMARK FASTEST DNS SERVERS';
+    showT('Benchmark error','var(--red)');
+  }
+}
+
+async function runPingTest(){
+  const target=document.getElementById('pingTarget').value.trim()||'google.com';
+  showT('Pinging '+target+'...','var(--accent)',0);
+  try{
+    const r=await pywebview.api.ping_target(target);
+    if(r.online){
+      const c=r.avg_ms<40?'var(--green)':r.avg_ms<100?'var(--yellow)':'var(--red)';
+      document.getElementById('pingRes').innerHTML='<div class="detail-item"><span class="k">Host Target</span><span class="v">'+r.host+'</span></div><div class="detail-item"><span class="k">Average Latency</span><span class="v" style="color:'+c+'">'+r.avg_ms+' ms</span></div><div class="detail-item"><span class="k">Packet Loss</span><span class="v" style="color:'+(r.loss_pct===0?'var(--green)':'var(--red)')+'">'+r.loss_pct+'%</span></div>';
+      showT('Ping result: '+r.avg_ms+' ms','var(--green)',3000);
+    }else{
+      document.getElementById('pingRes').innerHTML='<div class="detail-item"><span class="k">Status</span><span class="v" style="color:var(--red)">Host Unreachable / Offline</span></div>';
+      showT('Target unreachable','var(--red)',3000);
+    }
+  }catch(e){ showT('Ping error','var(--red)'); }
+}
+
+async function runPortScan(){
+  const target=document.getElementById('portTarget').value.trim()||'127.0.0.1';
+  const b=document.getElementById('bPortScan');
+  b.disabled=true; b.textContent='SCANNING...';
+  showT('Scanning ports on '+target+'...','var(--accent)',0);
+  try{
+    const r=await pywebview.api.scan_ports(target);
+    b.disabled=false; b.textContent='SCAN PORTS';
+    if(r.open_ports && r.open_ports.length){
+      const h=r.open_ports.map(p=>'<span class="badge-tag" style="margin:2px;display:inline-block">Port '+p.port+' ('+p.service+')</span>').join('');
+      document.getElementById('portRes').innerHTML='<div style="margin-bottom:6px;color:var(--white)">Open Ports on '+r.ip+':</div>'+h;
+      showT('Found '+r.open_ports.length+' open ports!','var(--green)',4000);
+      addLog('PORT SCAN -> '+r.ip+' ('+r.open_ports.length+' open)');
+    }else{
+      document.getElementById('portRes').innerHTML='<div style="color:var(--dim)">No open common ports found on '+target+'</div>';
+      showT('No open ports found','var(--dim)',3000);
+    }
+  }catch(e){
+    b.disabled=false; b.textContent='SCAN PORTS';
+    showT('Scan error','var(--red)');
+  }
+}
+
+function showT(m,c='var(--dim)',d=3000){
+  const t=document.getElementById('toast');
+  t.style.borderColor=c;
+  document.getElementById('tM').textContent=m;
+  t.classList.add('show');
+  if(d>0)setTimeout(()=>t.classList.remove('show'),d)
+}
+
+function addLog(t){
+  const ts=new Date().toLocaleTimeString('en',{hour12:false});
+  logs.unshift('['+ts+'] '+t);
+  if(logs.length>6)logs=logs.slice(0,6);
+  document.getElementById('logE').innerHTML=logs.map(l=>'<div>'+l+'</div>').join('')
+}
+
+async function doClean(){
+  const b=document.getElementById('bC');
+  b.disabled=true; b.textContent='CLEANING...';
+  showT('Cleaning memory...','var(--accent)',0);
+  try{
+    const r=await pywebview.api.smart_clean();
+    b.disabled=false; b.textContent='ULTRA SMART CLEAN';
+    showT('Freed '+Math.round(r.freed_mb)+' MB — '+r.processes_trimmed+' trimmed','var(--green)',5000);
+    addLog('CLEAN -> '+Math.round(r.freed_mb)+' MB freed');
+    update(); updateP()
+  }catch(e){
+    b.disabled=false; b.textContent='ULTRA SMART CLEAN';
+    showT('Error','var(--red)')
+  }
+}
+
+async function doBoost(){
+  const b=document.getElementById('bB');
+  b.disabled=true; b.textContent='BOOSTING...';
+  showT('Running system boost...','var(--yellow)',0);
+  try{
+    const r=await pywebview.api.system_boost();
+    b.disabled=false; b.textContent='FULL SYSTEM BOOST';
+    showT('System Boost Complete!','var(--green)',4000);
+    addLog('BOOST -> System optimization complete');
+    update(); updateP();
+  }catch(e){
+    b.disabled=false; b.textContent='FULL SYSTEM BOOST';
+    showT('Boost error','var(--red)');
+  }
+}
+
+async function doDisk(){
+  const b=document.getElementById('bDC');
+  b.disabled=true; b.textContent='CLEANING...';
+  showT('Deep cleaning disk...','var(--red)',0);
+  try{
+    const r=await pywebview.api.deep_clean();
+    b.disabled=false; b.textContent='DEEP CLEAN NOW';
+    const h=Object.entries(r.sections||{}).map(([k,v])=>'<div class="detail-item"><span class="k">'+k+'</span><span class="v">'+v+' MB</span></div>').join('');
+    document.getElementById('diskRes').innerHTML='<div class="detail-item"><span class="k">Files Deleted</span><span class="v" style="color:var(--green)">'+r.files_deleted+'</span></div><div class="detail-item"><span class="k">Total Freed</span><span class="v" style="color:var(--green)">'+r.total_freed_mb+' MB</span></div><hr style="border-color:rgba(255,255,255,.08);margin:10px">'+h;
+    showT('Freed '+r.total_freed_mb+' MB from disk!','var(--green)',5000);
+    addLog('DISK -> '+r.files_deleted+' files, '+r.total_freed_mb+' MB')
+  }catch(e){
+    b.disabled=false; b.textContent='DEEP CLEAN NOW';
+    showT('Error','var(--red)')
+  }
+}
+
+async function toggleGM(){
+  showT('Toggling Game Mode...','var(--accent)',0);
+  try{
+    const r=await pywebview.api.toggle_game_mode();
+    const tgl=document.getElementById('gmTgl');
+    if(r.active){
+      tgl.classList.add('on');
+      document.getElementById('gmSt').innerHTML='<span style="color:var(--green)">Game Mode is ON</span>';
+      document.getElementById('gmRes').innerHTML='<div class="detail-item"><span class="k">Services Stopped</span><span class="v" style="color:var(--green)">'+(r.services_stopped||0)+'</span></div><div class="detail-item"><span class="k">Power Plan</span><span class="v">HIGH PERFORMANCE</span></div><div class="detail-item"><span class="k">Priority</span><span class="v">BOOSTED</span></div>';
+      showT('Game Mode ON! '+r.services_stopped+' services stopped','var(--green)',4000);
+      addLog('GAME ON -> '+r.services_stopped+' services stopped')
+    }else{
+      tgl.classList.remove('on');
+      document.getElementById('gmSt').innerHTML='وضع الألعاب: مغلق | OFF';
+      document.getElementById('gmRes').innerHTML='<div class="detail-item"><span class="k">Services Restarted</span><span class="v">'+(r.services_restarted||0)+'</span></div><div class="detail-item"><span class="k">Power Plan</span><span class="v">BALANCED</span></div>';
+      showT('Game Mode OFF — services restored','var(--accent)',4000);
+      addLog('GAME OFF -> restored')
+    }
+  }catch(e){
+    showT('Error','var(--red)')
+  }
+}
+
+async function doNetFull(){
+  const b=document.getElementById('bNO');
+  b.disabled=true; b.textContent='OPTIMIZING...';
+  showT('Optimizing network...','#3b82f6',0);
+  try{
+    const r=await pywebview.api.network_optimize();
+    b.disabled=false; b.textContent='OPTIMIZE TCP';
+    showT('Network TCP optimized! '+r.tcp_applied+' rules applied','var(--green)',5000);
+    addLog('NET -> TCP:'+r.tcp_applied+' DNS:'+(r.dns_flush?'OK':'FAIL'))
+  }catch(e){
+    b.disabled=false; b.textContent='OPTIMIZE TCP';
+    showT('Error','var(--red)')
+  }
+}
+
+async function doRenew(){
+  showT('Releasing & Renewing IP...','#3b82f6',0);
+  try{
+    const r=await pywebview.api.network_renew_ip();
+    showT('IP address renewed successfully!','var(--green)',4000);
+    addLog('IP RENEW -> done');
+    loadNetDetails();
+  }catch(e){ showT('Error renewing IP','var(--red)') }
+}
+
+function boot(){
+  if(!window.pywebview||!window.pywebview.api){setTimeout(boot,200);return}
+  pywebview.api.get_icon_path().then(p=>{
+    if(p){
+      document.getElementById('anime-bg').style.backgroundImage='url('+p+')';
+      document.getElementById('sLogo').src=p
+    }
+  });
+  update();
+  updateP();
+  setInterval(update,2000);
+  setInterval(updateP,4000);
+}
+
+(function initParticles(){
+  const cvs = document.getElementById('pCanvas');
+  if(!cvs) return;
+  const ctx = cvs.getContext('2d');
+  let w = cvs.width = window.innerWidth;
+  let h = cvs.height = window.innerHeight;
+  window.addEventListener('resize', ()=>{ w = cvs.width = window.innerWidth; h = cvs.height = window.innerHeight; });
+
+  const mouse = { x: null, y: null, radius: 160 };
+  window.addEventListener('mousemove', (e)=>{ mouse.x = e.clientX; mouse.y = e.clientY; });
+  window.addEventListener('mouseleave', ()=>{ mouse.x = null; mouse.y = null; });
+
+  const particles = [];
+  const count = Math.min(Math.floor((w * h) / 13000), 90);
+  for(let i=0; i<count; i++){
+    particles.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.9,
+      vy: (Math.random() - 0.5) * 0.9,
+      size: Math.random() * 2.2 + 1.2,
+      color: Math.random() > 0.4 ? 'rgba(129,140,248,' : 'rgba(192,132,252,'
+    });
+  }
+
+  function loop(){
+    ctx.clearRect(0, 0, w, h);
+    for(let i=0; i<particles.length; i++){
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      if(p.x < 0 || p.x > w) p.vx *= -1;
+      if(p.y < 0 || p.y > h) p.vy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + '0.75)';
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = p.color + '0.8)';
+      ctx.fill();
+
+      // Inter-particle links
+      for(let j=i+1; j<particles.length; j++){
+        const p2 = particles[j];
+        const dx = p.x - p2.x;
+        const dy = p.y - p2.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if(dist < 120){
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.strokeStyle = p.color + (0.35 * (1 - dist/120)) + ')';
+          ctx.lineWidth = 0.9;
+          ctx.stroke();
+        }
+      }
+
+      // Mouse interactivity links
+      if(mouse.x !== null && mouse.y !== null){
+        const mdx = p.x - mouse.x;
+        const mdy = p.y - mouse.y;
+        const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+        if(mdist < mouse.radius){
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.strokeStyle = 'rgba(129,140,248,' + (0.75 * (1 - mdist/mouse.radius)) + ')';
+          ctx.lineWidth = 1.4;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
 setTimeout(boot,500);
 </script></body></html>

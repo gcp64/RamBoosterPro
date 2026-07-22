@@ -1,11 +1,12 @@
 """
-game_mode.py - Game Mode / CPU Boost Engine.
-Stops unnecessary Windows services and optimizes CPU for gaming.
+game_mode.py - Game Mode / CPU & GPU Boost Engine.
+Stops unnecessary Windows services and optimizes CPU & GPU for Games (Roblox, Genshin Impact, PUBG, Fortnite, etc.).
 """
 import ctypes
 import logging
 import subprocess
 import os
+import winreg
 
 logger = logging.getLogger("RamBooster.GameMode")
 
@@ -36,6 +37,19 @@ _game_mode_active = False
 _stopped_services = []
 
 
+def _is_service_running(service):
+    """Check if a Windows service is currently running."""
+    try:
+        result = subprocess.run(
+            ["sc", "query", service],
+            capture_output=True, text=True, timeout=5,
+            creationflags=subprocess.CREATE_NO_WINDOW,
+        )
+        return "RUNNING" in result.stdout
+    except Exception:
+        return False
+
+
 def _run_sc(action, service):
     """Run sc.exe to start/stop a service."""
     try:
@@ -49,8 +63,8 @@ def _run_sc(action, service):
         return False
 
 
-def _set_process_priority(priority_class=0x00000100):
-    """Set current process to HIGH priority. 0x100 = REALTIME, 0x80 = HIGH."""
+def _set_process_priority(priority_class=0x00000080):
+    """Set current process priority. 0x80 = HIGH, 0x8000 = ABOVE_NORMAL."""
     try:
         handle = ctypes.windll.kernel32.GetCurrentProcess()
         ctypes.windll.kernel32.SetPriorityClass(handle, priority_class)
@@ -60,7 +74,7 @@ def _set_process_priority(priority_class=0x00000100):
 
 
 def _set_power_plan(plan="high"):
-    """Set Windows power plan."""
+    """Set Windows power plan to High Performance."""
     plans = {
         "high": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c",
         "balanced": "381b4222-f694-41f0-9685-ff5bb260df2e",
@@ -77,101 +91,96 @@ def _set_power_plan(plan="high"):
         return False
 
 
-def _disable_visual_effects():
-    """Reduce Windows visual effects for performance."""
+def optimize_roblox_and_genshin():
+    """
+    Apply specialized Windows GPU & CPU High-Performance preferences for Roblox & Genshin Impact.
+    - Forces High Performance GPU in DirectX UserGpuPreferences
+    - Disables Windows Game Bar DVR throttling
+    - Sets process priority boost
+    """
+    applied = []
     try:
-        import winreg
-        key = winreg.OpenKey(
-            winreg.HKEY_CURRENT_USER,
-            r"Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects",
-            0, winreg.KEY_SET_VALUE,
-        )
-        winreg.SetValueEx(key, "VisualFXSetting", 0, winreg.REG_DWORD, 2)  # 2 = Best Performance
-        winreg.CloseKey(key)
-        return True
-    except Exception:
-        return False
+        # Enable High Performance GPU for Roblox & Genshin in Registry
+        key_path = r"Software\Microsoft\DirectX\UserGpuPreferences"
+        try:
+            key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path)
+            # 2 = High Performance GPU (Discrete NVIDIA / AMD)
+            winreg.SetValueEx(key, "RobloxPlayerBeta.exe", 0, winreg.REG_SZ, "GpuPreference=2;")
+            winreg.SetValueEx(key, "GenshinImpact.exe", 0, winreg.REG_SZ, "GpuPreference=2;")
+            winreg.SetValueEx(key, "YuanShen.exe", 0, winreg.REG_SZ, "GpuPreference=2;")
+            winreg.CloseKey(key)
+            applied.append("Roblox & Genshin Impact GPU High Performance Preference: Active")
+        except Exception:
+            pass
 
+        # Disable Game Bar DVR Throttling
+        try:
+            dvr_key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r"System\GameConfigStore")
+            winreg.SetValueEx(dvr_key, "GameDVR_Enabled", 0, winreg.REG_DWORD, 0)
+            winreg.CloseKey(dvr_key)
+            applied.append("Game Bar DVR Throttling: Disabled for Zero Stuttering")
+        except Exception:
+            pass
 
-def _restore_visual_effects():
-    """Restore Windows visual effects."""
-    try:
-        import winreg
-        key = winreg.OpenKey(
-            winreg.HKEY_CURRENT_USER,
-            r"Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects",
-            0, winreg.KEY_SET_VALUE,
-        )
-        winreg.SetValueEx(key, "VisualFXSetting", 0, winreg.REG_DWORD, 0)  # 0 = Let Windows choose
-        winreg.CloseKey(key)
-        return True
-    except Exception:
-        return False
+        # Boost priority of active Roblox & Genshin Impact processes via PowerShell
+        ps_cmd = "Get-Process -Name 'RobloxPlayerBeta','GenshinImpact','YuanShen' -ErrorAction SilentlyContinue | ForEach-Object { $_.PriorityClass = 'High' }"
+        subprocess.run(["powershell", "-Command", ps_cmd], capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        applied.append("Active Roblox / Genshin Impact Process Priority: High")
+
+        return {"success": True, "applied": applied}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 def activate_game_mode():
-    """Activate Game Mode - stop services, boost CPU, set power plan."""
+    """Activate Game Mode."""
     global _game_mode_active, _stopped_services
+    if _game_mode_active:
+        return {"already_active": True, "services_stopped": len(_stopped_services)}
+
     _stopped_services = []
-    results = {
-        "services_stopped": 0,
-        "services_failed": 0,
-        "power_plan": False,
-        "priority_boost": False,
-        "visual_effects": False,
-        "details": [],
-    }
+    for service in GAMING_STOP_SERVICES:
+        if _is_service_running(service):
+            if _run_sc("stop", service):
+                _stopped_services.append(service)
 
-    # 1. Stop non-essential services
-    for svc in GAMING_STOP_SERVICES:
-        if _run_sc("stop", svc):
-            _stopped_services.append(svc)
-            results["services_stopped"] += 1
-            results["details"].append(f"Stopped: {svc}")
-        else:
-            results["services_failed"] += 1
-
-    # 2. Set HIGH power plan
-    results["power_plan"] = _set_power_plan("high")
-
-    # 3. Boost process priority
-    results["priority_boost"] = _set_process_priority(0x00000080)  # HIGH
-
-    # 4. Reduce visual effects
-    results["visual_effects"] = _disable_visual_effects()
+    _set_power_plan("high")
+    _set_process_priority(0x00000080)
+    optimize_roblox_and_genshin()
 
     _game_mode_active = True
-    logger.info(
-        f"Game Mode ON: {results['services_stopped']} services stopped, "
-        f"power={results['power_plan']}"
-    )
-    return results
+    logger.info(f"Game Mode activated: {len(_stopped_services)} services stopped.")
+    return {
+        "active": True,
+        "services_stopped": len(_stopped_services),
+        "stopped_list": _stopped_services,
+        "power_plan": "High Performance",
+        "priority": "HIGH",
+    }
 
 
 def deactivate_game_mode():
-    """Deactivate Game Mode - restart services, restore settings."""
+    """Deactivate Game Mode."""
     global _game_mode_active, _stopped_services
-    results = {
-        "services_restarted": 0,
-        "power_plan": False,
-        "visual_restored": False,
-    }
+    if not _game_mode_active:
+        return {"already_inactive": True}
 
-    # 1. Restart stopped services
-    for svc in _stopped_services:
-        if _run_sc("start", svc):
-            results["services_restarted"] += 1
+    restarted = []
+    for service in _stopped_services:
+        if _run_sc("start", service):
+            restarted.append(service)
 
-    # 2. Restore balanced power plan
-    results["power_plan"] = _set_power_plan("balanced")
-
-    # 3. Restore visual effects
-    results["visual_restored"] = _restore_visual_effects()
+    _set_power_plan("balanced")
+    _set_process_priority(0x00000020)
 
     _stopped_services = []
     _game_mode_active = False
-    logger.info(f"Game Mode OFF: {results['services_restarted']} services restarted")
-    return results
+    logger.info(f"Game Mode deactivated: {len(restarted)} services restarted.")
+    return {
+        "active": False,
+        "services_restarted": len(restarted),
+        "power_plan": "Balanced",
+    }
 
 
 def is_game_mode_active():

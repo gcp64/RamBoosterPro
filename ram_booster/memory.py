@@ -126,7 +126,7 @@ def _enable_privilege(privilege_name: str) -> bool:
             h_token, False, ctypes.byref(tp), 0, None, None
         )
 
-        # Check GetLastError - AdjustTokenPrivileges returns True even on partial failure
+        # Capture GetLastError BEFORE closing handle
         error = ctypes.GetLastError()
         kernel32.CloseHandle(h_token)
 
@@ -137,9 +137,12 @@ def _enable_privilege(privilege_name: str) -> bool:
         if error == 0:
             logger.info(f"Privilege enabled: {privilege_name}")
             return True
+        elif error == 1300: # ERROR_NOT_ALL_ASSIGNED
+            logger.warning(f"Privilege {privilege_name} not held by token (error=1300)")
+            return False
         else:
             logger.warning(f"Privilege {privilege_name} - partial result (error={error})")
-            return True  # Still proceed, may work
+            return True
 
     except Exception as e:
         logger.error(f"Error enabling privilege {privilege_name}: {e}")
@@ -243,11 +246,19 @@ def trim_processes_working_sets() -> int:
             if pid <= 4 or pid == current_pid or name in protected:
                 continue
 
-            # Open process handle
-            handle = kernel32.OpenProcess(PROCESS_ALL_ACCESS, False, pid)
+            # Open process handle with minimal required rights (PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION)
+            PROCESS_SET_QUOTA = 0x0100
+            PROCESS_QUERY_INFORMATION = 0x0400
+            handle = kernel32.OpenProcess(PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION, False, pid)
             if handle:
-                # EmptyWorkingSet is equivalent to SetProcessWorkingSetSizeEx(-1, -1)
+                # EmptyWorkingSet is equivalent to SetProcessWorkingSetSize(-1, -1)
                 result = psapi.EmptyWorkingSet(handle)
+                if not result:
+                    # Fallback to SetProcessWorkingSetSize if EmptyWorkingSet fails
+                    SIZE_T = ctypes.c_size_t
+                    kernel32.SetProcessWorkingSetSize.argtypes = [wintypes.HANDLE, SIZE_T, SIZE_T]
+                    kernel32.SetProcessWorkingSetSize.restype = wintypes.BOOL
+                    result = kernel32.SetProcessWorkingSetSize(handle, SIZE_T(-1), SIZE_T(-1))
                 if result:
                     trimmed += 1
                 kernel32.CloseHandle(handle)
@@ -272,19 +283,21 @@ def flush_system_file_cache() -> bool:
         kernel32 = ctypes.windll.kernel32
 
         # SetSystemFileCacheSize(MinSize, MaxSize, Flags)
-        # Setting both to -1 with flag 0 resets to defaults
         SIZE_T = ctypes.c_size_t
+        kernel32.SetSystemFileCacheSize.argtypes = [SIZE_T, SIZE_T, wintypes.DWORD]
+        kernel32.SetSystemFileCacheSize.restype = wintypes.BOOL
+
         result = kernel32.SetSystemFileCacheSize(
-            SIZE_T(0xFFFFFFFFFFFFFFFF),  # -1
-            SIZE_T(0xFFFFFFFFFFFFFFFF),  # -1
-            ctypes.c_int(0),
+            SIZE_T(-1),
+            SIZE_T(-1),
+            0,
         )
 
         if result:
             logger.info("System file cache flushed successfully")
             # Restore defaults
             kernel32.SetSystemFileCacheSize(
-                SIZE_T(0), SIZE_T(0), ctypes.c_int(0)
+                SIZE_T(0), SIZE_T(0), 0
             )
         return bool(result)
 
