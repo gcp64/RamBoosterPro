@@ -42,6 +42,10 @@ from ram_booster.network_optimizer import (
     tune_nic_hardware_offloading as _tune_nic_hardware_offloading, apply_qos_gaming_prioritization as _apply_qos_gaming_prioritization,
     get_per_process_bandwidth as _get_per_process_bandwidth, auto_select_fastest_dns as _auto_select_fastest_dns,
     optimize_wifi_tx_power_roaming as _optimize_wifi_tx_power_roaming,
+    set_tcp_congestion_provider as _set_tcp_congestion_provider,
+    detect_router_gateway_vendor as _detect_router_gateway_vendor,
+    inspect_dns_firewall_shield as _inspect_dns_firewall_shield,
+    detect_mtu_blackhole_and_mss as _detect_mtu_blackhole_and_mss,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
@@ -244,6 +248,22 @@ class RamBoosterAPI:
         try: return _optimize_wifi_tx_power_roaming()
         except Exception as e: return {"success": False, "error": str(e)}
 
+    def set_tcp_congestion_provider(self, provider="cubic"):
+        try: return _set_tcp_congestion_provider(provider)
+        except Exception as e: return {"success": False, "error": str(e)}
+
+    def detect_router_gateway_vendor(self):
+        try: return _detect_router_gateway_vendor()
+        except Exception as e: return {"success": False, "error": str(e)}
+
+    def inspect_dns_firewall_shield(self):
+        try: return _inspect_dns_firewall_shield()
+        except Exception as e: return {"success": False, "error": str(e)}
+
+    def detect_mtu_blackhole_and_mss(self):
+        try: return _detect_mtu_blackhole_and_mss()
+        except Exception as e: return {"success": False, "error": str(e)}
+
     # ── System Controls ──
     def kill_process(self, pid):
         """Terminate a process by PID."""
@@ -325,18 +345,20 @@ def main():
 
     logger.info("RamBooster Pro System Optimizer starting...")
     base = sys._MEIPASS if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
-    html = os.path.join(base, "web", "index.html")
+    html_path = os.path.join(base, "web", "index.html")
+    with open(html_path, "r", encoding="utf-8") as f:
+        html_content = f.read()
 
     ico = os.path.join(base, "icon.ico")
     if not os.path.exists(ico): ico = None
 
     window = webview.create_window(
         title="RAM Booster Pro — System Optimizer",
-        url=html, js_api=RamBoosterAPI(),
+        html=html_content, js_api=RamBoosterAPI(),
         width=1200, height=760, min_size=(1000, 650),
         background_color="#050510",
     )
-    webview.start(debug=False)
+    webview.start(private_mode=True, debug=False)
 
 
 if __name__ == "__main__":

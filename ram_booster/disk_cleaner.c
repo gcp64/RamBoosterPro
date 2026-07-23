@@ -2099,6 +2099,60 @@ static PyObject *__Pyx_GetItemInt_Generic(PyObject *o, PyObject* j);
 static CYTHON_INLINE PyObject *__Pyx_GetItemInt_Fast(PyObject *o, Py_ssize_t i,
                                                      int is_list, int wraparound, int boundscheck, int unsafe_shared);
 
+/* ListCompAppend.proto */
+#if CYTHON_USE_PYLIST_INTERNALS && CYTHON_ASSUME_SAFE_MACROS
+static CYTHON_INLINE int __Pyx_ListComp_Append(PyObject* list, PyObject* x) {
+    PyListObject* L = (PyListObject*) list;
+    Py_ssize_t len = Py_SIZE(list);
+    if (likely(L->allocated > len)) {
+        Py_INCREF(x);
+        #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030d0000
+        L->ob_item[len] = x;
+        #else
+        PyList_SET_ITEM(list, len, x);
+        #endif
+        __Pyx_SET_SIZE(list, len + 1);
+        return 0;
+    }
+    return PyList_Append(list, x);
+}
+#else
+#define __Pyx_ListComp_Append(L,x) PyList_Append(L,x)
+#endif
+
+/* PyObjectLookupSpecial.proto */
+#if CYTHON_USE_PYTYPE_LOOKUP && CYTHON_USE_TYPE_SLOTS
+#define __Pyx_PyObject_LookupSpecialNoError(obj, attr_name)  __Pyx__PyObject_LookupSpecial(obj, attr_name, 0)
+#define __Pyx_PyObject_LookupSpecial(obj, attr_name)  __Pyx__PyObject_LookupSpecial(obj, attr_name, 1)
+static CYTHON_INLINE PyObject* __Pyx__PyObject_LookupSpecial(PyObject* obj, PyObject* attr_name, int with_error);
+#else
+#define __Pyx_PyObject_LookupSpecialNoError(o,n) __Pyx_PyObject_GetAttrStrNoError(o,n)
+#define __Pyx_PyObject_LookupSpecial(o,n) __Pyx_PyObject_GetAttrStr(o,n)
+#endif
+
+/* HasAttr.proto (used by ImportImpl) */
+#if __PYX_LIMITED_VERSION_HEX >= 0x030d0000
+#define __Pyx_HasAttr(o, n)  PyObject_HasAttrWithError(o, n)
+#else
+static CYTHON_INLINE int __Pyx_HasAttr(PyObject *, PyObject *);
+#endif
+
+/* ImportImpl.export */
+static PyObject *__Pyx__Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, PyObject *moddict, int level);
+
+/* Import.proto */
+static CYTHON_INLINE PyObject *__Pyx_Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, int level);
+
+/* ImportFrom.proto */
+static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name);
+
+/* PyObjectVectorCallMethodKwBuilder.proto */
+#if CYTHON_VECTORCALL && PY_VERSION_HEX >= 0x03090000
+#define __Pyx_Object_VectorcallMethod_CallFromBuilder PyObject_VectorcallMethod
+#else
+static PyObject *__Pyx_Object_VectorcallMethod_CallFromBuilder(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames);
+#endif
+
 /* PyRange_Check.proto */
 #if CYTHON_COMPILING_IN_PYPY && !defined(PyRange_Check)
   #define PyRange_Check(obj)  __Pyx_TypeCheck((obj), &PyRange_Type)
@@ -2283,13 +2337,6 @@ static PyObject *__Pyx_CyFunction_New(PyMethodDef *ml,
                                       PyObject *module, PyObject *globals,
                                       PyObject* code);
 
-/* PyObjectVectorCallMethodKwBuilder.proto */
-#if CYTHON_VECTORCALL && PY_VERSION_HEX >= 0x03090000
-#define __Pyx_Object_VectorcallMethod_CallFromBuilder PyObject_VectorcallMethod
-#else
-static PyObject *__Pyx_Object_VectorcallMethod_CallFromBuilder(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames);
-#endif
-
 /* SwapException.proto */
 #if CYTHON_FAST_THREAD_STATE
 #define __Pyx_ExceptionSwap(type, value, tb)  __Pyx__ExceptionSwap(__pyx_tstate, type, value, tb)
@@ -2367,22 +2414,6 @@ static int __Pyx_validate_bases_tuple(const char *type_name, Py_ssize_t dictoffs
 
 /* PyType_Ready.proto */
 CYTHON_UNUSED static int __Pyx_PyType_Ready(PyTypeObject *t);
-
-/* HasAttr.proto (used by ImportImpl) */
-#if __PYX_LIMITED_VERSION_HEX >= 0x030d0000
-#define __Pyx_HasAttr(o, n)  PyObject_HasAttrWithError(o, n)
-#else
-static CYTHON_INLINE int __Pyx_HasAttr(PyObject *, PyObject *);
-#endif
-
-/* ImportImpl.export */
-static PyObject *__Pyx__Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, PyObject *moddict, int level);
-
-/* Import.proto */
-static CYTHON_INLINE PyObject *__Pyx_Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, int level);
-
-/* ImportFrom.proto */
-static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name);
 
 /* ListPack.proto */
 static PyObject *__Pyx_PyList_Pack(Py_ssize_t n, ...);
@@ -2630,6 +2661,7 @@ int __pyx_module_is_main_ram_booster__disk_cleaner = 0;
 /* #### Code section: global_var ### */
 static PyObject *__pyx_builtin_sum;
 static PyObject *__pyx_builtin_round;
+static PyObject *__pyx_builtin_open;
 /* #### Code section: string_decls ### */
 static const char __pyx_k_disk_cleaner_py_Supercharged_Di[] = "\ndisk_cleaner.py - Supercharged Disk Manager & Deep Cleaning Suite.\nFeatures:\n- Installed Applications Auditor & Silent/Interactive Uninstaller\n- Large File Finder & Storage Space Hog Analyzer (>50MB)\n- Storage Categorizer (Music/Audio, Videos/Movies, Pictures, Documents, Installers/Archives)\n- Multi-Drive Partitions & Volume Metrics Inspector (C:, D:, E:, USBs)\n- Direct File Shredder & Cleaner\n- Deep Temp, Browser, Windows Update & Delivery Optimization Cleaner\n";
 /* #### Code section: decls ### */
@@ -2642,14 +2674,15 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_8clean_thumbnails(CYTHON_
 static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_10clean_windows_update(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_results); /* proto */
 static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_12clean_browser_caches(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_results); /* proto */
 static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_14deep_disk_clean(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16_extract_app_icon_b64(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_icon_path); /* proto */
 static PyObject *__pyx_lambda_funcdef_lambda1(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_x); /* proto */
-static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_uninstall_cmd); /* proto */
-static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18get_installed_apps(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20uninstall_app(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_uninstall_cmd); /* proto */
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22analyze_disk_categories(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
 static PyObject *__pyx_lambda_funcdef_lambda2(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_x); /* proto */
-static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_min_size_mb); /* proto */
-static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_filepath); /* proto */
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24find_large_files(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_min_size_mb); /* proto */
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26get_drive_partitions(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_28delete_specific_file(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_filepath); /* proto */
 static PyObject *__pyx_tp_new_11ram_booster_12disk_cleaner___pyx_scope_struct__genexpr(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 /* #### Code section: late_includes ### */
 /* #### Code section: module_state ### */
@@ -2676,10 +2709,10 @@ typedef struct {
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_items;
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_pop;
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_values;
-  PyObject *__pyx_tuple[5];
-  PyObject *__pyx_codeobj_tab[17];
-  PyObject *__pyx_string_tab[309];
-  PyObject *__pyx_number_tab[9];
+  PyObject *__pyx_tuple[8];
+  PyObject *__pyx_codeobj_tab[18];
+  PyObject *__pyx_string_tab[372];
+  PyObject *__pyx_number_tab[10];
 /* #### Code section: module_state_contents ### */
 /* CommonTypesMetaclass.module_state_decls */
 PyTypeObject *__pyx_CommonTypesMetaclassType;
@@ -2771,286 +2804,350 @@ static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_stati
 #define __pyx_kp_u__3 __pyx_string_tab[35]
 #define __pyx_kp_u__4 __pyx_string_tab[36]
 #define __pyx_kp_u__5 __pyx_string_tab[37]
-#define __pyx_kp_u_aac __pyx_string_tab[38]
-#define __pyx_kp_u_avi __pyx_string_tab[39]
-#define __pyx_kp_u_bmp __pyx_string_tab[40]
-#define __pyx_kp_u_csv __pyx_string_tab[41]
-#define __pyx_kp_u_disable __pyx_string_tab[42]
-#define __pyx_kp_u_doc __pyx_string_tab[43]
-#define __pyx_kp_u_docx __pyx_string_tab[44]
-#define __pyx_kp_u_enable __pyx_string_tab[45]
-#define __pyx_kp_u_exe __pyx_string_tab[46]
-#define __pyx_kp_u_files __pyx_string_tab[47]
-#define __pyx_kp_u_flac __pyx_string_tab[48]
-#define __pyx_kp_u_flv __pyx_string_tab[49]
-#define __pyx_kp_u_gc __pyx_string_tab[50]
-#define __pyx_kp_u_gif __pyx_string_tab[51]
-#define __pyx_kp_u_gz __pyx_string_tab[52]
-#define __pyx_kp_u_ico __pyx_string_tab[53]
-#define __pyx_kp_u_isenabled __pyx_string_tab[54]
-#define __pyx_kp_u_iso __pyx_string_tab[55]
-#define __pyx_kp_u_jpeg __pyx_string_tab[56]
-#define __pyx_kp_u_jpg __pyx_string_tab[57]
-#define __pyx_kp_u_m4a __pyx_string_tab[58]
-#define __pyx_kp_u_m4v __pyx_string_tab[59]
-#define __pyx_kp_u_mkv __pyx_string_tab[60]
-#define __pyx_kp_u_mov __pyx_string_tab[61]
-#define __pyx_kp_u_mp3 __pyx_string_tab[62]
-#define __pyx_kp_u_mp4 __pyx_string_tab[63]
-#define __pyx_kp_u_msi __pyx_string_tab[64]
-#define __pyx_kp_u_ogg __pyx_string_tab[65]
-#define __pyx_kp_u_pdf __pyx_string_tab[66]
-#define __pyx_kp_u_png __pyx_string_tab[67]
-#define __pyx_kp_u_pptx __pyx_string_tab[68]
-#define __pyx_kp_u_ram_booster_disk_cleaner_py __pyx_string_tab[69]
-#define __pyx_kp_u_rar __pyx_string_tab[70]
-#define __pyx_kp_u_raw __pyx_string_tab[71]
-#define __pyx_kp_u_svg __pyx_string_tab[72]
-#define __pyx_kp_u_tar __pyx_string_tab[73]
-#define __pyx_kp_u_txt __pyx_string_tab[74]
-#define __pyx_kp_u_wav __pyx_string_tab[75]
-#define __pyx_kp_u_webm __pyx_string_tab[76]
-#define __pyx_kp_u_webp __pyx_string_tab[77]
-#define __pyx_kp_u_wma __pyx_string_tab[78]
-#define __pyx_kp_u_wmv __pyx_string_tab[79]
-#define __pyx_kp_u_xls __pyx_string_tab[80]
-#define __pyx_kp_u_xlsx __pyx_string_tab[81]
-#define __pyx_kp_u_zip __pyx_string_tab[82]
-#define __pyx_n_u_APPDATA __pyx_string_tab[83]
-#define __pyx_n_u_CREATE_NO_WINDOW __pyx_string_tab[84]
-#define __pyx_n_u_CloseKey __pyx_string_tab[85]
-#define __pyx_n_u_Desktop __pyx_string_tab[86]
-#define __pyx_n_u_DisplayName __pyx_string_tab[87]
-#define __pyx_n_u_DisplayVersion __pyx_string_tab[88]
-#define __pyx_n_u_Documents __pyx_string_tab[89]
-#define __pyx_n_u_Downloads __pyx_string_tab[90]
-#define __pyx_n_u_EXT_CATEGORIES __pyx_string_tab[91]
-#define __pyx_n_u_EnumKey __pyx_string_tab[92]
-#define __pyx_n_u_EstimatedSize __pyx_string_tab[93]
-#define __pyx_n_u_Firefox __pyx_string_tab[94]
-#define __pyx_n_u_HKEY_CURRENT_USER __pyx_string_tab[95]
-#define __pyx_n_u_HKEY_LOCAL_MACHINE __pyx_string_tab[96]
-#define __pyx_n_u_KEY_READ __pyx_string_tab[97]
-#define __pyx_n_u_LOCALAPPDATA __pyx_string_tab[98]
-#define __pyx_n_u_Music __pyx_string_tab[99]
-#define __pyx_n_u_OpenKey __pyx_string_tab[100]
-#define __pyx_n_u_Pictures __pyx_string_tab[101]
-#define __pyx_n_u_Popen __pyx_string_tab[102]
-#define __pyx_n_u_Prefetch __pyx_string_tab[103]
-#define __pyx_n_u_Publisher __pyx_string_tab[104]
-#define __pyx_n_u_Pyx_PyDict_NextRef __pyx_string_tab[105]
-#define __pyx_n_u_QueryInfoKey __pyx_string_tab[106]
-#define __pyx_n_u_QueryValueEx __pyx_string_tab[107]
-#define __pyx_n_u_SW __pyx_string_tab[108]
-#define __pyx_n_u_TEMP __pyx_string_tab[109]
-#define __pyx_n_u_TMP __pyx_string_tab[110]
-#define __pyx_n_u_ThreadPoolExecutor __pyx_string_tab[111]
-#define __pyx_n_u_UninstallString __pyx_string_tab[112]
-#define __pyx_n_u_Videos __pyx_string_tab[113]
-#define __pyx_n_u__6 __pyx_string_tab[114]
-#define __pyx_n_u_all __pyx_string_tab[115]
-#define __pyx_n_u_analyze_disk_categories __pyx_string_tab[116]
-#define __pyx_n_u_annotate __pyx_string_tab[117]
-#define __pyx_n_u_appdata __pyx_string_tab[118]
-#define __pyx_n_u_apps __pyx_string_tab[119]
-#define __pyx_n_u_archives __pyx_string_tab[120]
-#define __pyx_n_u_archives_mb __pyx_string_tab[121]
-#define __pyx_n_u_archives_pct __pyx_string_tab[122]
-#define __pyx_n_u_asyncio_coroutines __pyx_string_tab[123]
-#define __pyx_n_u_audio __pyx_string_tab[124]
-#define __pyx_n_u_audio_mb __pyx_string_tab[125]
-#define __pyx_n_u_audio_pct __pyx_string_tab[126]
-#define __pyx_n_u_base __pyx_string_tab[127]
-#define __pyx_n_u_bytes_freed __pyx_string_tab[128]
-#define __pyx_n_u_cache2 __pyx_string_tab[129]
-#define __pyx_n_u_cache_paths __pyx_string_tab[130]
-#define __pyx_n_u_cat __pyx_string_tab[131]
-#define __pyx_n_u_cat_found __pyx_string_tab[132]
-#define __pyx_n_u_clean_browser_caches __pyx_string_tab[133]
-#define __pyx_n_u_clean_prefetch __pyx_string_tab[134]
-#define __pyx_n_u_clean_recent __pyx_string_tab[135]
-#define __pyx_n_u_clean_system_temp __pyx_string_tab[136]
-#define __pyx_n_u_clean_thumbnails __pyx_string_tab[137]
-#define __pyx_n_u_clean_windows_update __pyx_string_tab[138]
-#define __pyx_n_u_cline_in_traceback __pyx_string_tab[139]
-#define __pyx_n_u_close __pyx_string_tab[140]
-#define __pyx_n_u_concurrent_futures __pyx_string_tab[141]
-#define __pyx_n_u_counts __pyx_string_tab[142]
-#define __pyx_n_u_cp __pyx_string_tab[143]
-#define __pyx_n_u_deep_disk_clean __pyx_string_tab[144]
-#define __pyx_n_u_delete_specific_file __pyx_string_tab[145]
-#define __pyx_n_u_device __pyx_string_tab[146]
-#define __pyx_n_u_dirs_deleted __pyx_string_tab[147]
-#define __pyx_n_u_disk_partitions __pyx_string_tab[148]
-#define __pyx_n_u_disk_usage __pyx_string_tab[149]
-#define __pyx_n_u_documents __pyx_string_tab[150]
-#define __pyx_n_u_documents_mb __pyx_string_tab[151]
-#define __pyx_n_u_documents_pct __pyx_string_tab[152]
-#define __pyx_n_u_dp __pyx_string_tab[153]
-#define __pyx_n_u_e __pyx_string_tab[154]
-#define __pyx_n_u_environ __pyx_string_tab[155]
-#define __pyx_n_u_error __pyx_string_tab[156]
-#define __pyx_n_u_errors __pyx_string_tab[157]
-#define __pyx_n_u_exists __pyx_string_tab[158]
-#define __pyx_n_u_expanduser __pyx_string_tab[159]
-#define __pyx_n_u_ext __pyx_string_tab[160]
-#define __pyx_n_u_ext_list __pyx_string_tab[161]
-#define __pyx_n_u_f __pyx_string_tab[162]
-#define __pyx_n_u_filepath __pyx_string_tab[163]
-#define __pyx_n_u_files_deleted __pyx_string_tab[164]
-#define __pyx_n_u_find_large_files __pyx_string_tab[165]
-#define __pyx_n_u_find_large_files_locals_lambda __pyx_string_tab[166]
-#define __pyx_n_u_fn __pyx_string_tab[167]
-#define __pyx_n_u_fns __pyx_string_tab[168]
-#define __pyx_n_u_fp __pyx_string_tab[169]
-#define __pyx_n_u_free __pyx_string_tab[170]
-#define __pyx_n_u_free_gb __pyx_string_tab[171]
-#define __pyx_n_u_freed_mb __pyx_string_tab[172]
-#define __pyx_n_u_fstype __pyx_string_tab[173]
-#define __pyx_n_u_func __pyx_string_tab[174]
-#define __pyx_n_u_genexpr __pyx_string_tab[175]
-#define __pyx_n_u_get __pyx_string_tab[176]
-#define __pyx_n_u_getLogger __pyx_string_tab[177]
-#define __pyx_n_u_get_drive_partitions __pyx_string_tab[178]
-#define __pyx_n_u_get_installed_apps __pyx_string_tab[179]
-#define __pyx_n_u_get_installed_apps_locals_lambda __pyx_string_tab[180]
-#define __pyx_n_u_getsize __pyx_string_tab[181]
-#define __pyx_n_u_glob __pyx_string_tab[182]
-#define __pyx_n_u_hkey __pyx_string_tab[183]
-#define __pyx_n_u_i __pyx_string_tab[184]
-#define __pyx_n_u_ignore_errors __pyx_string_tab[185]
-#define __pyx_n_u_info __pyx_string_tab[186]
-#define __pyx_n_u_is_coroutine __pyx_string_tab[187]
-#define __pyx_n_u_isdir __pyx_string_tab[188]
-#define __pyx_n_u_isfile __pyx_string_tab[189]
-#define __pyx_n_u_item __pyx_string_tab[190]
-#define __pyx_n_u_items __pyx_string_tab[191]
-#define __pyx_n_u_join __pyx_string_tab[192]
-#define __pyx_n_u_key __pyx_string_tab[193]
-#define __pyx_n_u_key_path __pyx_string_tab[194]
-#define __pyx_n_u_lambda __pyx_string_tab[195]
-#define __pyx_n_u_large_files __pyx_string_tab[196]
-#define __pyx_n_u_listdir __pyx_string_tab[197]
-#define __pyx_n_u_local __pyx_string_tab[198]
-#define __pyx_n_u_logger __pyx_string_tab[199]
-#define __pyx_n_u_logging __pyx_string_tab[200]
-#define __pyx_n_u_lower __pyx_string_tab[201]
-#define __pyx_n_u_main __pyx_string_tab[202]
-#define __pyx_n_u_min_bytes __pyx_string_tab[203]
-#define __pyx_n_u_min_size_mb __pyx_string_tab[204]
-#define __pyx_n_u_module __pyx_string_tab[205]
-#define __pyx_n_u_mountpoint __pyx_string_tab[206]
-#define __pyx_n_u_msg __pyx_string_tab[207]
-#define __pyx_n_u_name __pyx_string_tab[208]
-#define __pyx_n_u_name_2 __pyx_string_tab[209]
-#define __pyx_n_u_next __pyx_string_tab[210]
-#define __pyx_n_u_num_subkeys __pyx_string_tab[211]
-#define __pyx_n_u_os __pyx_string_tab[212]
-#define __pyx_n_u_other __pyx_string_tab[213]
-#define __pyx_n_u_other_mb __pyx_string_tab[214]
-#define __pyx_n_u_p __pyx_string_tab[215]
-#define __pyx_n_u_p_cache __pyx_string_tab[216]
-#define __pyx_n_u_part __pyx_string_tab[217]
-#define __pyx_n_u_partitions __pyx_string_tab[218]
-#define __pyx_n_u_path __pyx_string_tab[219]
-#define __pyx_n_u_paths __pyx_string_tab[220]
-#define __pyx_n_u_percent __pyx_string_tab[221]
-#define __pyx_n_u_pf __pyx_string_tab[222]
-#define __pyx_n_u_pictures __pyx_string_tab[223]
-#define __pyx_n_u_pictures_mb __pyx_string_tab[224]
-#define __pyx_n_u_pictures_pct __pyx_string_tab[225]
-#define __pyx_n_u_pop __pyx_string_tab[226]
-#define __pyx_n_u_profile __pyx_string_tab[227]
-#define __pyx_n_u_psutil __pyx_string_tab[228]
-#define __pyx_n_u_publisher __pyx_string_tab[229]
-#define __pyx_n_u_qualname __pyx_string_tab[230]
-#define __pyx_n_u_ram_booster_disk_cleaner __pyx_string_tab[231]
-#define __pyx_n_u_recent __pyx_string_tab[232]
-#define __pyx_n_u_reg_paths __pyx_string_tab[233]
-#define __pyx_n_u_remove __pyx_string_tab[234]
-#define __pyx_n_u_results __pyx_string_tab[235]
-#define __pyx_n_u_reverse __pyx_string_tab[236]
-#define __pyx_n_u_rmtree __pyx_string_tab[237]
-#define __pyx_n_u_root __pyx_string_tab[238]
-#define __pyx_n_u_round __pyx_string_tab[239]
-#define __pyx_n_u_s1 __pyx_string_tab[240]
-#define __pyx_n_u_s2 __pyx_string_tab[241]
-#define __pyx_n_u_s3 __pyx_string_tab[242]
-#define __pyx_n_u_s4 __pyx_string_tab[243]
-#define __pyx_n_u_safe_delete __pyx_string_tab[244]
-#define __pyx_n_u_safe_delete_locals_genexpr __pyx_string_tab[245]
-#define __pyx_n_u_sections __pyx_string_tab[246]
-#define __pyx_n_u_seen __pyx_string_tab[247]
-#define __pyx_n_u_send __pyx_string_tab[248]
-#define __pyx_n_u_set_name __pyx_string_tab[249]
-#define __pyx_n_u_setdefault __pyx_string_tab[250]
-#define __pyx_n_u_shell __pyx_string_tab[251]
-#define __pyx_n_u_shutil __pyx_string_tab[252]
-#define __pyx_n_u_size __pyx_string_tab[253]
-#define __pyx_n_u_size_kb __pyx_string_tab[254]
-#define __pyx_n_u_size_mb __pyx_string_tab[255]
-#define __pyx_n_u_sk __pyx_string_tab[256]
-#define __pyx_n_u_sort __pyx_string_tab[257]
-#define __pyx_n_u_splitext __pyx_string_tab[258]
-#define __pyx_n_u_start_bytes __pyx_string_tab[259]
-#define __pyx_n_u_subkey_name __pyx_string_tab[260]
-#define __pyx_n_u_subprocess __pyx_string_tab[261]
-#define __pyx_n_u_success __pyx_string_tab[262]
-#define __pyx_n_u_sum __pyx_string_tab[263]
-#define __pyx_n_u_sz __pyx_string_tab[264]
-#define __pyx_n_u_target_dirs __pyx_string_tab[265]
-#define __pyx_n_u_test __pyx_string_tab[266]
-#define __pyx_n_u_throw __pyx_string_tab[267]
-#define __pyx_n_u_thumb __pyx_string_tab[268]
-#define __pyx_n_u_thumbcache __pyx_string_tab[269]
-#define __pyx_n_u_total __pyx_string_tab[270]
-#define __pyx_n_u_total_bytes __pyx_string_tab[271]
-#define __pyx_n_u_total_freed_mb __pyx_string_tab[272]
-#define __pyx_n_u_total_gb __pyx_string_tab[273]
-#define __pyx_n_u_total_mb __pyx_string_tab[274]
-#define __pyx_n_u_totals __pyx_string_tab[275]
-#define __pyx_n_u_uninstall_app __pyx_string_tab[276]
-#define __pyx_n_u_uninstall_cmd __pyx_string_tab[277]
-#define __pyx_n_u_uninstall_string __pyx_string_tab[278]
-#define __pyx_n_u_usage __pyx_string_tab[279]
-#define __pyx_n_u_used __pyx_string_tab[280]
-#define __pyx_n_u_used_gb __pyx_string_tab[281]
-#define __pyx_n_u_user_home __pyx_string_tab[282]
-#define __pyx_n_u_value __pyx_string_tab[283]
-#define __pyx_n_u_values __pyx_string_tab[284]
-#define __pyx_n_u_version __pyx_string_tab[285]
-#define __pyx_n_u_video __pyx_string_tab[286]
-#define __pyx_n_u_video_mb __pyx_string_tab[287]
-#define __pyx_n_u_video_pct __pyx_string_tab[288]
-#define __pyx_n_u_walk __pyx_string_tab[289]
-#define __pyx_n_u_winreg __pyx_string_tab[290]
-#define __pyx_n_u_x __pyx_string_tab[291]
-#define __pyx_kp_b_iso88591_1AQ __pyx_string_tab[292]
-#define __pyx_kp_b_iso88591_1_a_A_A_1_ha_6_c_q_Qe1A_U_1_q_x __pyx_string_tab[293]
-#define __pyx_kp_b_iso88591_1_uA_uA_uA_uA_uA_uA_is_3l_QTT_i __pyx_string_tab[294]
-#define __pyx_kp_b_iso88591_2U_2U_1_gQa_1_1_a_uF_1_3a_a_1_q __pyx_string_tab[295]
-#define __pyx_kp_b_iso88591_AQgV1 __pyx_string_tab[296]
-#define __pyx_kp_b_iso88591_A_Q_2U_1_ARuE_WA __pyx_string_tab[297]
-#define __pyx_kp_b_iso88591_A_axq_awa_4uCt2U_HBhaq_5_QfA_Q __pyx_string_tab[298]
-#define __pyx_kp_b_iso88591_Be5_84q_8_r_gQa_E_81A_Cq_a_ARuE __pyx_string_tab[299]
-#define __pyx_kp_b_iso88591_Bhd_1_b_A_uAWA_uAWA_uAWA_uAWA_u __pyx_string_tab[300]
-#define __pyx_kp_b_iso88591_Q_1_uA_uA_uA_uA_uA_uA_Be2Q_4r_g __pyx_string_tab[301]
-#define __pyx_kp_b_iso88591_RuE_HD_E_r_gQa_E_81A_5_Qhd __pyx_string_tab[302]
-#define __pyx_kp_b_iso88591_at1_F_Qd_gQ_a_d_a_E_wgV1_5_fG6 __pyx_string_tab[303]
-#define __pyx_kp_b_iso88591_q __pyx_string_tab[304]
-#define __pyx_kp_b_iso88591_q_A_Qa_1Kq_b_q_r_V_ggh_1_1Kq_e2 __pyx_string_tab[305]
-#define __pyx_kp_b_iso88591_r_gQa_E_81A_5_Qd_a __pyx_string_tab[306]
-#define __pyx_kp_b_iso88591_t1_7_1_a_6_7_3aq __pyx_string_tab[307]
-#define __pyx_kp_b_iso88591_t9Ct2U_7_1_q_xq_q_6_Yha_7_3aq __pyx_string_tab[308]
+#define __pyx_kp_u__6 __pyx_string_tab[38]
+#define __pyx_kp_u__7 __pyx_string_tab[39]
+#define __pyx_kp_u_aac __pyx_string_tab[40]
+#define __pyx_kp_u_avi __pyx_string_tab[41]
+#define __pyx_kp_u_bmp __pyx_string_tab[42]
+#define __pyx_kp_u_csv __pyx_string_tab[43]
+#define __pyx_kp_u_data_image_png_base64 __pyx_string_tab[44]
+#define __pyx_kp_u_disable __pyx_string_tab[45]
+#define __pyx_kp_u_doc __pyx_string_tab[46]
+#define __pyx_kp_u_docx __pyx_string_tab[47]
+#define __pyx_kp_u_enable __pyx_string_tab[48]
+#define __pyx_kp_u_exe __pyx_string_tab[49]
+#define __pyx_kp_u_files __pyx_string_tab[50]
+#define __pyx_kp_u_flac __pyx_string_tab[51]
+#define __pyx_kp_u_flv __pyx_string_tab[52]
+#define __pyx_kp_u_gc __pyx_string_tab[53]
+#define __pyx_kp_u_gif __pyx_string_tab[54]
+#define __pyx_kp_u_gz __pyx_string_tab[55]
+#define __pyx_kp_u_ico __pyx_string_tab[56]
+#define __pyx_kp_u_isenabled __pyx_string_tab[57]
+#define __pyx_kp_u_iso __pyx_string_tab[58]
+#define __pyx_kp_u_jpeg __pyx_string_tab[59]
+#define __pyx_kp_u_jpg __pyx_string_tab[60]
+#define __pyx_kp_u_m4a __pyx_string_tab[61]
+#define __pyx_kp_u_m4v __pyx_string_tab[62]
+#define __pyx_kp_u_mkv __pyx_string_tab[63]
+#define __pyx_kp_u_mov __pyx_string_tab[64]
+#define __pyx_kp_u_mp3 __pyx_string_tab[65]
+#define __pyx_kp_u_mp4 __pyx_string_tab[66]
+#define __pyx_kp_u_msi __pyx_string_tab[67]
+#define __pyx_kp_u_ogg __pyx_string_tab[68]
+#define __pyx_kp_u_pdf __pyx_string_tab[69]
+#define __pyx_kp_u_png __pyx_string_tab[70]
+#define __pyx_kp_u_pptx __pyx_string_tab[71]
+#define __pyx_kp_u_ram_booster_disk_cleaner_py __pyx_string_tab[72]
+#define __pyx_kp_u_rar __pyx_string_tab[73]
+#define __pyx_kp_u_raw_2 __pyx_string_tab[74]
+#define __pyx_kp_u_svg __pyx_string_tab[75]
+#define __pyx_kp_u_tar __pyx_string_tab[76]
+#define __pyx_kp_u_txt __pyx_string_tab[77]
+#define __pyx_kp_u_wav __pyx_string_tab[78]
+#define __pyx_kp_u_webm __pyx_string_tab[79]
+#define __pyx_kp_u_webp __pyx_string_tab[80]
+#define __pyx_kp_u_wma __pyx_string_tab[81]
+#define __pyx_kp_u_wmv __pyx_string_tab[82]
+#define __pyx_kp_u_xls __pyx_string_tab[83]
+#define __pyx_kp_u_xlsx __pyx_string_tab[84]
+#define __pyx_kp_u_zip __pyx_string_tab[85]
+#define __pyx_n_u_APPDATA __pyx_string_tab[86]
+#define __pyx_n_u_BGRA __pyx_string_tab[87]
+#define __pyx_n_u_BytesIO __pyx_string_tab[88]
+#define __pyx_n_u_CREATE_NO_WINDOW __pyx_string_tab[89]
+#define __pyx_n_u_CloseKey __pyx_string_tab[90]
+#define __pyx_n_u_CreateBitmap __pyx_string_tab[91]
+#define __pyx_n_u_CreateCompatibleBitmap __pyx_string_tab[92]
+#define __pyx_n_u_CreateCompatibleDC __pyx_string_tab[93]
+#define __pyx_n_u_CreateDCFromHandle __pyx_string_tab[94]
+#define __pyx_n_u_DI_NORMAL __pyx_string_tab[95]
+#define __pyx_n_u_Desktop __pyx_string_tab[96]
+#define __pyx_n_u_DestroyIcon __pyx_string_tab[97]
+#define __pyx_n_u_DisplayIcon __pyx_string_tab[98]
+#define __pyx_n_u_DisplayName __pyx_string_tab[99]
+#define __pyx_n_u_DisplayVersion __pyx_string_tab[100]
+#define __pyx_n_u_Documents __pyx_string_tab[101]
+#define __pyx_n_u_Downloads __pyx_string_tab[102]
+#define __pyx_n_u_DrawIconEx __pyx_string_tab[103]
+#define __pyx_n_u_EXT_CATEGORIES __pyx_string_tab[104]
+#define __pyx_n_u_EnumKey __pyx_string_tab[105]
+#define __pyx_n_u_EstimatedSize __pyx_string_tab[106]
+#define __pyx_n_u_ExtractIconEx __pyx_string_tab[107]
+#define __pyx_n_u_Firefox __pyx_string_tab[108]
+#define __pyx_n_u_GetBitmapBits __pyx_string_tab[109]
+#define __pyx_n_u_GetDC __pyx_string_tab[110]
+#define __pyx_n_u_GetHandleOutput __pyx_string_tab[111]
+#define __pyx_n_u_GetInfo __pyx_string_tab[112]
+#define __pyx_n_u_HKEY_CURRENT_USER __pyx_string_tab[113]
+#define __pyx_n_u_HKEY_LOCAL_MACHINE __pyx_string_tab[114]
+#define __pyx_n_u_Image __pyx_string_tab[115]
+#define __pyx_n_u_InstallLocation __pyx_string_tab[116]
+#define __pyx_n_u_KEY_READ __pyx_string_tab[117]
+#define __pyx_n_u_LOCALAPPDATA __pyx_string_tab[118]
+#define __pyx_n_u_Music __pyx_string_tab[119]
+#define __pyx_n_u_OpenKey __pyx_string_tab[120]
+#define __pyx_n_u_PIL __pyx_string_tab[121]
+#define __pyx_n_u_PNG __pyx_string_tab[122]
+#define __pyx_n_u_Pictures __pyx_string_tab[123]
+#define __pyx_n_u_Popen __pyx_string_tab[124]
+#define __pyx_n_u_Prefetch __pyx_string_tab[125]
+#define __pyx_n_u_Publisher __pyx_string_tab[126]
+#define __pyx_n_u_Pyx_PyDict_NextRef __pyx_string_tab[127]
+#define __pyx_n_u_QueryInfoKey __pyx_string_tab[128]
+#define __pyx_n_u_QueryValueEx __pyx_string_tab[129]
+#define __pyx_n_u_RGBA __pyx_string_tab[130]
+#define __pyx_n_u_SW __pyx_string_tab[131]
+#define __pyx_n_u_SelectObject __pyx_string_tab[132]
+#define __pyx_n_u_TEMP __pyx_string_tab[133]
+#define __pyx_n_u_TMP __pyx_string_tab[134]
+#define __pyx_n_u_ThreadPoolExecutor __pyx_string_tab[135]
+#define __pyx_n_u_UninstallString __pyx_string_tab[136]
+#define __pyx_n_u_Videos __pyx_string_tab[137]
+#define __pyx_n_u__8 __pyx_string_tab[138]
+#define __pyx_n_u_all __pyx_string_tab[139]
+#define __pyx_n_u_analyze_disk_categories __pyx_string_tab[140]
+#define __pyx_n_u_annotate __pyx_string_tab[141]
+#define __pyx_n_u_appdata __pyx_string_tab[142]
+#define __pyx_n_u_apps __pyx_string_tab[143]
+#define __pyx_n_u_archives __pyx_string_tab[144]
+#define __pyx_n_u_archives_mb __pyx_string_tab[145]
+#define __pyx_n_u_archives_pct __pyx_string_tab[146]
+#define __pyx_n_u_asyncio_coroutines __pyx_string_tab[147]
+#define __pyx_n_u_audio __pyx_string_tab[148]
+#define __pyx_n_u_audio_mb __pyx_string_tab[149]
+#define __pyx_n_u_audio_pct __pyx_string_tab[150]
+#define __pyx_n_u_b64encode __pyx_string_tab[151]
+#define __pyx_n_u_base __pyx_string_tab[152]
+#define __pyx_n_u_base64 __pyx_string_tab[153]
+#define __pyx_n_u_bmpbits __pyx_string_tab[154]
+#define __pyx_n_u_bmpinfo __pyx_string_tab[155]
+#define __pyx_n_u_buf __pyx_string_tab[156]
+#define __pyx_n_u_bytes_freed __pyx_string_tab[157]
+#define __pyx_n_u_cache2 __pyx_string_tab[158]
+#define __pyx_n_u_cache_paths __pyx_string_tab[159]
+#define __pyx_n_u_cat __pyx_string_tab[160]
+#define __pyx_n_u_cat_found __pyx_string_tab[161]
+#define __pyx_n_u_clean_browser_caches __pyx_string_tab[162]
+#define __pyx_n_u_clean_path __pyx_string_tab[163]
+#define __pyx_n_u_clean_prefetch __pyx_string_tab[164]
+#define __pyx_n_u_clean_recent __pyx_string_tab[165]
+#define __pyx_n_u_clean_system_temp __pyx_string_tab[166]
+#define __pyx_n_u_clean_thumbnails __pyx_string_tab[167]
+#define __pyx_n_u_clean_windows_update __pyx_string_tab[168]
+#define __pyx_n_u_cline_in_traceback __pyx_string_tab[169]
+#define __pyx_n_u_close __pyx_string_tab[170]
+#define __pyx_n_u_concurrent_futures __pyx_string_tab[171]
+#define __pyx_n_u_counts __pyx_string_tab[172]
+#define __pyx_n_u_cp __pyx_string_tab[173]
+#define __pyx_n_u_decode __pyx_string_tab[174]
+#define __pyx_n_u_deep_disk_clean __pyx_string_tab[175]
+#define __pyx_n_u_delete_specific_file __pyx_string_tab[176]
+#define __pyx_n_u_device __pyx_string_tab[177]
+#define __pyx_n_u_dirs_deleted __pyx_string_tab[178]
+#define __pyx_n_u_disk_partitions __pyx_string_tab[179]
+#define __pyx_n_u_disk_usage __pyx_string_tab[180]
+#define __pyx_n_u_display_icon __pyx_string_tab[181]
+#define __pyx_n_u_documents __pyx_string_tab[182]
+#define __pyx_n_u_documents_mb __pyx_string_tab[183]
+#define __pyx_n_u_documents_pct __pyx_string_tab[184]
+#define __pyx_n_u_dp __pyx_string_tab[185]
+#define __pyx_n_u_e __pyx_string_tab[186]
+#define __pyx_n_u_endswith __pyx_string_tab[187]
+#define __pyx_n_u_enter __pyx_string_tab[188]
+#define __pyx_n_u_environ __pyx_string_tab[189]
+#define __pyx_n_u_error __pyx_string_tab[190]
+#define __pyx_n_u_errors __pyx_string_tab[191]
+#define __pyx_n_u_exes __pyx_string_tab[192]
+#define __pyx_n_u_exists __pyx_string_tab[193]
+#define __pyx_n_u_exit __pyx_string_tab[194]
+#define __pyx_n_u_expanduser __pyx_string_tab[195]
+#define __pyx_n_u_ext __pyx_string_tab[196]
+#define __pyx_n_u_ext_list __pyx_string_tab[197]
+#define __pyx_n_u_extract_app_icon_b64 __pyx_string_tab[198]
+#define __pyx_n_u_f __pyx_string_tab[199]
+#define __pyx_n_u_filepath __pyx_string_tab[200]
+#define __pyx_n_u_files_deleted __pyx_string_tab[201]
+#define __pyx_n_u_find_large_files __pyx_string_tab[202]
+#define __pyx_n_u_find_large_files_locals_lambda __pyx_string_tab[203]
+#define __pyx_n_u_fn __pyx_string_tab[204]
+#define __pyx_n_u_fns __pyx_string_tab[205]
+#define __pyx_n_u_format __pyx_string_tab[206]
+#define __pyx_n_u_fp __pyx_string_tab[207]
+#define __pyx_n_u_free __pyx_string_tab[208]
+#define __pyx_n_u_free_gb __pyx_string_tab[209]
+#define __pyx_n_u_freed_mb __pyx_string_tab[210]
+#define __pyx_n_u_frombuffer __pyx_string_tab[211]
+#define __pyx_n_u_fstype __pyx_string_tab[212]
+#define __pyx_n_u_func __pyx_string_tab[213]
+#define __pyx_n_u_genexpr __pyx_string_tab[214]
+#define __pyx_n_u_get __pyx_string_tab[215]
+#define __pyx_n_u_getLogger __pyx_string_tab[216]
+#define __pyx_n_u_get_drive_partitions __pyx_string_tab[217]
+#define __pyx_n_u_get_installed_apps __pyx_string_tab[218]
+#define __pyx_n_u_get_installed_apps_locals_lambda __pyx_string_tab[219]
+#define __pyx_n_u_getsize __pyx_string_tab[220]
+#define __pyx_n_u_getvalue __pyx_string_tab[221]
+#define __pyx_n_u_glob __pyx_string_tab[222]
+#define __pyx_n_u_h __pyx_string_tab[223]
+#define __pyx_n_u_hbmp __pyx_string_tab[224]
+#define __pyx_n_u_hdc __pyx_string_tab[225]
+#define __pyx_n_u_hdc_mem __pyx_string_tab[226]
+#define __pyx_n_u_hicon __pyx_string_tab[227]
+#define __pyx_n_u_hkey __pyx_string_tab[228]
+#define __pyx_n_u_i __pyx_string_tab[229]
+#define __pyx_n_u_icon_b64 __pyx_string_tab[230]
+#define __pyx_n_u_icon_path __pyx_string_tab[231]
+#define __pyx_n_u_ignore_errors __pyx_string_tab[232]
+#define __pyx_n_u_im __pyx_string_tab[233]
+#define __pyx_n_u_info __pyx_string_tab[234]
+#define __pyx_n_u_install_location __pyx_string_tab[235]
+#define __pyx_n_u_io __pyx_string_tab[236]
+#define __pyx_n_u_is_coroutine __pyx_string_tab[237]
+#define __pyx_n_u_isdir __pyx_string_tab[238]
+#define __pyx_n_u_isfile __pyx_string_tab[239]
+#define __pyx_n_u_item __pyx_string_tab[240]
+#define __pyx_n_u_items __pyx_string_tab[241]
+#define __pyx_n_u_join __pyx_string_tab[242]
+#define __pyx_n_u_key __pyx_string_tab[243]
+#define __pyx_n_u_key_path __pyx_string_tab[244]
+#define __pyx_n_u_lambda __pyx_string_tab[245]
+#define __pyx_n_u_large __pyx_string_tab[246]
+#define __pyx_n_u_large_files __pyx_string_tab[247]
+#define __pyx_n_u_listdir __pyx_string_tab[248]
+#define __pyx_n_u_local __pyx_string_tab[249]
+#define __pyx_n_u_logger __pyx_string_tab[250]
+#define __pyx_n_u_logging __pyx_string_tab[251]
+#define __pyx_n_u_lower __pyx_string_tab[252]
+#define __pyx_n_u_main __pyx_string_tab[253]
+#define __pyx_n_u_min_bytes __pyx_string_tab[254]
+#define __pyx_n_u_min_size_mb __pyx_string_tab[255]
+#define __pyx_n_u_module __pyx_string_tab[256]
+#define __pyx_n_u_mountpoint __pyx_string_tab[257]
+#define __pyx_n_u_msg __pyx_string_tab[258]
+#define __pyx_n_u_name __pyx_string_tab[259]
+#define __pyx_n_u_name_2 __pyx_string_tab[260]
+#define __pyx_n_u_next __pyx_string_tab[261]
+#define __pyx_n_u_num_subkeys __pyx_string_tab[262]
+#define __pyx_n_u_open __pyx_string_tab[263]
+#define __pyx_n_u_os __pyx_string_tab[264]
+#define __pyx_n_u_other __pyx_string_tab[265]
+#define __pyx_n_u_other_mb __pyx_string_tab[266]
+#define __pyx_n_u_p __pyx_string_tab[267]
+#define __pyx_n_u_p_cache __pyx_string_tab[268]
+#define __pyx_n_u_part __pyx_string_tab[269]
+#define __pyx_n_u_partitions __pyx_string_tab[270]
+#define __pyx_n_u_path __pyx_string_tab[271]
+#define __pyx_n_u_paths __pyx_string_tab[272]
+#define __pyx_n_u_percent __pyx_string_tab[273]
+#define __pyx_n_u_pf __pyx_string_tab[274]
+#define __pyx_n_u_pictures __pyx_string_tab[275]
+#define __pyx_n_u_pictures_mb __pyx_string_tab[276]
+#define __pyx_n_u_pictures_pct __pyx_string_tab[277]
+#define __pyx_n_u_pop __pyx_string_tab[278]
+#define __pyx_n_u_profile __pyx_string_tab[279]
+#define __pyx_n_u_psutil __pyx_string_tab[280]
+#define __pyx_n_u_publisher __pyx_string_tab[281]
+#define __pyx_n_u_qualname __pyx_string_tab[282]
+#define __pyx_n_u_ram_booster_disk_cleaner __pyx_string_tab[283]
+#define __pyx_n_u_raw __pyx_string_tab[284]
+#define __pyx_n_u_rb __pyx_string_tab[285]
+#define __pyx_n_u_read __pyx_string_tab[286]
+#define __pyx_n_u_recent __pyx_string_tab[287]
+#define __pyx_n_u_reg_paths __pyx_string_tab[288]
+#define __pyx_n_u_remove __pyx_string_tab[289]
+#define __pyx_n_u_results __pyx_string_tab[290]
+#define __pyx_n_u_reverse __pyx_string_tab[291]
+#define __pyx_n_u_rmtree __pyx_string_tab[292]
+#define __pyx_n_u_root __pyx_string_tab[293]
+#define __pyx_n_u_round __pyx_string_tab[294]
+#define __pyx_n_u_s1 __pyx_string_tab[295]
+#define __pyx_n_u_s2 __pyx_string_tab[296]
+#define __pyx_n_u_s3 __pyx_string_tab[297]
+#define __pyx_n_u_s4 __pyx_string_tab[298]
+#define __pyx_n_u_safe_delete __pyx_string_tab[299]
+#define __pyx_n_u_safe_delete_locals_genexpr __pyx_string_tab[300]
+#define __pyx_n_u_save __pyx_string_tab[301]
+#define __pyx_n_u_sections __pyx_string_tab[302]
+#define __pyx_n_u_seen __pyx_string_tab[303]
+#define __pyx_n_u_send __pyx_string_tab[304]
+#define __pyx_n_u_set_name __pyx_string_tab[305]
+#define __pyx_n_u_setdefault __pyx_string_tab[306]
+#define __pyx_n_u_shell __pyx_string_tab[307]
+#define __pyx_n_u_shutil __pyx_string_tab[308]
+#define __pyx_n_u_size __pyx_string_tab[309]
+#define __pyx_n_u_size_kb __pyx_string_tab[310]
+#define __pyx_n_u_size_mb __pyx_string_tab[311]
+#define __pyx_n_u_sk __pyx_string_tab[312]
+#define __pyx_n_u_small __pyx_string_tab[313]
+#define __pyx_n_u_sort __pyx_string_tab[314]
+#define __pyx_n_u_split __pyx_string_tab[315]
+#define __pyx_n_u_splitext __pyx_string_tab[316]
+#define __pyx_n_u_start_bytes __pyx_string_tab[317]
+#define __pyx_n_u_strip __pyx_string_tab[318]
+#define __pyx_n_u_subkey_name __pyx_string_tab[319]
+#define __pyx_n_u_subprocess __pyx_string_tab[320]
+#define __pyx_n_u_success __pyx_string_tab[321]
+#define __pyx_n_u_sum __pyx_string_tab[322]
+#define __pyx_n_u_sz __pyx_string_tab[323]
+#define __pyx_n_u_target_dirs __pyx_string_tab[324]
+#define __pyx_n_u_test __pyx_string_tab[325]
+#define __pyx_n_u_throw __pyx_string_tab[326]
+#define __pyx_n_u_thumb __pyx_string_tab[327]
+#define __pyx_n_u_thumbcache __pyx_string_tab[328]
+#define __pyx_n_u_total __pyx_string_tab[329]
+#define __pyx_n_u_total_bytes __pyx_string_tab[330]
+#define __pyx_n_u_total_freed_mb __pyx_string_tab[331]
+#define __pyx_n_u_total_gb __pyx_string_tab[332]
+#define __pyx_n_u_total_mb __pyx_string_tab[333]
+#define __pyx_n_u_totals __pyx_string_tab[334]
+#define __pyx_n_u_uninstall_app __pyx_string_tab[335]
+#define __pyx_n_u_uninstall_cmd __pyx_string_tab[336]
+#define __pyx_n_u_uninstall_string __pyx_string_tab[337]
+#define __pyx_n_u_usage __pyx_string_tab[338]
+#define __pyx_n_u_used __pyx_string_tab[339]
+#define __pyx_n_u_used_gb __pyx_string_tab[340]
+#define __pyx_n_u_user_home __pyx_string_tab[341]
+#define __pyx_n_u_value __pyx_string_tab[342]
+#define __pyx_n_u_values __pyx_string_tab[343]
+#define __pyx_n_u_version __pyx_string_tab[344]
+#define __pyx_n_u_video __pyx_string_tab[345]
+#define __pyx_n_u_video_mb __pyx_string_tab[346]
+#define __pyx_n_u_video_pct __pyx_string_tab[347]
+#define __pyx_n_u_walk __pyx_string_tab[348]
+#define __pyx_n_u_win32con __pyx_string_tab[349]
+#define __pyx_n_u_win32gui __pyx_string_tab[350]
+#define __pyx_n_u_win32ui __pyx_string_tab[351]
+#define __pyx_n_u_winreg __pyx_string_tab[352]
+#define __pyx_n_u_x __pyx_string_tab[353]
+#define __pyx_kp_b_iso88591_1AQ __pyx_string_tab[354]
+#define __pyx_kp_b_iso88591_1_a_A_A_1_ha_6_c_q_Qe1A_U_1_q_x __pyx_string_tab[355]
+#define __pyx_kp_b_iso88591_1_uA_uA_uA_uA_uA_uA_is_3l_QTT_i __pyx_string_tab[356]
+#define __pyx_kp_b_iso88591_2U_2U_1_gQa_1_1_a_uF_1_3a_a_1_q __pyx_string_tab[357]
+#define __pyx_kp_b_iso88591_AQgV1 __pyx_string_tab[358]
+#define __pyx_kp_b_iso88591_A_Q_2U_1_ARuE_WA __pyx_string_tab[359]
+#define __pyx_kp_b_iso88591_A_axq_awa_4uCt2U_HBhaq_5_QfA_Q __pyx_string_tab[360]
+#define __pyx_kp_b_iso88591_Be5_84q_8_r_gQa_E_81A_Cq_a_ARuE __pyx_string_tab[361]
+#define __pyx_kp_b_iso88591_Bhd_1_b_A_uAWA_uAWA_uAWA_uAWA_u __pyx_string_tab[362]
+#define __pyx_kp_b_iso88591_Q_1_uA_uA_uA_uA_uA_uA_Be2Q_4r_g __pyx_string_tab[363]
+#define __pyx_kp_b_iso88591_RuE_HD_E_r_gQa_E_81A_5_Qhd __pyx_string_tab[364]
+#define __pyx_kp_b_iso88591_at1_F_Qd_gQ_a_d_a_E_wgV1_5_fG6 __pyx_string_tab[365]
+#define __pyx_kp_b_iso88591_q __pyx_string_tab[366]
+#define __pyx_kp_b_iso88591_q_A_Qa_1Kq_b_q_r_V_ggh_1_1Kq_e2 __pyx_string_tab[367]
+#define __pyx_kp_b_iso88591_r_gQa_E_81A_5_Qd_a __pyx_string_tab[368]
+#define __pyx_kp_b_iso88591_t1_7_1_a_6_7_3aq __pyx_string_tab[369]
+#define __pyx_kp_b_iso88591_t9Ct2U_7_1_q_xq_q_6_Yha_7_3aq __pyx_string_tab[370]
+#define __pyx_kp_b_iso88591_t_S_Ja_q_YfAV6_ar_q_4r_gQa_r_fA __pyx_string_tab[371]
 #define __pyx_float_0_0 __pyx_number_tab[0]
 #define __pyx_int_0 __pyx_number_tab[1]
 #define __pyx_int_1 __pyx_number_tab[2]
 #define __pyx_int_2 __pyx_number_tab[3]
 #define __pyx_int_30 __pyx_number_tab[4]
-#define __pyx_int_100 __pyx_number_tab[5]
-#define __pyx_int_1024 __pyx_number_tab[6]
-#define __pyx_int_1048576 __pyx_number_tab[7]
-#define __pyx_int_1073741824 __pyx_number_tab[8]
+#define __pyx_int_32 __pyx_number_tab[5]
+#define __pyx_int_100 __pyx_number_tab[6]
+#define __pyx_int_1024 __pyx_number_tab[7]
+#define __pyx_int_1048576 __pyx_number_tab[8]
+#define __pyx_int_1073741824 __pyx_number_tab[9]
 /* #### Code section: module_state_clear ### */
 #if CYTHON_USE_MODULE_STATE
 static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
@@ -3067,10 +3164,10 @@ static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
   #endif
   Py_CLEAR(clear_module_state->__pyx_ptype_11ram_booster_12disk_cleaner___pyx_scope_struct__genexpr);
   Py_CLEAR(clear_module_state->__pyx_type_11ram_booster_12disk_cleaner___pyx_scope_struct__genexpr);
-  for (int i=0; i<5; ++i) { Py_CLEAR(clear_module_state->__pyx_tuple[i]); }
-  for (int i=0; i<17; ++i) { Py_CLEAR(clear_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<309; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
-  for (int i=0; i<9; ++i) { Py_CLEAR(clear_module_state->__pyx_number_tab[i]); }
+  for (int i=0; i<8; ++i) { Py_CLEAR(clear_module_state->__pyx_tuple[i]); }
+  for (int i=0; i<18; ++i) { Py_CLEAR(clear_module_state->__pyx_codeobj_tab[i]); }
+  for (int i=0; i<372; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<10; ++i) { Py_CLEAR(clear_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_clear_contents ### */
 /* CommonTypesMetaclass.module_state_clear */
 Py_CLEAR(clear_module_state->__pyx_CommonTypesMetaclassType);
@@ -3098,10 +3195,10 @@ static CYTHON_SMALL_CODE int __pyx_m_traverse(PyObject *m, visitproc visit, void
   __Pyx_VISIT_CONST(traverse_module_state->__pyx_empty_unicode);
   Py_VISIT(traverse_module_state->__pyx_ptype_11ram_booster_12disk_cleaner___pyx_scope_struct__genexpr);
   Py_VISIT(traverse_module_state->__pyx_type_11ram_booster_12disk_cleaner___pyx_scope_struct__genexpr);
-  for (int i=0; i<5; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_tuple[i]); }
-  for (int i=0; i<17; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<309; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
-  for (int i=0; i<9; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_number_tab[i]); }
+  for (int i=0; i<8; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_tuple[i]); }
+  for (int i=0; i<18; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_codeobj_tab[i]); }
+  for (int i=0; i<372; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<10; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_traverse_contents ### */
 /* CommonTypesMetaclass.module_state_traverse */
 Py_VISIT(traverse_module_state->__pyx_CommonTypesMetaclassType);
@@ -7458,29 +7555,1568 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_14deep_disk_clean(CYTHON_
 /* "ram_booster/disk_cleaner.py":173
  * #  INSTALLED APPLICATIONS AUDITOR & UNINSTALLER
  * 
- * def get_installed_apps():             # <<<<<<<<<<<<<<
- *     """
- *     Audit and list all installed applications on Windows with estimated size, publisher, and uninstall string.
+ * def _extract_app_icon_b64(icon_path):             # <<<<<<<<<<<<<<
+ *     """Extract real high-res 32x32 PNG Base64 icon from EXE, ICO or DisplayIcon path."""
+ *     if not icon_path or not isinstance(icon_path, str):
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_17get_installed_apps(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-PyDoc_STRVAR(__pyx_doc_11ram_booster_12disk_cleaner_16get_installed_apps, "\n    Audit and list all installed applications on Windows with estimated size, publisher, and uninstall string.\n    ");
-static PyMethodDef __pyx_mdef_11ram_booster_12disk_cleaner_17get_installed_apps = {"get_installed_apps", (PyCFunction)__pyx_pw_11ram_booster_12disk_cleaner_17get_installed_apps, METH_NOARGS, __pyx_doc_11ram_booster_12disk_cleaner_16get_installed_apps};
-static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_17get_installed_apps(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_17_extract_app_icon_b64(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+); /*proto*/
+PyDoc_STRVAR(__pyx_doc_11ram_booster_12disk_cleaner_16_extract_app_icon_b64, "Extract real high-res 32x32 PNG Base64 icon from EXE, ICO or DisplayIcon path.");
+static PyMethodDef __pyx_mdef_11ram_booster_12disk_cleaner_17_extract_app_icon_b64 = {"_extract_app_icon_b64", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_11ram_booster_12disk_cleaner_17_extract_app_icon_b64, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_11ram_booster_12disk_cleaner_16_extract_app_icon_b64};
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_17_extract_app_icon_b64(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+) {
+  PyObject *__pyx_v_icon_path = 0;
+  #if !CYTHON_METH_FASTCALL
+  CYTHON_UNUSED Py_ssize_t __pyx_nargs;
+  #endif
+  CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
+  PyObject* values[1] = {0};
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("_extract_app_icon_b64 (wrapper)", 0);
+  #if !CYTHON_METH_FASTCALL
+  #if CYTHON_ASSUME_SAFE_SIZE
+  __pyx_nargs = PyTuple_GET_SIZE(__pyx_args);
+  #else
+  __pyx_nargs = PyTuple_Size(__pyx_args); if (unlikely(__pyx_nargs < 0)) return NULL;
+  #endif
+  #endif
+  __pyx_kwvalues = __Pyx_KwValues_FASTCALL(__pyx_args, __pyx_nargs);
+  {
+    PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_icon_path,0};
+    const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 173, __pyx_L3_error)
+    if (__pyx_kwds_len > 0) {
+      switch (__pyx_nargs) {
+        case  1:
+        values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 173, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      const Py_ssize_t kwd_pos_args = __pyx_nargs;
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "_extract_app_icon_b64", 0) < (0)) __PYX_ERR(0, 173, __pyx_L3_error)
+      for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("_extract_app_icon_b64", 1, 1, 1, i); __PYX_ERR(0, 173, __pyx_L3_error) }
+      }
+    } else if (unlikely(__pyx_nargs != 1)) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 173, __pyx_L3_error)
+    }
+    __pyx_v_icon_path = values[0];
+  }
+  goto __pyx_L6_skip;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("_extract_app_icon_b64", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 173, __pyx_L3_error)
+  __pyx_L6_skip:;
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __Pyx_AddTraceback("ram_booster.disk_cleaner._extract_app_icon_b64", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_11ram_booster_12disk_cleaner_16_extract_app_icon_b64(__pyx_self, __pyx_v_icon_path);
+
+  /* function exit code */
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16_extract_app_icon_b64(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_icon_path) {
+  PyObject *__pyx_v_clean_path = NULL;
+  PyObject *__pyx_v_exes = NULL;
+  PyObject *__pyx_v_f = NULL;
+  PyObject *__pyx_v_base64 = NULL;
+  PyObject *__pyx_v_win32gui = NULL;
+  PyObject *__pyx_v_win32ui = NULL;
+  PyObject *__pyx_v_win32con = NULL;
+  PyObject *__pyx_v_io = NULL;
+  PyObject *__pyx_v_Image = NULL;
+  PyObject *__pyx_v_large = NULL;
+  PyObject *__pyx_v_small = NULL;
+  PyObject *__pyx_v_hicon = NULL;
+  PyObject *__pyx_v_hdc = NULL;
+  PyObject *__pyx_v_hbmp = NULL;
+  PyObject *__pyx_v_hdc_mem = NULL;
+  CYTHON_UNUSED PyObject *__pyx_v_bmpinfo = NULL;
+  PyObject *__pyx_v_bmpbits = NULL;
+  PyObject *__pyx_v_im = NULL;
+  PyObject *__pyx_v_h = NULL;
+  PyObject *__pyx_v_buf = NULL;
+  PyObject *__pyx_8genexpr1__pyx_v_f = NULL;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  int __pyx_t_1;
+  int __pyx_t_2;
+  int __pyx_t_3;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  PyObject *__pyx_t_7 = NULL;
+  PyObject *__pyx_t_8 = NULL;
+  PyObject *__pyx_t_9 = NULL;
+  PyObject *__pyx_t_10 = NULL;
+  PyObject *__pyx_t_11 = NULL;
+  PyObject *__pyx_t_12 = NULL;
+  size_t __pyx_t_13;
+  Py_ssize_t __pyx_t_14;
+  PyObject *(*__pyx_t_15)(PyObject *);
+  PyObject *__pyx_t_16 = NULL;
+  PyObject *__pyx_t_17 = NULL;
+  PyObject *__pyx_t_18 = NULL;
+  PyObject *__pyx_t_19 = NULL;
+  PyObject *__pyx_t_20 = NULL;
+  PyObject *(*__pyx_t_21)(PyObject *);
+  int __pyx_t_22;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("_extract_app_icon_b64", 0);
+
+  /* "ram_booster/disk_cleaner.py":175
+ * def _extract_app_icon_b64(icon_path):
+ *     """Extract real high-res 32x32 PNG Base64 icon from EXE, ICO or DisplayIcon path."""
+ *     if not icon_path or not isinstance(icon_path, str):             # <<<<<<<<<<<<<<
+ *         return ""
+ *     try:
+*/
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_icon_path); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 175, __pyx_L1_error)
+  __pyx_t_3 = (!__pyx_t_2);
+  if (!__pyx_t_3) {
+  } else {
+    __pyx_t_1 = __pyx_t_3;
+    goto __pyx_L4_bool_binop_done;
+  }
+  __pyx_t_3 = PyUnicode_Check(__pyx_v_icon_path); 
+  __pyx_t_2 = (!__pyx_t_3);
+  __pyx_t_1 = __pyx_t_2;
+  __pyx_L4_bool_binop_done:;
+  if (__pyx_t_1) {
+
+    /* "ram_booster/disk_cleaner.py":176
+ *     """Extract real high-res 32x32 PNG Base64 icon from EXE, ICO or DisplayIcon path."""
+ *     if not icon_path or not isinstance(icon_path, str):
+ *         return ""             # <<<<<<<<<<<<<<
+ *     try:
+ *         clean_path = icon_path.strip('"\'').split(',')[0].strip()
+*/
+    __Pyx_XDECREF(__pyx_r);
+    __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_);
+    __pyx_r = __pyx_mstate_global->__pyx_kp_u_;
+    goto __pyx_L0;
+
+    /* "ram_booster/disk_cleaner.py":175
+ * def _extract_app_icon_b64(icon_path):
+ *     """Extract real high-res 32x32 PNG Base64 icon from EXE, ICO or DisplayIcon path."""
+ *     if not icon_path or not isinstance(icon_path, str):             # <<<<<<<<<<<<<<
+ *         return ""
+ *     try:
+*/
+  }
+
+  /* "ram_booster/disk_cleaner.py":177
+ *     if not icon_path or not isinstance(icon_path, str):
+ *         return ""
+ *     try:             # <<<<<<<<<<<<<<
+ *         clean_path = icon_path.strip('"\'').split(',')[0].strip()
+ *         if not os.path.exists(clean_path):
+*/
+  {
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    __Pyx_ExceptionSave(&__pyx_t_4, &__pyx_t_5, &__pyx_t_6);
+    __Pyx_XGOTREF(__pyx_t_4);
+    __Pyx_XGOTREF(__pyx_t_5);
+    __Pyx_XGOTREF(__pyx_t_6);
+    /*try:*/ {
+
+      /* "ram_booster/disk_cleaner.py":178
+ *         return ""
+ *     try:
+ *         clean_path = icon_path.strip('"\'').split(',')[0].strip()             # <<<<<<<<<<<<<<
+ *         if not os.path.exists(clean_path):
+ *             if os.path.isdir(icon_path):
+*/
+      __pyx_t_12 = __pyx_v_icon_path;
+      __Pyx_INCREF(__pyx_t_12);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_12, __pyx_mstate_global->__pyx_kp_u__2};
+        __pyx_t_11 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_strip, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
+        if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 178, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_11);
+      }
+      __pyx_t_10 = __pyx_t_11;
+      __Pyx_INCREF(__pyx_t_10);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_10, __pyx_mstate_global->__pyx_kp_u__3};
+        __pyx_t_9 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_split, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
+        __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+        if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 178, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_9);
+      }
+      __pyx_t_11 = __Pyx_GetItemInt(__pyx_t_9, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 1, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 178, __pyx_L6_error)
+      __Pyx_GOTREF(__pyx_t_11);
+      __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
+      __pyx_t_8 = __pyx_t_11;
+      __Pyx_INCREF(__pyx_t_8);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_8, NULL};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_strip, __pyx_callargs+__pyx_t_13, (1-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 178, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __pyx_v_clean_path = __pyx_t_7;
+      __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":179
+ *     try:
+ *         clean_path = icon_path.strip('"\'').split(',')[0].strip()
+ *         if not os.path.exists(clean_path):             # <<<<<<<<<<<<<<
+ *             if os.path.isdir(icon_path):
+ *                 exes = [os.path.join(icon_path, f) for f in os.listdir(icon_path) if f.lower().endswith(".exe")]
+*/
+      __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 179, __pyx_L6_error)
+      __Pyx_GOTREF(__pyx_t_8);
+      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 179, __pyx_L6_error)
+      __Pyx_GOTREF(__pyx_t_9);
+      __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __pyx_t_11 = __pyx_t_9;
+      __Pyx_INCREF(__pyx_t_11);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_11, __pyx_v_clean_path};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_exists, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+        __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 179, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 179, __pyx_L6_error)
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __pyx_t_2 = (!__pyx_t_1);
+      if (__pyx_t_2) {
+
+        /* "ram_booster/disk_cleaner.py":180
+ *         clean_path = icon_path.strip('"\'').split(',')[0].strip()
+ *         if not os.path.exists(clean_path):
+ *             if os.path.isdir(icon_path):             # <<<<<<<<<<<<<<
+ *                 exes = [os.path.join(icon_path, f) for f in os.listdir(icon_path) if f.lower().endswith(".exe")]
+ *                 if exes:
+*/
+        __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 180, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_11);
+        __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 180, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_8);
+        __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+        __pyx_t_9 = __pyx_t_8;
+        __Pyx_INCREF(__pyx_t_9);
+        __pyx_t_13 = 0;
+        {
+          PyObject *__pyx_callargs[2] = {__pyx_t_9, __pyx_v_icon_path};
+          __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_isdir, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+          __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+          if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 180, __pyx_L6_error)
+          __Pyx_GOTREF(__pyx_t_7);
+        }
+        __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 180, __pyx_L6_error)
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+        if (__pyx_t_2) {
+
+          /* "ram_booster/disk_cleaner.py":181
+ *         if not os.path.exists(clean_path):
+ *             if os.path.isdir(icon_path):
+ *                 exes = [os.path.join(icon_path, f) for f in os.listdir(icon_path) if f.lower().endswith(".exe")]             # <<<<<<<<<<<<<<
+ *                 if exes:
+ *                     clean_path = exes[0]
+*/
+          { /* enter inner scope */
+            __pyx_t_7 = PyList_New(0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 181, __pyx_L16_error)
+            __Pyx_GOTREF(__pyx_t_7);
+            __pyx_t_9 = NULL;
+            __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 181, __pyx_L16_error)
+            __Pyx_GOTREF(__pyx_t_11);
+            __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_listdir); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 181, __pyx_L16_error)
+            __Pyx_GOTREF(__pyx_t_10);
+            __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+            __pyx_t_13 = 1;
+            #if CYTHON_UNPACK_METHODS
+            if (unlikely(PyMethod_Check(__pyx_t_10))) {
+              __pyx_t_9 = PyMethod_GET_SELF(__pyx_t_10);
+              assert(__pyx_t_9);
+              PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_10);
+              __Pyx_INCREF(__pyx_t_9);
+              __Pyx_INCREF(__pyx__function);
+              __Pyx_DECREF_SET(__pyx_t_10, __pyx__function);
+              __pyx_t_13 = 0;
+            }
+            #endif
+            {
+              PyObject *__pyx_callargs[2] = {__pyx_t_9, __pyx_v_icon_path};
+              __pyx_t_8 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_10, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (__pyx_t_13*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+              __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+              __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
+              if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 181, __pyx_L16_error)
+              __Pyx_GOTREF(__pyx_t_8);
+            }
+            if (likely(PyList_CheckExact(__pyx_t_8)) || PyTuple_CheckExact(__pyx_t_8)) {
+              __pyx_t_10 = __pyx_t_8; __Pyx_INCREF(__pyx_t_10);
+              __pyx_t_14 = 0;
+              __pyx_t_15 = NULL;
+            } else {
+              __pyx_t_14 = -1; __pyx_t_10 = PyObject_GetIter(__pyx_t_8); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 181, __pyx_L16_error)
+              __Pyx_GOTREF(__pyx_t_10);
+              __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_10); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 181, __pyx_L16_error)
+            }
+            __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+            for (;;) {
+              if (likely(!__pyx_t_15)) {
+                if (likely(PyList_CheckExact(__pyx_t_10))) {
+                  {
+                    Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_10);
+                    #if !CYTHON_ASSUME_SAFE_SIZE
+                    if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 181, __pyx_L16_error)
+                    #endif
+                    if (__pyx_t_14 >= __pyx_temp) break;
+                  }
+                  __pyx_t_8 = __Pyx_PyList_GetItemRefFast(__pyx_t_10, __pyx_t_14, __Pyx_ReferenceSharing_OwnStrongReference);
+                  ++__pyx_t_14;
+                } else {
+                  {
+                    Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_10);
+                    #if !CYTHON_ASSUME_SAFE_SIZE
+                    if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 181, __pyx_L16_error)
+                    #endif
+                    if (__pyx_t_14 >= __pyx_temp) break;
+                  }
+                  #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                  __pyx_t_8 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_10, __pyx_t_14));
+                  #else
+                  __pyx_t_8 = __Pyx_PySequence_ITEM(__pyx_t_10, __pyx_t_14);
+                  #endif
+                  ++__pyx_t_14;
+                }
+                if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 181, __pyx_L16_error)
+              } else {
+                __pyx_t_8 = __pyx_t_15(__pyx_t_10);
+                if (unlikely(!__pyx_t_8)) {
+                  PyObject* exc_type = PyErr_Occurred();
+                  if (exc_type) {
+                    if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 181, __pyx_L16_error)
+                    PyErr_Clear();
+                  }
+                  break;
+                }
+              }
+              __Pyx_GOTREF(__pyx_t_8);
+              __Pyx_XDECREF_SET(__pyx_8genexpr1__pyx_v_f, __pyx_t_8);
+              __pyx_t_8 = 0;
+              __pyx_t_12 = __pyx_8genexpr1__pyx_v_f;
+              __Pyx_INCREF(__pyx_t_12);
+              __pyx_t_13 = 0;
+              {
+                PyObject *__pyx_callargs[2] = {__pyx_t_12, NULL};
+                __pyx_t_11 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_lower, __pyx_callargs+__pyx_t_13, (1-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
+                if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 181, __pyx_L16_error)
+                __Pyx_GOTREF(__pyx_t_11);
+              }
+              __pyx_t_9 = __pyx_t_11;
+              __Pyx_INCREF(__pyx_t_9);
+              __pyx_t_13 = 0;
+              {
+                PyObject *__pyx_callargs[2] = {__pyx_t_9, __pyx_mstate_global->__pyx_kp_u_exe};
+                __pyx_t_8 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_endswith, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+                __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+                if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 181, __pyx_L16_error)
+                __Pyx_GOTREF(__pyx_t_8);
+              }
+              __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_8); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 181, __pyx_L16_error)
+              __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+              if (__pyx_t_2) {
+                __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 181, __pyx_L16_error)
+                __Pyx_GOTREF(__pyx_t_9);
+                __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 181, __pyx_L16_error)
+                __Pyx_GOTREF(__pyx_t_12);
+                __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
+                __pyx_t_11 = __pyx_t_12;
+                __Pyx_INCREF(__pyx_t_11);
+                __pyx_t_13 = 0;
+                {
+                  PyObject *__pyx_callargs[3] = {__pyx_t_11, __pyx_v_icon_path, __pyx_8genexpr1__pyx_v_f};
+                  __pyx_t_8 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_13, (3-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                  __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+                  __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
+                  if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 181, __pyx_L16_error)
+                  __Pyx_GOTREF(__pyx_t_8);
+                }
+                if (unlikely(__Pyx_ListComp_Append(__pyx_t_7, (PyObject*)__pyx_t_8))) __PYX_ERR(0, 181, __pyx_L16_error)
+                __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+              }
+            }
+            __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
+            __Pyx_XDECREF(__pyx_8genexpr1__pyx_v_f); __pyx_8genexpr1__pyx_v_f = 0;
+            goto __pyx_L21_exit_scope;
+            __pyx_L16_error:;
+            __Pyx_XDECREF(__pyx_8genexpr1__pyx_v_f); __pyx_8genexpr1__pyx_v_f = 0;
+            goto __pyx_L6_error;
+            __pyx_L21_exit_scope:;
+          } /* exit inner scope */
+          __pyx_v_exes = ((PyObject*)__pyx_t_7);
+          __pyx_t_7 = 0;
+
+          /* "ram_booster/disk_cleaner.py":182
+ *             if os.path.isdir(icon_path):
+ *                 exes = [os.path.join(icon_path, f) for f in os.listdir(icon_path) if f.lower().endswith(".exe")]
+ *                 if exes:             # <<<<<<<<<<<<<<
+ *                     clean_path = exes[0]
+ *                 else:
+*/
+          {
+            Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_v_exes);
+            if (unlikely(((!CYTHON_ASSUME_SAFE_SIZE) && __pyx_temp < 0))) __PYX_ERR(0, 182, __pyx_L6_error)
+            __pyx_t_2 = (__pyx_temp != 0);
+          }
+
+          if (__pyx_t_2) {
+
+            /* "ram_booster/disk_cleaner.py":183
+ *                 exes = [os.path.join(icon_path, f) for f in os.listdir(icon_path) if f.lower().endswith(".exe")]
+ *                 if exes:
+ *                     clean_path = exes[0]             # <<<<<<<<<<<<<<
+ *                 else:
+ *                     return ""
+*/
+            __pyx_t_7 = __Pyx_GetItemInt_List(__pyx_v_exes, 0, long, 1, __Pyx_PyLong_From_long, 1, 0, 1, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 183, __pyx_L6_error)
+            __Pyx_GOTREF(__pyx_t_7);
+            __Pyx_DECREF_SET(__pyx_v_clean_path, __pyx_t_7);
+            __pyx_t_7 = 0;
+
+            /* "ram_booster/disk_cleaner.py":182
+ *             if os.path.isdir(icon_path):
+ *                 exes = [os.path.join(icon_path, f) for f in os.listdir(icon_path) if f.lower().endswith(".exe")]
+ *                 if exes:             # <<<<<<<<<<<<<<
+ *                     clean_path = exes[0]
+ *                 else:
+*/
+            goto __pyx_L22;
+          }
+
+          /* "ram_booster/disk_cleaner.py":185
+ *                     clean_path = exes[0]
+ *                 else:
+ *                     return ""             # <<<<<<<<<<<<<<
+ *             else:
+ *                 return ""
+*/
+          /*else*/ {
+            __Pyx_XDECREF(__pyx_r);
+            __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_);
+            __pyx_r = __pyx_mstate_global->__pyx_kp_u_;
+            goto __pyx_L10_try_return;
+          }
+          __pyx_L22:;
+
+          /* "ram_booster/disk_cleaner.py":180
+ *         clean_path = icon_path.strip('"\'').split(',')[0].strip()
+ *         if not os.path.exists(clean_path):
+ *             if os.path.isdir(icon_path):             # <<<<<<<<<<<<<<
+ *                 exes = [os.path.join(icon_path, f) for f in os.listdir(icon_path) if f.lower().endswith(".exe")]
+ *                 if exes:
+*/
+          goto __pyx_L13;
+        }
+
+        /* "ram_booster/disk_cleaner.py":187
+ *                     return ""
+ *             else:
+ *                 return ""             # <<<<<<<<<<<<<<
+ * 
+ *         if clean_path.lower().endswith((".png", ".ico")):
+*/
+        /*else*/ {
+          __Pyx_XDECREF(__pyx_r);
+          __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_);
+          __pyx_r = __pyx_mstate_global->__pyx_kp_u_;
+          goto __pyx_L10_try_return;
+        }
+        __pyx_L13:;
+
+        /* "ram_booster/disk_cleaner.py":179
+ *     try:
+ *         clean_path = icon_path.strip('"\'').split(',')[0].strip()
+ *         if not os.path.exists(clean_path):             # <<<<<<<<<<<<<<
+ *             if os.path.isdir(icon_path):
+ *                 exes = [os.path.join(icon_path, f) for f in os.listdir(icon_path) if f.lower().endswith(".exe")]
+*/
+      }
+
+      /* "ram_booster/disk_cleaner.py":189
+ *                 return ""
+ * 
+ *         if clean_path.lower().endswith((".png", ".ico")):             # <<<<<<<<<<<<<<
+ *             with open(clean_path, "rb") as f:
+ *                 import base64
+*/
+      __pyx_t_12 = __pyx_v_clean_path;
+      __Pyx_INCREF(__pyx_t_12);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_12, NULL};
+        __pyx_t_8 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_lower, __pyx_callargs+__pyx_t_13, (1-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
+        if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 189, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_8);
+      }
+      __pyx_t_10 = __pyx_t_8;
+      __Pyx_INCREF(__pyx_t_10);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_10, __pyx_mstate_global->__pyx_tuple[4]};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_endswith, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
+        __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 189, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 189, __pyx_L6_error)
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      if (__pyx_t_2) {
+
+        /* "ram_booster/disk_cleaner.py":190
+ * 
+ *         if clean_path.lower().endswith((".png", ".ico")):
+ *             with open(clean_path, "rb") as f:             # <<<<<<<<<<<<<<
+ *                 import base64
+ *                 return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+*/
+        /*with:*/ {
+          __pyx_t_8 = NULL;
+          __pyx_t_13 = 1;
+          {
+            PyObject *__pyx_callargs[3] = {__pyx_t_8, __pyx_v_clean_path, __pyx_mstate_global->__pyx_n_u_rb};
+            __pyx_t_7 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_open, __pyx_callargs+__pyx_t_13, (3-__pyx_t_13) | (__pyx_t_13*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+            if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 190, __pyx_L6_error)
+            __Pyx_GOTREF(__pyx_t_7);
+          }
+          __pyx_t_16 = __Pyx_PyObject_LookupSpecial(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_exit); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 190, __pyx_L6_error)
+          __Pyx_GOTREF(__pyx_t_16);
+          __pyx_t_10 = NULL;
+          __pyx_t_12 = __Pyx_PyObject_LookupSpecial(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_enter); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 190, __pyx_L24_error)
+          __Pyx_GOTREF(__pyx_t_12);
+          __pyx_t_13 = 1;
+          #if CYTHON_UNPACK_METHODS
+          if (likely(PyMethod_Check(__pyx_t_12))) {
+            __pyx_t_10 = PyMethod_GET_SELF(__pyx_t_12);
+            assert(__pyx_t_10);
+            PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_12);
+            __Pyx_INCREF(__pyx_t_10);
+            __Pyx_INCREF(__pyx__function);
+            __Pyx_DECREF_SET(__pyx_t_12, __pyx__function);
+            __pyx_t_13 = 0;
+          }
+          #endif
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_10, NULL};
+            __pyx_t_8 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_12, __pyx_callargs+__pyx_t_13, (1-__pyx_t_13) | (__pyx_t_13*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
+            __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
+            if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 190, __pyx_L24_error)
+            __Pyx_GOTREF(__pyx_t_8);
+          }
+          __pyx_t_12 = __pyx_t_8;
+          __pyx_t_8 = 0;
+          __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+          /*try:*/ {
+            {
+              __Pyx_PyThreadState_declare
+              __Pyx_PyThreadState_assign
+              __Pyx_ExceptionSave(&__pyx_t_17, &__pyx_t_18, &__pyx_t_19);
+              __Pyx_XGOTREF(__pyx_t_17);
+              __Pyx_XGOTREF(__pyx_t_18);
+              __Pyx_XGOTREF(__pyx_t_19);
+              /*try:*/ {
+                __pyx_v_f = __pyx_t_12;
+                __pyx_t_12 = 0;
+
+                /* "ram_booster/disk_cleaner.py":191
+ *         if clean_path.lower().endswith((".png", ".ico")):
+ *             with open(clean_path, "rb") as f:
+ *                 import base64             # <<<<<<<<<<<<<<
+ *                 return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+ * 
+*/
+                __pyx_t_20 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_base64, 0, 0, NULL, 0); if (unlikely(!__pyx_t_20)) __PYX_ERR(0, 191, __pyx_L28_error)
+                __pyx_t_12 = __pyx_t_20;
+                __Pyx_GOTREF(__pyx_t_12);
+                __pyx_v_base64 = __pyx_t_12;
+                __pyx_t_12 = 0;
+
+                /* "ram_booster/disk_cleaner.py":192
+ *             with open(clean_path, "rb") as f:
+ *                 import base64
+ *                 return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"             # <<<<<<<<<<<<<<
+ * 
+ *         import win32gui, win32ui, win32con, base64, io
+*/
+                __Pyx_XDECREF(__pyx_r);
+                __pyx_t_10 = __pyx_v_base64;
+                __Pyx_INCREF(__pyx_t_10);
+                __pyx_t_9 = __pyx_v_f;
+                __Pyx_INCREF(__pyx_t_9);
+                __pyx_t_13 = 0;
+                {
+                  PyObject *__pyx_callargs[2] = {__pyx_t_9, NULL};
+                  __pyx_t_11 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_read, __pyx_callargs+__pyx_t_13, (1-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                  __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+                  if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 192, __pyx_L28_error)
+                  __Pyx_GOTREF(__pyx_t_11);
+                }
+                __pyx_t_13 = 0;
+                {
+                  PyObject *__pyx_callargs[2] = {__pyx_t_10, __pyx_t_11};
+                  __pyx_t_8 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_b64encode, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                  __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
+                  __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+                  if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 192, __pyx_L28_error)
+                  __Pyx_GOTREF(__pyx_t_8);
+                }
+                __pyx_t_7 = __pyx_t_8;
+                __Pyx_INCREF(__pyx_t_7);
+                __pyx_t_13 = 0;
+                {
+                  PyObject *__pyx_callargs[2] = {__pyx_t_7, NULL};
+                  __pyx_t_12 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_decode, __pyx_callargs+__pyx_t_13, (1-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                  __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+                  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+                  if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 192, __pyx_L28_error)
+                  __Pyx_GOTREF(__pyx_t_12);
+                }
+                __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_t_12, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 192, __pyx_L28_error)
+                __Pyx_GOTREF(__pyx_t_8);
+                __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
+                __pyx_t_12 = __Pyx_PyUnicode_Concat(__pyx_mstate_global->__pyx_kp_u_data_image_png_base64, __pyx_t_8); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 192, __pyx_L28_error)
+                __Pyx_GOTREF(__pyx_t_12);
+                __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+                __pyx_r = __pyx_t_12;
+                __pyx_t_12 = 0;
+                goto __pyx_L32_try_return;
+
+                /* "ram_booster/disk_cleaner.py":190
+ * 
+ *         if clean_path.lower().endswith((".png", ".ico")):
+ *             with open(clean_path, "rb") as f:             # <<<<<<<<<<<<<<
+ *                 import base64
+ *                 return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+*/
+              }
+              __pyx_L28_error:;
+              __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
+              __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+              __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
+              __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+              __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+              __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+              /*except:*/ {
+                __Pyx_AddTraceback("ram_booster.disk_cleaner._extract_app_icon_b64", __pyx_clineno, __pyx_lineno, __pyx_filename);
+                if (__Pyx_GetException(&__pyx_t_12, &__pyx_t_8, &__pyx_t_7) < 0) __PYX_ERR(0, 190, __pyx_L30_except_error)
+                __Pyx_XGOTREF(__pyx_t_12);
+                __Pyx_XGOTREF(__pyx_t_8);
+                __Pyx_XGOTREF(__pyx_t_7);
+                __pyx_t_11 = PyTuple_Pack(3, __pyx_t_12, __pyx_t_8, __pyx_t_7); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 190, __pyx_L30_except_error)
+                __Pyx_GOTREF(__pyx_t_11);
+                __pyx_t_20 = __Pyx_PyObject_Call(__pyx_t_16, __pyx_t_11, NULL);
+                __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
+                __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+                if (unlikely(!__pyx_t_20)) __PYX_ERR(0, 190, __pyx_L30_except_error)
+                __Pyx_GOTREF(__pyx_t_20);
+                __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_20);
+                __Pyx_DECREF(__pyx_t_20); __pyx_t_20 = 0;
+                if (__pyx_t_2 < (0)) __PYX_ERR(0, 190, __pyx_L30_except_error)
+                __pyx_t_1 = (!__pyx_t_2);
+                if (unlikely(__pyx_t_1)) {
+                  __Pyx_GIVEREF(__pyx_t_12);
+                  __Pyx_GIVEREF(__pyx_t_8);
+                  __Pyx_XGIVEREF(__pyx_t_7);
+                  __Pyx_ErrRestoreWithState(__pyx_t_12, __pyx_t_8, __pyx_t_7);
+                  __pyx_t_12 = 0;  __pyx_t_8 = 0;  __pyx_t_7 = 0; 
+                  __PYX_ERR(0, 190, __pyx_L30_except_error)
+                }
+                __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
+                __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+                __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+                goto __pyx_L29_exception_handled;
+              }
+              __pyx_L30_except_error:;
+              __Pyx_XGIVEREF(__pyx_t_17);
+              __Pyx_XGIVEREF(__pyx_t_18);
+              __Pyx_XGIVEREF(__pyx_t_19);
+              __Pyx_ExceptionReset(__pyx_t_17, __pyx_t_18, __pyx_t_19);
+              goto __pyx_L6_error;
+              __pyx_L32_try_return:;
+              __Pyx_XGIVEREF(__pyx_t_17);
+              __Pyx_XGIVEREF(__pyx_t_18);
+              __Pyx_XGIVEREF(__pyx_t_19);
+              __Pyx_ExceptionReset(__pyx_t_17, __pyx_t_18, __pyx_t_19);
+              goto __pyx_L25_return;
+              __pyx_L29_exception_handled:;
+              __Pyx_XGIVEREF(__pyx_t_17);
+              __Pyx_XGIVEREF(__pyx_t_18);
+              __Pyx_XGIVEREF(__pyx_t_19);
+              __Pyx_ExceptionReset(__pyx_t_17, __pyx_t_18, __pyx_t_19);
+            }
+          }
+          /*finally:*/ {
+            /*normal exit:*/{
+              if (__pyx_t_16) {
+                __pyx_t_19 = __Pyx_PyObject_Call(__pyx_t_16, __pyx_mstate_global->__pyx_tuple[5], NULL);
+                __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
+                if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 190, __pyx_L6_error)
+                __Pyx_GOTREF(__pyx_t_19);
+                __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
+              }
+              goto __pyx_L27;
+            }
+            __pyx_L25_return: {
+              __pyx_t_19 = __pyx_r;
+              __pyx_r = 0;
+              if (__pyx_t_16) {
+                __pyx_t_18 = __Pyx_PyObject_Call(__pyx_t_16, __pyx_mstate_global->__pyx_tuple[5], NULL);
+                __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
+                if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 190, __pyx_L6_error)
+                __Pyx_GOTREF(__pyx_t_18);
+                __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
+              }
+              __pyx_r = __pyx_t_19;
+              __pyx_t_19 = 0;
+              goto __pyx_L10_try_return;
+            }
+            __pyx_L27:;
+          }
+          goto __pyx_L37;
+          __pyx_L24_error:;
+          __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
+          goto __pyx_L6_error;
+          __pyx_L37:;
+        }
+
+        /* "ram_booster/disk_cleaner.py":189
+ *                 return ""
+ * 
+ *         if clean_path.lower().endswith((".png", ".ico")):             # <<<<<<<<<<<<<<
+ *             with open(clean_path, "rb") as f:
+ *                 import base64
+*/
+      }
+
+      /* "ram_booster/disk_cleaner.py":194
+ *                 return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+ * 
+ *         import win32gui, win32ui, win32con, base64, io             # <<<<<<<<<<<<<<
+ *         from PIL import Image
+ * 
+*/
+      __pyx_t_16 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_win32gui, 0, 0, NULL, 0); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 194, __pyx_L6_error)
+      __pyx_t_7 = __pyx_t_16;
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_v_win32gui = __pyx_t_7;
+      __pyx_t_7 = 0;
+      __pyx_t_16 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_win32ui, 0, 0, NULL, 0); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 194, __pyx_L6_error)
+      __pyx_t_7 = __pyx_t_16;
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_v_win32ui = __pyx_t_7;
+      __pyx_t_7 = 0;
+      __pyx_t_16 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_win32con, 0, 0, NULL, 0); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 194, __pyx_L6_error)
+      __pyx_t_7 = __pyx_t_16;
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_v_win32con = __pyx_t_7;
+      __pyx_t_7 = 0;
+      __pyx_t_16 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_base64, 0, 0, NULL, 0); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 194, __pyx_L6_error)
+      __pyx_t_7 = __pyx_t_16;
+      __Pyx_GOTREF(__pyx_t_7);
+      __Pyx_XDECREF_SET(__pyx_v_base64, __pyx_t_7);
+      __pyx_t_7 = 0;
+      __pyx_t_16 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_io, 0, 0, NULL, 0); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 194, __pyx_L6_error)
+      __pyx_t_7 = __pyx_t_16;
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_v_io = __pyx_t_7;
+      __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":195
+ * 
+ *         import win32gui, win32ui, win32con, base64, io
+ *         from PIL import Image             # <<<<<<<<<<<<<<
+ * 
+ *         large, small = win32gui.ExtractIconEx(clean_path, 0)
+*/
+      {
+        PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_Image};
+        __pyx_t_16 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_PIL, __pyx_imported_names, 1, NULL, 0); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 195, __pyx_L6_error)
+      }
+      __pyx_t_7 = __pyx_t_16;
+      __Pyx_GOTREF(__pyx_t_7);
+      {
+        PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_Image};
+        __pyx_t_14 = 0; {
+          __pyx_t_8 = __Pyx_ImportFrom(__pyx_t_7, __pyx_imported_names[__pyx_t_14]); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 195, __pyx_L6_error)
+          __Pyx_GOTREF(__pyx_t_8);
+          switch (__pyx_t_14) {
+            case 0:
+            __Pyx_INCREF(__pyx_t_8);
+            __pyx_v_Image = __pyx_t_8;
+            break;
+            default:;
+          }
+          __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+        }
+      }
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":197
+ *         from PIL import Image
+ * 
+ *         large, small = win32gui.ExtractIconEx(clean_path, 0)             # <<<<<<<<<<<<<<
+ *         hicon = large[0] if large else (small[0] if small else None)
+ *         if not hicon:
+*/
+      __pyx_t_8 = __pyx_v_win32gui;
+      __Pyx_INCREF(__pyx_t_8);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[3] = {__pyx_t_8, __pyx_v_clean_path, __pyx_mstate_global->__pyx_int_0};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_ExtractIconEx, __pyx_callargs+__pyx_t_13, (3-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 197, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      if ((likely(PyTuple_CheckExact(__pyx_t_7))) || (PyList_CheckExact(__pyx_t_7))) {
+        PyObject* sequence = __pyx_t_7;
+        Py_ssize_t size = __Pyx_PySequence_SIZE(sequence);
+        if (unlikely(size != 2)) {
+          if (size > 2) __Pyx_RaiseTooManyValuesError(2);
+          else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
+          __PYX_ERR(0, 197, __pyx_L6_error)
+        }
+        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+        if (likely(PyTuple_CheckExact(sequence))) {
+          __pyx_t_8 = PyTuple_GET_ITEM(sequence, 0);
+          __Pyx_INCREF(__pyx_t_8);
+          __pyx_t_12 = PyTuple_GET_ITEM(sequence, 1);
+          __Pyx_INCREF(__pyx_t_12);
+        } else {
+          __pyx_t_8 = __Pyx_PyList_GetItemRefFast(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
+          if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 197, __pyx_L6_error)
+          __Pyx_XGOTREF(__pyx_t_8);
+          __pyx_t_12 = __Pyx_PyList_GetItemRefFast(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
+          if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 197, __pyx_L6_error)
+          __Pyx_XGOTREF(__pyx_t_12);
+        }
+        #else
+        __pyx_t_8 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 197, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_8);
+        __pyx_t_12 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 197, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_12);
+        #endif
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      } else {
+        Py_ssize_t index = -1;
+        __pyx_t_11 = PyObject_GetIter(__pyx_t_7); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 197, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_11);
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+        __pyx_t_21 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_11);
+        index = 0; __pyx_t_8 = __pyx_t_21(__pyx_t_11); if (unlikely(!__pyx_t_8)) goto __pyx_L38_unpacking_failed;
+        __Pyx_GOTREF(__pyx_t_8);
+        index = 1; __pyx_t_12 = __pyx_t_21(__pyx_t_11); if (unlikely(!__pyx_t_12)) goto __pyx_L38_unpacking_failed;
+        __Pyx_GOTREF(__pyx_t_12);
+        if (__Pyx_IternextUnpackEndCheck(__pyx_t_21(__pyx_t_11), 2) < (0)) __PYX_ERR(0, 197, __pyx_L6_error)
+        __pyx_t_21 = NULL;
+        __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+        goto __pyx_L39_unpacking_done;
+        __pyx_L38_unpacking_failed:;
+        __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+        __pyx_t_21 = NULL;
+        if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
+        __PYX_ERR(0, 197, __pyx_L6_error)
+        __pyx_L39_unpacking_done:;
+      }
+      __pyx_v_large = __pyx_t_8;
+      __pyx_t_8 = 0;
+      __pyx_v_small = __pyx_t_12;
+      __pyx_t_12 = 0;
+
+      /* "ram_booster/disk_cleaner.py":198
+ * 
+ *         large, small = win32gui.ExtractIconEx(clean_path, 0)
+ *         hicon = large[0] if large else (small[0] if small else None)             # <<<<<<<<<<<<<<
+ *         if not hicon:
+ *             return ""
+*/
+      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_large); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 198, __pyx_L6_error)
+      if (__pyx_t_1) {
+        __pyx_t_12 = __Pyx_GetItemInt(__pyx_v_large, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 1, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 198, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_12);
+        __pyx_t_7 = __pyx_t_12;
+        __pyx_t_12 = 0;
+      } else {
+        __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_small); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 198, __pyx_L6_error)
+        if (__pyx_t_2) {
+          __pyx_t_8 = __Pyx_GetItemInt(__pyx_v_small, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 1, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 198, __pyx_L6_error)
+          __Pyx_GOTREF(__pyx_t_8);
+          __pyx_t_12 = __pyx_t_8;
+          __pyx_t_8 = 0;
+        } else {
+          __Pyx_INCREF(Py_None);
+          __pyx_t_12 = Py_None;
+        }
+        __pyx_t_7 = __pyx_t_12;
+        __pyx_t_12 = 0;
+      }
+      __pyx_v_hicon = __pyx_t_7;
+      __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":199
+ *         large, small = win32gui.ExtractIconEx(clean_path, 0)
+ *         hicon = large[0] if large else (small[0] if small else None)
+ *         if not hicon:             # <<<<<<<<<<<<<<
+ *             return ""
+ * 
+*/
+      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_hicon); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 199, __pyx_L6_error)
+      __pyx_t_2 = (!__pyx_t_1);
+      if (__pyx_t_2) {
+
+        /* "ram_booster/disk_cleaner.py":200
+ *         hicon = large[0] if large else (small[0] if small else None)
+ *         if not hicon:
+ *             return ""             # <<<<<<<<<<<<<<
+ * 
+ *         hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
+*/
+        __Pyx_XDECREF(__pyx_r);
+        __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_);
+        __pyx_r = __pyx_mstate_global->__pyx_kp_u_;
+        goto __pyx_L10_try_return;
+
+        /* "ram_booster/disk_cleaner.py":199
+ *         large, small = win32gui.ExtractIconEx(clean_path, 0)
+ *         hicon = large[0] if large else (small[0] if small else None)
+ *         if not hicon:             # <<<<<<<<<<<<<<
+ *             return ""
+ * 
+*/
+      }
+
+      /* "ram_booster/disk_cleaner.py":202
+ *             return ""
+ * 
+ *         hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))             # <<<<<<<<<<<<<<
+ *         hbmp = win32ui.CreateBitmap()
+ *         hbmp.CreateCompatibleBitmap(hdc, 32, 32)
+*/
+      __pyx_t_12 = __pyx_v_win32ui;
+      __Pyx_INCREF(__pyx_t_12);
+      __pyx_t_11 = __pyx_v_win32gui;
+      __Pyx_INCREF(__pyx_t_11);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_11, __pyx_mstate_global->__pyx_int_0};
+        __pyx_t_8 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_GetDC, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+        if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 202, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_8);
+      }
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_12, __pyx_t_8};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_CreateDCFromHandle, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
+        __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 202, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __pyx_v_hdc = __pyx_t_7;
+      __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":203
+ * 
+ *         hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
+ *         hbmp = win32ui.CreateBitmap()             # <<<<<<<<<<<<<<
+ *         hbmp.CreateCompatibleBitmap(hdc, 32, 32)
+ *         hdc_mem = hdc.CreateCompatibleDC()
+*/
+      __pyx_t_8 = __pyx_v_win32ui;
+      __Pyx_INCREF(__pyx_t_8);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_8, NULL};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_CreateBitmap, __pyx_callargs+__pyx_t_13, (1-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 203, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __pyx_v_hbmp = __pyx_t_7;
+      __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":204
+ *         hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
+ *         hbmp = win32ui.CreateBitmap()
+ *         hbmp.CreateCompatibleBitmap(hdc, 32, 32)             # <<<<<<<<<<<<<<
+ *         hdc_mem = hdc.CreateCompatibleDC()
+ *         hdc_mem.SelectObject(hbmp)
+*/
+      __pyx_t_8 = __pyx_v_hbmp;
+      __Pyx_INCREF(__pyx_t_8);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[4] = {__pyx_t_8, __pyx_v_hdc, __pyx_mstate_global->__pyx_int_32, __pyx_mstate_global->__pyx_int_32};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_CreateCompatibleBitmap, __pyx_callargs+__pyx_t_13, (4-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 204, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":205
+ *         hbmp = win32ui.CreateBitmap()
+ *         hbmp.CreateCompatibleBitmap(hdc, 32, 32)
+ *         hdc_mem = hdc.CreateCompatibleDC()             # <<<<<<<<<<<<<<
+ *         hdc_mem.SelectObject(hbmp)
+ * 
+*/
+      __pyx_t_8 = __pyx_v_hdc;
+      __Pyx_INCREF(__pyx_t_8);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_8, NULL};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_CreateCompatibleDC, __pyx_callargs+__pyx_t_13, (1-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 205, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __pyx_v_hdc_mem = __pyx_t_7;
+      __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":206
+ *         hbmp.CreateCompatibleBitmap(hdc, 32, 32)
+ *         hdc_mem = hdc.CreateCompatibleDC()
+ *         hdc_mem.SelectObject(hbmp)             # <<<<<<<<<<<<<<
+ * 
+ *         win32gui.DrawIconEx(hdc_mem.GetHandleOutput(), 0, 0, hicon, 32, 32, 0, 0, win32con.DI_NORMAL)
+*/
+      __pyx_t_8 = __pyx_v_hdc_mem;
+      __Pyx_INCREF(__pyx_t_8);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_8, __pyx_v_hbmp};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_SelectObject, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 206, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":208
+ *         hdc_mem.SelectObject(hbmp)
+ * 
+ *         win32gui.DrawIconEx(hdc_mem.GetHandleOutput(), 0, 0, hicon, 32, 32, 0, 0, win32con.DI_NORMAL)             # <<<<<<<<<<<<<<
+ *         bmpinfo = hbmp.GetInfo()
+ *         bmpbits = hbmp.GetBitmapBits(True)
+*/
+      __pyx_t_8 = __pyx_v_win32gui;
+      __Pyx_INCREF(__pyx_t_8);
+      __pyx_t_11 = __pyx_v_hdc_mem;
+      __Pyx_INCREF(__pyx_t_11);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_11, NULL};
+        __pyx_t_12 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_GetHandleOutput, __pyx_callargs+__pyx_t_13, (1-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+        if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 208, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_12);
+      }
+      __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_win32con, __pyx_mstate_global->__pyx_n_u_DI_NORMAL); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 208, __pyx_L6_error)
+      __Pyx_GOTREF(__pyx_t_11);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[10] = {__pyx_t_8, __pyx_t_12, __pyx_mstate_global->__pyx_int_0, __pyx_mstate_global->__pyx_int_0, __pyx_v_hicon, __pyx_mstate_global->__pyx_int_32, __pyx_mstate_global->__pyx_int_32, __pyx_mstate_global->__pyx_int_0, __pyx_mstate_global->__pyx_int_0, __pyx_t_11};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_DrawIconEx, __pyx_callargs+__pyx_t_13, (10-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
+        __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 208, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":209
+ * 
+ *         win32gui.DrawIconEx(hdc_mem.GetHandleOutput(), 0, 0, hicon, 32, 32, 0, 0, win32con.DI_NORMAL)
+ *         bmpinfo = hbmp.GetInfo()             # <<<<<<<<<<<<<<
+ *         bmpbits = hbmp.GetBitmapBits(True)
+ * 
+*/
+      __pyx_t_11 = __pyx_v_hbmp;
+      __Pyx_INCREF(__pyx_t_11);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_11, NULL};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_GetInfo, __pyx_callargs+__pyx_t_13, (1-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 209, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __pyx_v_bmpinfo = __pyx_t_7;
+      __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":210
+ *         win32gui.DrawIconEx(hdc_mem.GetHandleOutput(), 0, 0, hicon, 32, 32, 0, 0, win32con.DI_NORMAL)
+ *         bmpinfo = hbmp.GetInfo()
+ *         bmpbits = hbmp.GetBitmapBits(True)             # <<<<<<<<<<<<<<
+ * 
+ *         im = Image.frombuffer('RGBA', (32, 32), bmpbits, 'raw', 'BGRA', 0, 1)
+*/
+      __pyx_t_11 = __pyx_v_hbmp;
+      __Pyx_INCREF(__pyx_t_11);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_11, Py_True};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_GetBitmapBits, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 210, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __pyx_v_bmpbits = __pyx_t_7;
+      __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":212
+ *         bmpbits = hbmp.GetBitmapBits(True)
+ * 
+ *         im = Image.frombuffer('RGBA', (32, 32), bmpbits, 'raw', 'BGRA', 0, 1)             # <<<<<<<<<<<<<<
+ * 
+ *         for h in large: win32gui.DestroyIcon(h)
+*/
+      __pyx_t_11 = __pyx_v_Image;
+      __Pyx_INCREF(__pyx_t_11);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[8] = {__pyx_t_11, __pyx_mstate_global->__pyx_n_u_RGBA, __pyx_mstate_global->__pyx_tuple[6], __pyx_v_bmpbits, __pyx_mstate_global->__pyx_n_u_raw, __pyx_mstate_global->__pyx_n_u_BGRA, __pyx_mstate_global->__pyx_int_0, __pyx_mstate_global->__pyx_int_1};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_frombuffer, __pyx_callargs+__pyx_t_13, (8-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 212, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __pyx_v_im = __pyx_t_7;
+      __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":214
+ *         im = Image.frombuffer('RGBA', (32, 32), bmpbits, 'raw', 'BGRA', 0, 1)
+ * 
+ *         for h in large: win32gui.DestroyIcon(h)             # <<<<<<<<<<<<<<
+ *         for h in small: win32gui.DestroyIcon(h)
+ * 
+*/
+      if (likely(PyList_CheckExact(__pyx_v_large)) || PyTuple_CheckExact(__pyx_v_large)) {
+        __pyx_t_7 = __pyx_v_large; __Pyx_INCREF(__pyx_t_7);
+        __pyx_t_14 = 0;
+        __pyx_t_15 = NULL;
+      } else {
+        __pyx_t_14 = -1; __pyx_t_7 = PyObject_GetIter(__pyx_v_large); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 214, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_7); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 214, __pyx_L6_error)
+      }
+      for (;;) {
+        if (likely(!__pyx_t_15)) {
+          if (likely(PyList_CheckExact(__pyx_t_7))) {
+            {
+              Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_7);
+              #if !CYTHON_ASSUME_SAFE_SIZE
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 214, __pyx_L6_error)
+              #endif
+              if (__pyx_t_14 >= __pyx_temp) break;
+            }
+            __pyx_t_11 = __Pyx_PyList_GetItemRefFast(__pyx_t_7, __pyx_t_14, __Pyx_ReferenceSharing_OwnStrongReference);
+            ++__pyx_t_14;
+          } else {
+            {
+              Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_7);
+              #if !CYTHON_ASSUME_SAFE_SIZE
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 214, __pyx_L6_error)
+              #endif
+              if (__pyx_t_14 >= __pyx_temp) break;
+            }
+            #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+            __pyx_t_11 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_7, __pyx_t_14));
+            #else
+            __pyx_t_11 = __Pyx_PySequence_ITEM(__pyx_t_7, __pyx_t_14);
+            #endif
+            ++__pyx_t_14;
+          }
+          if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 214, __pyx_L6_error)
+        } else {
+          __pyx_t_11 = __pyx_t_15(__pyx_t_7);
+          if (unlikely(!__pyx_t_11)) {
+            PyObject* exc_type = PyErr_Occurred();
+            if (exc_type) {
+              if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 214, __pyx_L6_error)
+              PyErr_Clear();
+            }
+            break;
+          }
+        }
+        __Pyx_GOTREF(__pyx_t_11);
+        __Pyx_XDECREF_SET(__pyx_v_h, __pyx_t_11);
+        __pyx_t_11 = 0;
+        __pyx_t_12 = __pyx_v_win32gui;
+        __Pyx_INCREF(__pyx_t_12);
+        __pyx_t_13 = 0;
+        {
+          PyObject *__pyx_callargs[2] = {__pyx_t_12, __pyx_v_h};
+          __pyx_t_11 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_DestroyIcon, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
+          if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 214, __pyx_L6_error)
+          __Pyx_GOTREF(__pyx_t_11);
+        }
+        __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+      }
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":215
+ * 
+ *         for h in large: win32gui.DestroyIcon(h)
+ *         for h in small: win32gui.DestroyIcon(h)             # <<<<<<<<<<<<<<
+ * 
+ *         buf = io.BytesIO()
+*/
+      if (likely(PyList_CheckExact(__pyx_v_small)) || PyTuple_CheckExact(__pyx_v_small)) {
+        __pyx_t_7 = __pyx_v_small; __Pyx_INCREF(__pyx_t_7);
+        __pyx_t_14 = 0;
+        __pyx_t_15 = NULL;
+      } else {
+        __pyx_t_14 = -1; __pyx_t_7 = PyObject_GetIter(__pyx_v_small); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 215, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_7); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 215, __pyx_L6_error)
+      }
+      for (;;) {
+        if (likely(!__pyx_t_15)) {
+          if (likely(PyList_CheckExact(__pyx_t_7))) {
+            {
+              Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_7);
+              #if !CYTHON_ASSUME_SAFE_SIZE
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 215, __pyx_L6_error)
+              #endif
+              if (__pyx_t_14 >= __pyx_temp) break;
+            }
+            __pyx_t_11 = __Pyx_PyList_GetItemRefFast(__pyx_t_7, __pyx_t_14, __Pyx_ReferenceSharing_OwnStrongReference);
+            ++__pyx_t_14;
+          } else {
+            {
+              Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_7);
+              #if !CYTHON_ASSUME_SAFE_SIZE
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 215, __pyx_L6_error)
+              #endif
+              if (__pyx_t_14 >= __pyx_temp) break;
+            }
+            #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+            __pyx_t_11 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_7, __pyx_t_14));
+            #else
+            __pyx_t_11 = __Pyx_PySequence_ITEM(__pyx_t_7, __pyx_t_14);
+            #endif
+            ++__pyx_t_14;
+          }
+          if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 215, __pyx_L6_error)
+        } else {
+          __pyx_t_11 = __pyx_t_15(__pyx_t_7);
+          if (unlikely(!__pyx_t_11)) {
+            PyObject* exc_type = PyErr_Occurred();
+            if (exc_type) {
+              if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 215, __pyx_L6_error)
+              PyErr_Clear();
+            }
+            break;
+          }
+        }
+        __Pyx_GOTREF(__pyx_t_11);
+        __Pyx_XDECREF_SET(__pyx_v_h, __pyx_t_11);
+        __pyx_t_11 = 0;
+        __pyx_t_12 = __pyx_v_win32gui;
+        __Pyx_INCREF(__pyx_t_12);
+        __pyx_t_13 = 0;
+        {
+          PyObject *__pyx_callargs[2] = {__pyx_t_12, __pyx_v_h};
+          __pyx_t_11 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_DestroyIcon, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
+          if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 215, __pyx_L6_error)
+          __Pyx_GOTREF(__pyx_t_11);
+        }
+        __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+      }
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":217
+ *         for h in small: win32gui.DestroyIcon(h)
+ * 
+ *         buf = io.BytesIO()             # <<<<<<<<<<<<<<
+ *         im.save(buf, format="PNG")
+ *         return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
+*/
+      __pyx_t_11 = __pyx_v_io;
+      __Pyx_INCREF(__pyx_t_11);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_11, NULL};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_BytesIO, __pyx_callargs+__pyx_t_13, (1-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 217, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __pyx_v_buf = __pyx_t_7;
+      __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":218
+ * 
+ *         buf = io.BytesIO()
+ *         im.save(buf, format="PNG")             # <<<<<<<<<<<<<<
+ *         return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
+ *     except Exception:
+*/
+      __pyx_t_11 = __pyx_v_im;
+      __Pyx_INCREF(__pyx_t_11);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 1 : 0)] = {__pyx_t_11, __pyx_v_buf};
+        __pyx_t_12 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 218, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_12);
+        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_format, __pyx_mstate_global->__pyx_n_u_PNG, __pyx_t_12, __pyx_callargs+2, 0) < (0)) __PYX_ERR(0, 218, __pyx_L6_error)
+        __pyx_t_7 = __Pyx_Object_VectorcallMethod_CallFromBuilder((PyObject*)__pyx_mstate_global->__pyx_n_u_save, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_12);
+        __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+        __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 218, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+
+      /* "ram_booster/disk_cleaner.py":219
+ *         buf = io.BytesIO()
+ *         im.save(buf, format="PNG")
+ *         return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"             # <<<<<<<<<<<<<<
+ *     except Exception:
+ *         return ""
+*/
+      __Pyx_XDECREF(__pyx_r);
+      __pyx_t_8 = __pyx_v_base64;
+      __Pyx_INCREF(__pyx_t_8);
+      __pyx_t_9 = __pyx_v_buf;
+      __Pyx_INCREF(__pyx_t_9);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_9, NULL};
+        __pyx_t_10 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_getvalue, __pyx_callargs+__pyx_t_13, (1-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+        if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 219, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_10);
+      }
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_8, __pyx_t_10};
+        __pyx_t_11 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_b64encode, __pyx_callargs+__pyx_t_13, (2-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
+        if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 219, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_11);
+      }
+      __pyx_t_12 = __pyx_t_11;
+      __Pyx_INCREF(__pyx_t_12);
+      __pyx_t_13 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_12, NULL};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_decode, __pyx_callargs+__pyx_t_13, (1-__pyx_t_13) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
+        __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 219, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __pyx_t_11 = __Pyx_PyObject_FormatSimple(__pyx_t_7, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 219, __pyx_L6_error)
+      __Pyx_GOTREF(__pyx_t_11);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __pyx_t_7 = __Pyx_PyUnicode_Concat(__pyx_mstate_global->__pyx_kp_u_data_image_png_base64, __pyx_t_11); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 219, __pyx_L6_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+      __pyx_r = __pyx_t_7;
+      __pyx_t_7 = 0;
+      goto __pyx_L10_try_return;
+
+      /* "ram_booster/disk_cleaner.py":177
+ *     if not icon_path or not isinstance(icon_path, str):
+ *         return ""
+ *     try:             # <<<<<<<<<<<<<<
+ *         clean_path = icon_path.strip('"\'').split(',')[0].strip()
+ *         if not os.path.exists(clean_path):
+*/
+    }
+    __pyx_L6_error:;
+    __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
+    __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+    __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
+    __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+    __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+
+    /* "ram_booster/disk_cleaner.py":220
+ *         im.save(buf, format="PNG")
+ *         return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
+ *     except Exception:             # <<<<<<<<<<<<<<
+ *         return ""
+ * 
+*/
+    __pyx_t_22 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+    if (__pyx_t_22) {
+      __Pyx_ErrRestore(0,0,0);
+
+      /* "ram_booster/disk_cleaner.py":221
+ *         return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
+ *     except Exception:
+ *         return ""             # <<<<<<<<<<<<<<
+ * 
+ * 
+*/
+      __Pyx_XDECREF(__pyx_r);
+      __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_);
+      __pyx_r = __pyx_mstate_global->__pyx_kp_u_;
+      goto __pyx_L9_except_return;
+    }
+    goto __pyx_L8_except_error;
+
+    /* "ram_booster/disk_cleaner.py":177
+ *     if not icon_path or not isinstance(icon_path, str):
+ *         return ""
+ *     try:             # <<<<<<<<<<<<<<
+ *         clean_path = icon_path.strip('"\'').split(',')[0].strip()
+ *         if not os.path.exists(clean_path):
+*/
+    __pyx_L8_except_error:;
+    __Pyx_XGIVEREF(__pyx_t_4);
+    __Pyx_XGIVEREF(__pyx_t_5);
+    __Pyx_XGIVEREF(__pyx_t_6);
+    __Pyx_ExceptionReset(__pyx_t_4, __pyx_t_5, __pyx_t_6);
+    goto __pyx_L1_error;
+    __pyx_L10_try_return:;
+    __Pyx_XGIVEREF(__pyx_t_4);
+    __Pyx_XGIVEREF(__pyx_t_5);
+    __Pyx_XGIVEREF(__pyx_t_6);
+    __Pyx_ExceptionReset(__pyx_t_4, __pyx_t_5, __pyx_t_6);
+    goto __pyx_L0;
+    __pyx_L9_except_return:;
+    __Pyx_XGIVEREF(__pyx_t_4);
+    __Pyx_XGIVEREF(__pyx_t_5);
+    __Pyx_XGIVEREF(__pyx_t_6);
+    __Pyx_ExceptionReset(__pyx_t_4, __pyx_t_5, __pyx_t_6);
+    goto __pyx_L0;
+  }
+
+  /* "ram_booster/disk_cleaner.py":173
+ * #  INSTALLED APPLICATIONS AUDITOR & UNINSTALLER
+ * 
+ * def _extract_app_icon_b64(icon_path):             # <<<<<<<<<<<<<<
+ *     """Extract real high-res 32x32 PNG Base64 icon from EXE, ICO or DisplayIcon path."""
+ *     if not icon_path or not isinstance(icon_path, str):
+*/
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_7);
+  __Pyx_XDECREF(__pyx_t_8);
+  __Pyx_XDECREF(__pyx_t_9);
+  __Pyx_XDECREF(__pyx_t_10);
+  __Pyx_XDECREF(__pyx_t_11);
+  __Pyx_XDECREF(__pyx_t_12);
+  __Pyx_AddTraceback("ram_booster.disk_cleaner._extract_app_icon_b64", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_clean_path);
+  __Pyx_XDECREF(__pyx_v_exes);
+  __Pyx_XDECREF(__pyx_v_f);
+  __Pyx_XDECREF(__pyx_v_base64);
+  __Pyx_XDECREF(__pyx_v_win32gui);
+  __Pyx_XDECREF(__pyx_v_win32ui);
+  __Pyx_XDECREF(__pyx_v_win32con);
+  __Pyx_XDECREF(__pyx_v_io);
+  __Pyx_XDECREF(__pyx_v_Image);
+  __Pyx_XDECREF(__pyx_v_large);
+  __Pyx_XDECREF(__pyx_v_small);
+  __Pyx_XDECREF(__pyx_v_hicon);
+  __Pyx_XDECREF(__pyx_v_hdc);
+  __Pyx_XDECREF(__pyx_v_hbmp);
+  __Pyx_XDECREF(__pyx_v_hdc_mem);
+  __Pyx_XDECREF(__pyx_v_bmpinfo);
+  __Pyx_XDECREF(__pyx_v_bmpbits);
+  __Pyx_XDECREF(__pyx_v_im);
+  __Pyx_XDECREF(__pyx_v_h);
+  __Pyx_XDECREF(__pyx_v_buf);
+  __Pyx_XDECREF(__pyx_8genexpr1__pyx_v_f);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "ram_booster/disk_cleaner.py":224
+ * 
+ * 
+ * def get_installed_apps():             # <<<<<<<<<<<<<<
+ *     """Scan Windows Registry for installed applications with publisher, size, version, and real icons."""
+ *     apps = []
+*/
+
+/* Python wrapper */
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_19get_installed_apps(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+PyDoc_STRVAR(__pyx_doc_11ram_booster_12disk_cleaner_18get_installed_apps, "Scan Windows Registry for installed applications with publisher, size, version, and real icons.");
+static PyMethodDef __pyx_mdef_11ram_booster_12disk_cleaner_19get_installed_apps = {"get_installed_apps", (PyCFunction)__pyx_pw_11ram_booster_12disk_cleaner_19get_installed_apps, METH_NOARGS, __pyx_doc_11ram_booster_12disk_cleaner_18get_installed_apps};
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_19get_installed_apps(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_installed_apps (wrapper)", 0);
   __pyx_kwvalues = __Pyx_KwValues_VARARGS(__pyx_args, __pyx_nargs);
-  __pyx_r = __pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(__pyx_self);
+  __pyx_r = __pyx_pf_11ram_booster_12disk_cleaner_18get_installed_apps(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "ram_booster/disk_cleaner.py":241
+/* "ram_booster/disk_cleaner.py":301
  *             pass
  * 
  *     apps.sort(key=lambda x: x["name"].lower())             # <<<<<<<<<<<<<<
@@ -7527,32 +9163,32 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_x,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 241, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 301, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 241, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 301, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "lambda1", 0) < (0)) __PYX_ERR(0, 241, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "lambda1", 0) < (0)) __PYX_ERR(0, 301, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("lambda1", 1, 1, 1, i); __PYX_ERR(0, 241, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("lambda1", 1, 1, 1, i); __PYX_ERR(0, 301, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 241, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 301, __pyx_L3_error)
     }
     __pyx_v_x = values[0];
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("lambda1", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 241, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("lambda1", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 301, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -7585,7 +9221,7 @@ static PyObject *__pyx_lambda_funcdef_lambda1(CYTHON_UNUSED PyObject *__pyx_self
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("lambda1", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_x, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 241, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_x, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 301, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_2 = __pyx_t_3;
   __Pyx_INCREF(__pyx_t_2);
@@ -7595,7 +9231,7 @@ static PyObject *__pyx_lambda_funcdef_lambda1(CYTHON_UNUSED PyObject *__pyx_self
     __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_lower, __pyx_callargs+__pyx_t_4, (1-__pyx_t_4) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 241, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 301, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   }
   __pyx_r = __pyx_t_1;
@@ -7615,15 +9251,15 @@ static PyObject *__pyx_lambda_funcdef_lambda1(CYTHON_UNUSED PyObject *__pyx_self
   return __pyx_r;
 }
 
-/* "ram_booster/disk_cleaner.py":173
- * #  INSTALLED APPLICATIONS AUDITOR & UNINSTALLER
+/* "ram_booster/disk_cleaner.py":224
+ * 
  * 
  * def get_installed_apps():             # <<<<<<<<<<<<<<
- *     """
- *     Audit and list all installed applications on Windows with estimated size, publisher, and uninstall string.
+ *     """Scan Windows Registry for installed applications with publisher, size, version, and real icons."""
+ *     apps = []
 */
 
-static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18get_installed_apps(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_v_apps = NULL;
   PyObject *__pyx_v_seen = NULL;
   PyObject *__pyx_v_reg_paths = NULL;
@@ -7640,6 +9276,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
   PyObject *__pyx_v_version = NULL;
   PyObject *__pyx_v_size_kb = NULL;
   PyObject *__pyx_v_uninstall_string = NULL;
+  PyObject *__pyx_v_display_icon = NULL;
+  PyObject *__pyx_v_install_location = NULL;
+  PyObject *__pyx_v_icon_b64 = NULL;
   PyObject *__pyx_v_size_mb = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -7676,115 +9315,115 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_installed_apps", 0);
 
-  /* "ram_booster/disk_cleaner.py":177
- *     Audit and list all installed applications on Windows with estimated size, publisher, and uninstall string.
- *     """
+  /* "ram_booster/disk_cleaner.py":226
+ * def get_installed_apps():
+ *     """Scan Windows Registry for installed applications with publisher, size, version, and real icons."""
  *     apps = []             # <<<<<<<<<<<<<<
  *     seen = set()
  * 
 */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 177, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 226, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_apps = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "ram_booster/disk_cleaner.py":178
- *     """
+  /* "ram_booster/disk_cleaner.py":227
+ *     """Scan Windows Registry for installed applications with publisher, size, version, and real icons."""
  *     apps = []
  *     seen = set()             # <<<<<<<<<<<<<<
  * 
  *     reg_paths = [
 */
-  __pyx_t_1 = PySet_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 178, __pyx_L1_error)
+  __pyx_t_1 = PySet_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 227, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_seen = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "ram_booster/disk_cleaner.py":181
+  /* "ram_booster/disk_cleaner.py":230
  * 
  *     reg_paths = [
  *         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),             # <<<<<<<<<<<<<<
  *         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"),
  *         (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Uninstall"),
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 181, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 230, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_HKEY_LOCAL_MACHINE); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 181, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_HKEY_LOCAL_MACHINE); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 230, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 181, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 230, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_2);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_2) != (0)) __PYX_ERR(0, 181, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_2) != (0)) __PYX_ERR(0, 230, __pyx_L1_error);
   __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_SOFTWARE_Microsoft_Windows_Curre);
   __Pyx_GIVEREF(__pyx_mstate_global->__pyx_kp_u_SOFTWARE_Microsoft_Windows_Curre);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_mstate_global->__pyx_kp_u_SOFTWARE_Microsoft_Windows_Curre) != (0)) __PYX_ERR(0, 181, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_mstate_global->__pyx_kp_u_SOFTWARE_Microsoft_Windows_Curre) != (0)) __PYX_ERR(0, 230, __pyx_L1_error);
   __pyx_t_2 = 0;
 
-  /* "ram_booster/disk_cleaner.py":182
+  /* "ram_booster/disk_cleaner.py":231
  *     reg_paths = [
  *         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
  *         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"),             # <<<<<<<<<<<<<<
  *         (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Uninstall"),
  *     ]
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 182, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 231, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_HKEY_LOCAL_MACHINE); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 182, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_HKEY_LOCAL_MACHINE); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 231, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 182, __pyx_L1_error)
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 231, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_GIVEREF(__pyx_t_3);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_3) != (0)) __PYX_ERR(0, 182, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_3) != (0)) __PYX_ERR(0, 231, __pyx_L1_error);
   __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_SOFTWARE_WOW6432Node_Microsoft_W);
   __Pyx_GIVEREF(__pyx_mstate_global->__pyx_kp_u_SOFTWARE_WOW6432Node_Microsoft_W);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_mstate_global->__pyx_kp_u_SOFTWARE_WOW6432Node_Microsoft_W) != (0)) __PYX_ERR(0, 182, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_mstate_global->__pyx_kp_u_SOFTWARE_WOW6432Node_Microsoft_W) != (0)) __PYX_ERR(0, 231, __pyx_L1_error);
   __pyx_t_3 = 0;
 
-  /* "ram_booster/disk_cleaner.py":183
+  /* "ram_booster/disk_cleaner.py":232
  *         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
  *         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"),
  *         (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Uninstall"),             # <<<<<<<<<<<<<<
  *     ]
  * 
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 183, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 232, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_HKEY_CURRENT_USER); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 183, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_HKEY_CURRENT_USER); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 232, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 183, __pyx_L1_error)
+  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 232, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_GIVEREF(__pyx_t_4);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_4) != (0)) __PYX_ERR(0, 183, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_4) != (0)) __PYX_ERR(0, 232, __pyx_L1_error);
   __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_Software_Microsoft_Windows_Curre);
   __Pyx_GIVEREF(__pyx_mstate_global->__pyx_kp_u_Software_Microsoft_Windows_Curre);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_3, 1, __pyx_mstate_global->__pyx_kp_u_Software_Microsoft_Windows_Curre) != (0)) __PYX_ERR(0, 183, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_3, 1, __pyx_mstate_global->__pyx_kp_u_Software_Microsoft_Windows_Curre) != (0)) __PYX_ERR(0, 232, __pyx_L1_error);
   __pyx_t_4 = 0;
 
-  /* "ram_booster/disk_cleaner.py":180
+  /* "ram_booster/disk_cleaner.py":229
  *     seen = set()
  * 
  *     reg_paths = [             # <<<<<<<<<<<<<<
  *         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
  *         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"),
 */
-  __pyx_t_4 = PyList_New(3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 180, __pyx_L1_error)
+  __pyx_t_4 = PyList_New(3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 229, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_GIVEREF(__pyx_t_1);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_4, 0, __pyx_t_1) != (0)) __PYX_ERR(0, 180, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_4, 0, __pyx_t_1) != (0)) __PYX_ERR(0, 229, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_2);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_4, 1, __pyx_t_2) != (0)) __PYX_ERR(0, 180, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_4, 1, __pyx_t_2) != (0)) __PYX_ERR(0, 229, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_3);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_4, 2, __pyx_t_3) != (0)) __PYX_ERR(0, 180, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_4, 2, __pyx_t_3) != (0)) __PYX_ERR(0, 229, __pyx_L1_error);
   __pyx_t_1 = 0;
   __pyx_t_2 = 0;
   __pyx_t_3 = 0;
   __pyx_v_reg_paths = ((PyObject*)__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "ram_booster/disk_cleaner.py":186
+  /* "ram_booster/disk_cleaner.py":235
  *     ]
  * 
  *     for root, path in reg_paths:             # <<<<<<<<<<<<<<
@@ -7797,13 +9436,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
     {
       Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_4);
       #if !CYTHON_ASSUME_SAFE_SIZE
-      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 186, __pyx_L1_error)
+      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 235, __pyx_L1_error)
       #endif
       if (__pyx_t_5 >= __pyx_temp) break;
     }
     __pyx_t_3 = __Pyx_PyList_GetItemRefFast(__pyx_t_4, __pyx_t_5, __Pyx_ReferenceSharing_OwnStrongReference);
     ++__pyx_t_5;
-    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 186, __pyx_L1_error)
+    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 235, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     if ((likely(PyTuple_CheckExact(__pyx_t_3))) || (PyList_CheckExact(__pyx_t_3))) {
       PyObject* sequence = __pyx_t_3;
@@ -7811,7 +9450,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
       if (unlikely(size != 2)) {
         if (size > 2) __Pyx_RaiseTooManyValuesError(2);
         else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-        __PYX_ERR(0, 186, __pyx_L1_error)
+        __PYX_ERR(0, 235, __pyx_L1_error)
       }
       #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
       if (likely(PyTuple_CheckExact(sequence))) {
@@ -7821,22 +9460,22 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
         __Pyx_INCREF(__pyx_t_1);
       } else {
         __pyx_t_2 = __Pyx_PyList_GetItemRefFast(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
-        if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 186, __pyx_L1_error)
+        if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 235, __pyx_L1_error)
         __Pyx_XGOTREF(__pyx_t_2);
         __pyx_t_1 = __Pyx_PyList_GetItemRefFast(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
-        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 186, __pyx_L1_error)
+        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 235, __pyx_L1_error)
         __Pyx_XGOTREF(__pyx_t_1);
       }
       #else
-      __pyx_t_2 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 186, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 235, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_1 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 186, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 235, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       #endif
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     } else {
       Py_ssize_t index = -1;
-      __pyx_t_6 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 186, __pyx_L1_error)
+      __pyx_t_6 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 235, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __pyx_t_7 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_6);
@@ -7844,7 +9483,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
       __Pyx_GOTREF(__pyx_t_2);
       index = 1; __pyx_t_1 = __pyx_t_7(__pyx_t_6); if (unlikely(!__pyx_t_1)) goto __pyx_L5_unpacking_failed;
       __Pyx_GOTREF(__pyx_t_1);
-      if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_6), 2) < (0)) __PYX_ERR(0, 186, __pyx_L1_error)
+      if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_6), 2) < (0)) __PYX_ERR(0, 235, __pyx_L1_error)
       __pyx_t_7 = NULL;
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       goto __pyx_L6_unpacking_done;
@@ -7852,7 +9491,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __pyx_t_7 = NULL;
       if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-      __PYX_ERR(0, 186, __pyx_L1_error)
+      __PYX_ERR(0, 235, __pyx_L1_error)
       __pyx_L6_unpacking_done:;
     }
     __Pyx_XDECREF_SET(__pyx_v_root, __pyx_t_2);
@@ -7860,7 +9499,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
     __Pyx_XDECREF_SET(__pyx_v_path, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "ram_booster/disk_cleaner.py":187
+    /* "ram_booster/disk_cleaner.py":236
  * 
  *     for root, path in reg_paths:
  *         try:             # <<<<<<<<<<<<<<
@@ -7876,7 +9515,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
       __Pyx_XGOTREF(__pyx_t_10);
       /*try:*/ {
 
-        /* "ram_booster/disk_cleaner.py":188
+        /* "ram_booster/disk_cleaner.py":237
  *     for root, path in reg_paths:
  *         try:
  *             hkey = winreg.OpenKey(root, path, 0, winreg.KEY_READ)             # <<<<<<<<<<<<<<
@@ -7884,14 +9523,14 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
  * 
 */
         __pyx_t_1 = NULL;
-        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 188, __pyx_L7_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 237, __pyx_L7_error)
         __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_OpenKey); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 188, __pyx_L7_error)
+        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_OpenKey); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 237, __pyx_L7_error)
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 188, __pyx_L7_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 237, __pyx_L7_error)
         __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_KEY_READ); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 188, __pyx_L7_error)
+        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_KEY_READ); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 237, __pyx_L7_error)
         __Pyx_GOTREF(__pyx_t_11);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         __pyx_t_12 = 1;
@@ -7912,13 +9551,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
           __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
           __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 188, __pyx_L7_error)
+          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 237, __pyx_L7_error)
           __Pyx_GOTREF(__pyx_t_3);
         }
         __Pyx_XDECREF_SET(__pyx_v_hkey, __pyx_t_3);
         __pyx_t_3 = 0;
 
-        /* "ram_booster/disk_cleaner.py":189
+        /* "ram_booster/disk_cleaner.py":238
  *         try:
  *             hkey = winreg.OpenKey(root, path, 0, winreg.KEY_READ)
  *             num_subkeys = winreg.QueryInfoKey(hkey)[0]             # <<<<<<<<<<<<<<
@@ -7926,9 +9565,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
  *             for i in range(num_subkeys):
 */
         __pyx_t_6 = NULL;
-        __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 189, __pyx_L7_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 238, __pyx_L7_error)
         __Pyx_GOTREF(__pyx_t_11);
-        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_QueryInfoKey); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 189, __pyx_L7_error)
+        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_QueryInfoKey); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 238, __pyx_L7_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
         __pyx_t_12 = 1;
@@ -7948,16 +9587,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
           __pyx_t_3 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_1, __pyx_callargs+__pyx_t_12, (2-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
           __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
           __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 189, __pyx_L7_error)
+          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 238, __pyx_L7_error)
           __Pyx_GOTREF(__pyx_t_3);
         }
-        __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_3, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 1, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 189, __pyx_L7_error)
+        __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_3, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 1, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 238, __pyx_L7_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_XDECREF_SET(__pyx_v_num_subkeys, __pyx_t_1);
         __pyx_t_1 = 0;
 
-        /* "ram_booster/disk_cleaner.py":191
+        /* "ram_booster/disk_cleaner.py":240
  *             num_subkeys = winreg.QueryInfoKey(hkey)[0]
  * 
  *             for i in range(num_subkeys):             # <<<<<<<<<<<<<<
@@ -7970,12 +9609,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
           PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_v_num_subkeys};
           __pyx_t_1 = __Pyx_PyObject_FastCall((PyObject*)(&PyRange_Type), __pyx_callargs+__pyx_t_12, (2-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
           __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-          if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 191, __pyx_L7_error)
+          if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 240, __pyx_L7_error)
           __Pyx_GOTREF(__pyx_t_1);
         }
-        __pyx_t_3 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 191, __pyx_L7_error)
+        __pyx_t_3 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 240, __pyx_L7_error)
         __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_13 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_3); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 191, __pyx_L7_error)
+        __pyx_t_13 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_3); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 240, __pyx_L7_error)
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         for (;;) {
           {
@@ -7983,7 +9622,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
             if (unlikely(!__pyx_t_1)) {
               PyObject* exc_type = PyErr_Occurred();
               if (exc_type) {
-                if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 191, __pyx_L7_error)
+                if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 240, __pyx_L7_error)
                 PyErr_Clear();
               }
               break;
@@ -7993,7 +9632,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
           __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_1);
           __pyx_t_1 = 0;
 
-          /* "ram_booster/disk_cleaner.py":192
+          /* "ram_booster/disk_cleaner.py":241
  * 
  *             for i in range(num_subkeys):
  *                 try:             # <<<<<<<<<<<<<<
@@ -8009,7 +9648,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
             __Pyx_XGOTREF(__pyx_t_16);
             /*try:*/ {
 
-              /* "ram_booster/disk_cleaner.py":193
+              /* "ram_booster/disk_cleaner.py":242
  *             for i in range(num_subkeys):
  *                 try:
  *                     subkey_name = winreg.EnumKey(hkey, i)             # <<<<<<<<<<<<<<
@@ -8017,9 +9656,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
  * 
 */
               __pyx_t_6 = NULL;
-              __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 193, __pyx_L17_error)
+              __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 242, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_11);
-              __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_EnumKey); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 193, __pyx_L17_error)
+              __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_EnumKey); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 242, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_2);
               __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
               __pyx_t_12 = 1;
@@ -8039,13 +9678,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __pyx_t_1 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_2, __pyx_callargs+__pyx_t_12, (3-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
                 __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
                 __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-                if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 193, __pyx_L17_error)
+                if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 242, __pyx_L17_error)
                 __Pyx_GOTREF(__pyx_t_1);
               }
               __Pyx_XDECREF_SET(__pyx_v_subkey_name, __pyx_t_1);
               __pyx_t_1 = 0;
 
-              /* "ram_booster/disk_cleaner.py":194
+              /* "ram_booster/disk_cleaner.py":243
  *                 try:
  *                     subkey_name = winreg.EnumKey(hkey, i)
  *                     sk = winreg.OpenKey(root, f"{path}\\{subkey_name}", 0, winreg.KEY_READ)             # <<<<<<<<<<<<<<
@@ -8053,26 +9692,26 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
  *                     try:
 */
               __pyx_t_2 = NULL;
-              __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 194, __pyx_L17_error)
+              __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 243, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_6);
-              __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_OpenKey); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 194, __pyx_L17_error)
+              __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_OpenKey); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 243, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_11);
               __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-              __pyx_t_6 = __Pyx_PyObject_FormatSimple(__pyx_v_path, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 194, __pyx_L17_error)
+              __pyx_t_6 = __Pyx_PyObject_FormatSimple(__pyx_v_path, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 243, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_6);
-              __pyx_t_17 = __Pyx_PyObject_FormatSimple(__pyx_v_subkey_name, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 194, __pyx_L17_error)
+              __pyx_t_17 = __Pyx_PyObject_FormatSimple(__pyx_v_subkey_name, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 243, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_17);
               __pyx_t_18[0] = __pyx_t_6;
-              __pyx_t_18[1] = __pyx_mstate_global->__pyx_kp_u__2;
+              __pyx_t_18[1] = __pyx_mstate_global->__pyx_kp_u__5;
               __pyx_t_18[2] = __pyx_t_17;
               __pyx_t_19 = __Pyx_PyUnicode_Join(__pyx_t_18, 3, __Pyx_PyUnicode_GET_LENGTH(__pyx_t_6) + 1 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_17), 127 | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_6) | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_17));
-              if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 194, __pyx_L17_error)
+              if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 243, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_19);
               __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
               __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
-              __Pyx_GetModuleGlobalName(__pyx_t_17, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 194, __pyx_L17_error)
+              __Pyx_GetModuleGlobalName(__pyx_t_17, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 243, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_17);
-              __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_17, __pyx_mstate_global->__pyx_n_u_KEY_READ); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 194, __pyx_L17_error)
+              __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_17, __pyx_mstate_global->__pyx_n_u_KEY_READ); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 243, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_6);
               __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
               __pyx_t_12 = 1;
@@ -8094,13 +9733,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
                 __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
                 __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 194, __pyx_L17_error)
+                if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 243, __pyx_L17_error)
                 __Pyx_GOTREF(__pyx_t_1);
               }
               __Pyx_XDECREF_SET(__pyx_v_sk, __pyx_t_1);
               __pyx_t_1 = 0;
 
-              /* "ram_booster/disk_cleaner.py":196
+              /* "ram_booster/disk_cleaner.py":245
  *                     sk = winreg.OpenKey(root, f"{path}\\{subkey_name}", 0, winreg.KEY_READ)
  * 
  *                     try:             # <<<<<<<<<<<<<<
@@ -8116,7 +9755,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __Pyx_XGOTREF(__pyx_t_22);
                 /*try:*/ {
 
-                  /* "ram_booster/disk_cleaner.py":197
+                  /* "ram_booster/disk_cleaner.py":246
  * 
  *                     try:
  *                         name, _ = winreg.QueryValueEx(sk, "DisplayName")             # <<<<<<<<<<<<<<
@@ -8124,9 +9763,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
  *                         winreg.CloseKey(sk)
 */
                   __pyx_t_11 = NULL;
-                  __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 197, __pyx_L25_error)
+                  __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 246, __pyx_L25_error)
                   __Pyx_GOTREF(__pyx_t_6);
-                  __pyx_t_19 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_QueryValueEx); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 197, __pyx_L25_error)
+                  __pyx_t_19 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_QueryValueEx); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 246, __pyx_L25_error)
                   __Pyx_GOTREF(__pyx_t_19);
                   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
                   __pyx_t_12 = 1;
@@ -8146,7 +9785,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __pyx_t_1 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_19, __pyx_callargs+__pyx_t_12, (3-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
                     __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
                     __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
-                    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 197, __pyx_L25_error)
+                    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 246, __pyx_L25_error)
                     __Pyx_GOTREF(__pyx_t_1);
                   }
                   if ((likely(PyTuple_CheckExact(__pyx_t_1))) || (PyList_CheckExact(__pyx_t_1))) {
@@ -8155,7 +9794,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     if (unlikely(size != 2)) {
                       if (size > 2) __Pyx_RaiseTooManyValuesError(2);
                       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-                      __PYX_ERR(0, 197, __pyx_L25_error)
+                      __PYX_ERR(0, 246, __pyx_L25_error)
                     }
                     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
                     if (likely(PyTuple_CheckExact(sequence))) {
@@ -8165,22 +9804,22 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                       __Pyx_INCREF(__pyx_t_11);
                     } else {
                       __pyx_t_19 = __Pyx_PyList_GetItemRefFast(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
-                      if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 197, __pyx_L25_error)
+                      if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 246, __pyx_L25_error)
                       __Pyx_XGOTREF(__pyx_t_19);
                       __pyx_t_11 = __Pyx_PyList_GetItemRefFast(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
-                      if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 197, __pyx_L25_error)
+                      if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 246, __pyx_L25_error)
                       __Pyx_XGOTREF(__pyx_t_11);
                     }
                     #else
-                    __pyx_t_19 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 197, __pyx_L25_error)
+                    __pyx_t_19 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 246, __pyx_L25_error)
                     __Pyx_GOTREF(__pyx_t_19);
-                    __pyx_t_11 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 197, __pyx_L25_error)
+                    __pyx_t_11 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 246, __pyx_L25_error)
                     __Pyx_GOTREF(__pyx_t_11);
                     #endif
                     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                   } else {
                     Py_ssize_t index = -1;
-                    __pyx_t_6 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 197, __pyx_L25_error)
+                    __pyx_t_6 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 246, __pyx_L25_error)
                     __Pyx_GOTREF(__pyx_t_6);
                     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                     __pyx_t_7 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_6);
@@ -8188,7 +9827,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __Pyx_GOTREF(__pyx_t_19);
                     index = 1; __pyx_t_11 = __pyx_t_7(__pyx_t_6); if (unlikely(!__pyx_t_11)) goto __pyx_L33_unpacking_failed;
                     __Pyx_GOTREF(__pyx_t_11);
-                    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_6), 2) < (0)) __PYX_ERR(0, 197, __pyx_L25_error)
+                    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_6), 2) < (0)) __PYX_ERR(0, 246, __pyx_L25_error)
                     __pyx_t_7 = NULL;
                     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
                     goto __pyx_L34_unpacking_done;
@@ -8196,7 +9835,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
                     __pyx_t_7 = NULL;
                     if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-                    __PYX_ERR(0, 197, __pyx_L25_error)
+                    __PYX_ERR(0, 246, __pyx_L25_error)
                     __pyx_L34_unpacking_done:;
                   }
                   __Pyx_XDECREF_SET(__pyx_v_name, __pyx_t_19);
@@ -8204,7 +9843,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                   __Pyx_XDECREF_SET(__pyx_v__, __pyx_t_11);
                   __pyx_t_11 = 0;
 
-                  /* "ram_booster/disk_cleaner.py":196
+                  /* "ram_booster/disk_cleaner.py":245
  *                     sk = winreg.OpenKey(root, f"{path}\\{subkey_name}", 0, winreg.KEY_READ)
  * 
  *                     try:             # <<<<<<<<<<<<<<
@@ -8224,7 +9863,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
                 __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-                /* "ram_booster/disk_cleaner.py":198
+                /* "ram_booster/disk_cleaner.py":247
  *                     try:
  *                         name, _ = winreg.QueryValueEx(sk, "DisplayName")
  *                     except Exception:             # <<<<<<<<<<<<<<
@@ -8234,12 +9873,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __pyx_t_23 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
                 if (__pyx_t_23) {
                   __Pyx_AddTraceback("ram_booster.disk_cleaner.get_installed_apps", __pyx_clineno, __pyx_lineno, __pyx_filename);
-                  if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_11, &__pyx_t_19) < 0) __PYX_ERR(0, 198, __pyx_L27_except_error)
+                  if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_11, &__pyx_t_19) < 0) __PYX_ERR(0, 247, __pyx_L27_except_error)
                   __Pyx_XGOTREF(__pyx_t_1);
                   __Pyx_XGOTREF(__pyx_t_11);
                   __Pyx_XGOTREF(__pyx_t_19);
 
-                  /* "ram_booster/disk_cleaner.py":199
+                  /* "ram_booster/disk_cleaner.py":248
  *                         name, _ = winreg.QueryValueEx(sk, "DisplayName")
  *                     except Exception:
  *                         winreg.CloseKey(sk)             # <<<<<<<<<<<<<<
@@ -8247,9 +9886,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
  * 
 */
                   __pyx_t_2 = NULL;
-                  __Pyx_GetModuleGlobalName(__pyx_t_17, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 199, __pyx_L27_except_error)
+                  __Pyx_GetModuleGlobalName(__pyx_t_17, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 248, __pyx_L27_except_error)
                   __Pyx_GOTREF(__pyx_t_17);
-                  __pyx_t_24 = __Pyx_PyObject_GetAttrStr(__pyx_t_17, __pyx_mstate_global->__pyx_n_u_CloseKey); if (unlikely(!__pyx_t_24)) __PYX_ERR(0, 199, __pyx_L27_except_error)
+                  __pyx_t_24 = __Pyx_PyObject_GetAttrStr(__pyx_t_17, __pyx_mstate_global->__pyx_n_u_CloseKey); if (unlikely(!__pyx_t_24)) __PYX_ERR(0, 248, __pyx_L27_except_error)
                   __Pyx_GOTREF(__pyx_t_24);
                   __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
                   __pyx_t_12 = 1;
@@ -8269,12 +9908,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_24, __pyx_callargs+__pyx_t_12, (2-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
                     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
                     __Pyx_DECREF(__pyx_t_24); __pyx_t_24 = 0;
-                    if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 199, __pyx_L27_except_error)
+                    if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 248, __pyx_L27_except_error)
                     __Pyx_GOTREF(__pyx_t_6);
                   }
                   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-                  /* "ram_booster/disk_cleaner.py":200
+                  /* "ram_booster/disk_cleaner.py":249
  *                     except Exception:
  *                         winreg.CloseKey(sk)
  *                         continue             # <<<<<<<<<<<<<<
@@ -8290,7 +9929,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 }
                 goto __pyx_L27_except_error;
 
-                /* "ram_booster/disk_cleaner.py":196
+                /* "ram_booster/disk_cleaner.py":245
  *                     sk = winreg.OpenKey(root, f"{path}\\{subkey_name}", 0, winreg.KEY_READ)
  * 
  *                     try:             # <<<<<<<<<<<<<<
@@ -8312,38 +9951,38 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __pyx_L32_try_end:;
               }
 
-              /* "ram_booster/disk_cleaner.py":202
+              /* "ram_booster/disk_cleaner.py":251
  *                         continue
  * 
  *                     if not name or name in seen or "Security Update" in name or "Update for" in name:             # <<<<<<<<<<<<<<
  *                         winreg.CloseKey(sk)
  *                         continue
 */
-              __pyx_t_26 = __Pyx_PyObject_IsTrue(__pyx_v_name); if (unlikely((__pyx_t_26 < 0))) __PYX_ERR(0, 202, __pyx_L17_error)
+              __pyx_t_26 = __Pyx_PyObject_IsTrue(__pyx_v_name); if (unlikely((__pyx_t_26 < 0))) __PYX_ERR(0, 251, __pyx_L17_error)
               __pyx_t_27 = (!__pyx_t_26);
               if (!__pyx_t_27) {
               } else {
                 __pyx_t_25 = __pyx_t_27;
                 goto __pyx_L38_bool_binop_done;
               }
-              __pyx_t_27 = (__Pyx_PySet_ContainsTF(__pyx_v_name, __pyx_v_seen, Py_EQ)); if (unlikely((__pyx_t_27 < 0))) __PYX_ERR(0, 202, __pyx_L17_error)
+              __pyx_t_27 = (__Pyx_PySet_ContainsTF(__pyx_v_name, __pyx_v_seen, Py_EQ)); if (unlikely((__pyx_t_27 < 0))) __PYX_ERR(0, 251, __pyx_L17_error)
               if (!__pyx_t_27) {
               } else {
                 __pyx_t_25 = __pyx_t_27;
                 goto __pyx_L38_bool_binop_done;
               }
-              __pyx_t_27 = (__Pyx_PySequence_ContainsTF(__pyx_mstate_global->__pyx_kp_u_Security_Update, __pyx_v_name, Py_EQ)); if (unlikely((__pyx_t_27 < 0))) __PYX_ERR(0, 202, __pyx_L17_error)
+              __pyx_t_27 = (__Pyx_PySequence_ContainsTF(__pyx_mstate_global->__pyx_kp_u_Security_Update, __pyx_v_name, Py_EQ)); if (unlikely((__pyx_t_27 < 0))) __PYX_ERR(0, 251, __pyx_L17_error)
               if (!__pyx_t_27) {
               } else {
                 __pyx_t_25 = __pyx_t_27;
                 goto __pyx_L38_bool_binop_done;
               }
-              __pyx_t_27 = (__Pyx_PySequence_ContainsTF(__pyx_mstate_global->__pyx_kp_u_Update_for, __pyx_v_name, Py_EQ)); if (unlikely((__pyx_t_27 < 0))) __PYX_ERR(0, 202, __pyx_L17_error)
+              __pyx_t_27 = (__Pyx_PySequence_ContainsTF(__pyx_mstate_global->__pyx_kp_u_Update_for, __pyx_v_name, Py_EQ)); if (unlikely((__pyx_t_27 < 0))) __PYX_ERR(0, 251, __pyx_L17_error)
               __pyx_t_25 = __pyx_t_27;
               __pyx_L38_bool_binop_done:;
               if (__pyx_t_25) {
 
-                /* "ram_booster/disk_cleaner.py":203
+                /* "ram_booster/disk_cleaner.py":252
  * 
  *                     if not name or name in seen or "Security Update" in name or "Update for" in name:
  *                         winreg.CloseKey(sk)             # <<<<<<<<<<<<<<
@@ -8351,9 +9990,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
  * 
 */
                 __pyx_t_11 = NULL;
-                __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 203, __pyx_L17_error)
+                __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 252, __pyx_L17_error)
                 __Pyx_GOTREF(__pyx_t_1);
-                __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_CloseKey); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 203, __pyx_L17_error)
+                __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_CloseKey); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 252, __pyx_L17_error)
                 __Pyx_GOTREF(__pyx_t_6);
                 __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                 __pyx_t_12 = 1;
@@ -8373,12 +10012,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                   __pyx_t_19 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_6, __pyx_callargs+__pyx_t_12, (2-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
                   __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
                   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-                  if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 203, __pyx_L17_error)
+                  if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 252, __pyx_L17_error)
                   __Pyx_GOTREF(__pyx_t_19);
                 }
                 __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
 
-                /* "ram_booster/disk_cleaner.py":204
+                /* "ram_booster/disk_cleaner.py":253
  *                     if not name or name in seen or "Security Update" in name or "Update for" in name:
  *                         winreg.CloseKey(sk)
  *                         continue             # <<<<<<<<<<<<<<
@@ -8387,7 +10026,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
 */
                 goto __pyx_L23_try_continue;
 
-                /* "ram_booster/disk_cleaner.py":202
+                /* "ram_booster/disk_cleaner.py":251
  *                         continue
  * 
  *                     if not name or name in seen or "Security Update" in name or "Update for" in name:             # <<<<<<<<<<<<<<
@@ -8396,16 +10035,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
 */
               }
 
-              /* "ram_booster/disk_cleaner.py":206
+              /* "ram_booster/disk_cleaner.py":255
  *                         continue
  * 
  *                     seen.add(name)             # <<<<<<<<<<<<<<
  * 
  *                     publisher = "Unknown Publisher"
 */
-              __pyx_t_28 = PySet_Add(__pyx_v_seen, __pyx_v_name); if (unlikely(__pyx_t_28 == ((int)-1))) __PYX_ERR(0, 206, __pyx_L17_error)
+              __pyx_t_28 = PySet_Add(__pyx_v_seen, __pyx_v_name); if (unlikely(__pyx_t_28 == ((int)-1))) __PYX_ERR(0, 255, __pyx_L17_error)
 
-              /* "ram_booster/disk_cleaner.py":208
+              /* "ram_booster/disk_cleaner.py":257
  *                     seen.add(name)
  * 
  *                     publisher = "Unknown Publisher"             # <<<<<<<<<<<<<<
@@ -8415,7 +10054,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
               __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_Unknown_Publisher);
               __Pyx_XDECREF_SET(__pyx_v_publisher, __pyx_mstate_global->__pyx_kp_u_Unknown_Publisher);
 
-              /* "ram_booster/disk_cleaner.py":209
+              /* "ram_booster/disk_cleaner.py":258
  * 
  *                     publisher = "Unknown Publisher"
  *                     try: publisher, _ = winreg.QueryValueEx(sk, "Publisher")             # <<<<<<<<<<<<<<
@@ -8431,9 +10070,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __Pyx_XGOTREF(__pyx_t_20);
                 /*try:*/ {
                   __pyx_t_6 = NULL;
-                  __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 209, __pyx_L42_error)
+                  __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 258, __pyx_L42_error)
                   __Pyx_GOTREF(__pyx_t_11);
-                  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_QueryValueEx); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 209, __pyx_L42_error)
+                  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_QueryValueEx); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 258, __pyx_L42_error)
                   __Pyx_GOTREF(__pyx_t_1);
                   __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                   __pyx_t_12 = 1;
@@ -8453,7 +10092,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __pyx_t_19 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_1, __pyx_callargs+__pyx_t_12, (3-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
                     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
                     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                    if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 209, __pyx_L42_error)
+                    if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 258, __pyx_L42_error)
                     __Pyx_GOTREF(__pyx_t_19);
                   }
                   if ((likely(PyTuple_CheckExact(__pyx_t_19))) || (PyList_CheckExact(__pyx_t_19))) {
@@ -8462,7 +10101,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     if (unlikely(size != 2)) {
                       if (size > 2) __Pyx_RaiseTooManyValuesError(2);
                       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-                      __PYX_ERR(0, 209, __pyx_L42_error)
+                      __PYX_ERR(0, 258, __pyx_L42_error)
                     }
                     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
                     if (likely(PyTuple_CheckExact(sequence))) {
@@ -8472,22 +10111,22 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                       __Pyx_INCREF(__pyx_t_6);
                     } else {
                       __pyx_t_1 = __Pyx_PyList_GetItemRefFast(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
-                      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 209, __pyx_L42_error)
+                      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 258, __pyx_L42_error)
                       __Pyx_XGOTREF(__pyx_t_1);
                       __pyx_t_6 = __Pyx_PyList_GetItemRefFast(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
-                      if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 209, __pyx_L42_error)
+                      if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 258, __pyx_L42_error)
                       __Pyx_XGOTREF(__pyx_t_6);
                     }
                     #else
-                    __pyx_t_1 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 209, __pyx_L42_error)
+                    __pyx_t_1 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 258, __pyx_L42_error)
                     __Pyx_GOTREF(__pyx_t_1);
-                    __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 209, __pyx_L42_error)
+                    __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 258, __pyx_L42_error)
                     __Pyx_GOTREF(__pyx_t_6);
                     #endif
                     __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
                   } else {
                     Py_ssize_t index = -1;
-                    __pyx_t_11 = PyObject_GetIter(__pyx_t_19); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 209, __pyx_L42_error)
+                    __pyx_t_11 = PyObject_GetIter(__pyx_t_19); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 258, __pyx_L42_error)
                     __Pyx_GOTREF(__pyx_t_11);
                     __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
                     __pyx_t_7 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_11);
@@ -8495,7 +10134,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __Pyx_GOTREF(__pyx_t_1);
                     index = 1; __pyx_t_6 = __pyx_t_7(__pyx_t_11); if (unlikely(!__pyx_t_6)) goto __pyx_L50_unpacking_failed;
                     __Pyx_GOTREF(__pyx_t_6);
-                    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_11), 2) < (0)) __PYX_ERR(0, 209, __pyx_L42_error)
+                    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_11), 2) < (0)) __PYX_ERR(0, 258, __pyx_L42_error)
                     __pyx_t_7 = NULL;
                     __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                     goto __pyx_L51_unpacking_done;
@@ -8503,7 +10142,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                     __pyx_t_7 = NULL;
                     if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-                    __PYX_ERR(0, 209, __pyx_L42_error)
+                    __PYX_ERR(0, 258, __pyx_L42_error)
                     __pyx_L51_unpacking_done:;
                   }
                   __Pyx_DECREF_SET(__pyx_v_publisher, __pyx_t_1);
@@ -8524,7 +10163,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __Pyx_XDECREF(__pyx_t_24); __pyx_t_24 = 0;
                 __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-                /* "ram_booster/disk_cleaner.py":210
+                /* "ram_booster/disk_cleaner.py":259
  *                     publisher = "Unknown Publisher"
  *                     try: publisher, _ = winreg.QueryValueEx(sk, "Publisher")
  *                     except Exception: pass             # <<<<<<<<<<<<<<
@@ -8538,7 +10177,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 }
                 goto __pyx_L44_except_error;
 
-                /* "ram_booster/disk_cleaner.py":209
+                /* "ram_booster/disk_cleaner.py":258
  * 
  *                     publisher = "Unknown Publisher"
  *                     try: publisher, _ = winreg.QueryValueEx(sk, "Publisher")             # <<<<<<<<<<<<<<
@@ -8559,7 +10198,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __pyx_L49_try_end:;
               }
 
-              /* "ram_booster/disk_cleaner.py":212
+              /* "ram_booster/disk_cleaner.py":261
  *                     except Exception: pass
  * 
  *                     version = "1.0"             # <<<<<<<<<<<<<<
@@ -8569,7 +10208,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
               __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_1_0);
               __Pyx_XDECREF_SET(__pyx_v_version, __pyx_mstate_global->__pyx_kp_u_1_0);
 
-              /* "ram_booster/disk_cleaner.py":213
+              /* "ram_booster/disk_cleaner.py":262
  * 
  *                     version = "1.0"
  *                     try: version, _ = winreg.QueryValueEx(sk, "DisplayVersion")             # <<<<<<<<<<<<<<
@@ -8585,9 +10224,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __Pyx_XGOTREF(__pyx_t_22);
                 /*try:*/ {
                   __pyx_t_6 = NULL;
-                  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 213, __pyx_L54_error)
+                  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 262, __pyx_L54_error)
                   __Pyx_GOTREF(__pyx_t_1);
-                  __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_QueryValueEx); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 213, __pyx_L54_error)
+                  __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_QueryValueEx); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 262, __pyx_L54_error)
                   __Pyx_GOTREF(__pyx_t_11);
                   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                   __pyx_t_12 = 1;
@@ -8607,7 +10246,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __pyx_t_19 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_11, __pyx_callargs+__pyx_t_12, (3-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
                     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
                     __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                    if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 213, __pyx_L54_error)
+                    if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 262, __pyx_L54_error)
                     __Pyx_GOTREF(__pyx_t_19);
                   }
                   if ((likely(PyTuple_CheckExact(__pyx_t_19))) || (PyList_CheckExact(__pyx_t_19))) {
@@ -8616,7 +10255,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     if (unlikely(size != 2)) {
                       if (size > 2) __Pyx_RaiseTooManyValuesError(2);
                       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-                      __PYX_ERR(0, 213, __pyx_L54_error)
+                      __PYX_ERR(0, 262, __pyx_L54_error)
                     }
                     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
                     if (likely(PyTuple_CheckExact(sequence))) {
@@ -8626,22 +10265,22 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                       __Pyx_INCREF(__pyx_t_6);
                     } else {
                       __pyx_t_11 = __Pyx_PyList_GetItemRefFast(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
-                      if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 213, __pyx_L54_error)
+                      if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 262, __pyx_L54_error)
                       __Pyx_XGOTREF(__pyx_t_11);
                       __pyx_t_6 = __Pyx_PyList_GetItemRefFast(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
-                      if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 213, __pyx_L54_error)
+                      if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 262, __pyx_L54_error)
                       __Pyx_XGOTREF(__pyx_t_6);
                     }
                     #else
-                    __pyx_t_11 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 213, __pyx_L54_error)
+                    __pyx_t_11 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 262, __pyx_L54_error)
                     __Pyx_GOTREF(__pyx_t_11);
-                    __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 213, __pyx_L54_error)
+                    __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 262, __pyx_L54_error)
                     __Pyx_GOTREF(__pyx_t_6);
                     #endif
                     __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
                   } else {
                     Py_ssize_t index = -1;
-                    __pyx_t_1 = PyObject_GetIter(__pyx_t_19); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 213, __pyx_L54_error)
+                    __pyx_t_1 = PyObject_GetIter(__pyx_t_19); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 262, __pyx_L54_error)
                     __Pyx_GOTREF(__pyx_t_1);
                     __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
                     __pyx_t_7 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_1);
@@ -8649,7 +10288,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __Pyx_GOTREF(__pyx_t_11);
                     index = 1; __pyx_t_6 = __pyx_t_7(__pyx_t_1); if (unlikely(!__pyx_t_6)) goto __pyx_L62_unpacking_failed;
                     __Pyx_GOTREF(__pyx_t_6);
-                    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_1), 2) < (0)) __PYX_ERR(0, 213, __pyx_L54_error)
+                    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_1), 2) < (0)) __PYX_ERR(0, 262, __pyx_L54_error)
                     __pyx_t_7 = NULL;
                     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                     goto __pyx_L63_unpacking_done;
@@ -8657,7 +10296,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                     __pyx_t_7 = NULL;
                     if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-                    __PYX_ERR(0, 213, __pyx_L54_error)
+                    __PYX_ERR(0, 262, __pyx_L54_error)
                     __pyx_L63_unpacking_done:;
                   }
                   __Pyx_DECREF_SET(__pyx_v_version, __pyx_t_11);
@@ -8678,7 +10317,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __Pyx_XDECREF(__pyx_t_24); __pyx_t_24 = 0;
                 __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-                /* "ram_booster/disk_cleaner.py":214
+                /* "ram_booster/disk_cleaner.py":263
  *                     version = "1.0"
  *                     try: version, _ = winreg.QueryValueEx(sk, "DisplayVersion")
  *                     except Exception: pass             # <<<<<<<<<<<<<<
@@ -8692,7 +10331,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 }
                 goto __pyx_L56_except_error;
 
-                /* "ram_booster/disk_cleaner.py":213
+                /* "ram_booster/disk_cleaner.py":262
  * 
  *                     version = "1.0"
  *                     try: version, _ = winreg.QueryValueEx(sk, "DisplayVersion")             # <<<<<<<<<<<<<<
@@ -8713,7 +10352,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __pyx_L61_try_end:;
               }
 
-              /* "ram_booster/disk_cleaner.py":216
+              /* "ram_booster/disk_cleaner.py":265
  *                     except Exception: pass
  * 
  *                     size_kb = 0             # <<<<<<<<<<<<<<
@@ -8723,7 +10362,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
               __Pyx_INCREF(__pyx_mstate_global->__pyx_int_0);
               __Pyx_XDECREF_SET(__pyx_v_size_kb, __pyx_mstate_global->__pyx_int_0);
 
-              /* "ram_booster/disk_cleaner.py":217
+              /* "ram_booster/disk_cleaner.py":266
  * 
  *                     size_kb = 0
  *                     try: size_kb, _ = winreg.QueryValueEx(sk, "EstimatedSize")             # <<<<<<<<<<<<<<
@@ -8739,9 +10378,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __Pyx_XGOTREF(__pyx_t_20);
                 /*try:*/ {
                   __pyx_t_6 = NULL;
-                  __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 217, __pyx_L66_error)
+                  __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 266, __pyx_L66_error)
                   __Pyx_GOTREF(__pyx_t_11);
-                  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_QueryValueEx); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 217, __pyx_L66_error)
+                  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_QueryValueEx); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 266, __pyx_L66_error)
                   __Pyx_GOTREF(__pyx_t_1);
                   __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                   __pyx_t_12 = 1;
@@ -8761,7 +10400,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __pyx_t_19 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_1, __pyx_callargs+__pyx_t_12, (3-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
                     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
                     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                    if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 217, __pyx_L66_error)
+                    if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 266, __pyx_L66_error)
                     __Pyx_GOTREF(__pyx_t_19);
                   }
                   if ((likely(PyTuple_CheckExact(__pyx_t_19))) || (PyList_CheckExact(__pyx_t_19))) {
@@ -8770,7 +10409,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     if (unlikely(size != 2)) {
                       if (size > 2) __Pyx_RaiseTooManyValuesError(2);
                       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-                      __PYX_ERR(0, 217, __pyx_L66_error)
+                      __PYX_ERR(0, 266, __pyx_L66_error)
                     }
                     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
                     if (likely(PyTuple_CheckExact(sequence))) {
@@ -8780,22 +10419,22 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                       __Pyx_INCREF(__pyx_t_6);
                     } else {
                       __pyx_t_1 = __Pyx_PyList_GetItemRefFast(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
-                      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 217, __pyx_L66_error)
+                      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 266, __pyx_L66_error)
                       __Pyx_XGOTREF(__pyx_t_1);
                       __pyx_t_6 = __Pyx_PyList_GetItemRefFast(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
-                      if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 217, __pyx_L66_error)
+                      if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 266, __pyx_L66_error)
                       __Pyx_XGOTREF(__pyx_t_6);
                     }
                     #else
-                    __pyx_t_1 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 217, __pyx_L66_error)
+                    __pyx_t_1 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 266, __pyx_L66_error)
                     __Pyx_GOTREF(__pyx_t_1);
-                    __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 217, __pyx_L66_error)
+                    __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 266, __pyx_L66_error)
                     __Pyx_GOTREF(__pyx_t_6);
                     #endif
                     __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
                   } else {
                     Py_ssize_t index = -1;
-                    __pyx_t_11 = PyObject_GetIter(__pyx_t_19); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 217, __pyx_L66_error)
+                    __pyx_t_11 = PyObject_GetIter(__pyx_t_19); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 266, __pyx_L66_error)
                     __Pyx_GOTREF(__pyx_t_11);
                     __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
                     __pyx_t_7 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_11);
@@ -8803,7 +10442,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __Pyx_GOTREF(__pyx_t_1);
                     index = 1; __pyx_t_6 = __pyx_t_7(__pyx_t_11); if (unlikely(!__pyx_t_6)) goto __pyx_L74_unpacking_failed;
                     __Pyx_GOTREF(__pyx_t_6);
-                    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_11), 2) < (0)) __PYX_ERR(0, 217, __pyx_L66_error)
+                    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_11), 2) < (0)) __PYX_ERR(0, 266, __pyx_L66_error)
                     __pyx_t_7 = NULL;
                     __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                     goto __pyx_L75_unpacking_done;
@@ -8811,7 +10450,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                     __pyx_t_7 = NULL;
                     if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-                    __PYX_ERR(0, 217, __pyx_L66_error)
+                    __PYX_ERR(0, 266, __pyx_L66_error)
                     __pyx_L75_unpacking_done:;
                   }
                   __Pyx_DECREF_SET(__pyx_v_size_kb, __pyx_t_1);
@@ -8832,7 +10471,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __Pyx_XDECREF(__pyx_t_24); __pyx_t_24 = 0;
                 __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-                /* "ram_booster/disk_cleaner.py":218
+                /* "ram_booster/disk_cleaner.py":267
  *                     size_kb = 0
  *                     try: size_kb, _ = winreg.QueryValueEx(sk, "EstimatedSize")
  *                     except Exception: pass             # <<<<<<<<<<<<<<
@@ -8846,7 +10485,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 }
                 goto __pyx_L68_except_error;
 
-                /* "ram_booster/disk_cleaner.py":217
+                /* "ram_booster/disk_cleaner.py":266
  * 
  *                     size_kb = 0
  *                     try: size_kb, _ = winreg.QueryValueEx(sk, "EstimatedSize")             # <<<<<<<<<<<<<<
@@ -8867,7 +10506,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __pyx_L73_try_end:;
               }
 
-              /* "ram_booster/disk_cleaner.py":220
+              /* "ram_booster/disk_cleaner.py":269
  *                     except Exception: pass
  * 
  *                     uninstall_string = ""             # <<<<<<<<<<<<<<
@@ -8877,7 +10516,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
               __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_);
               __Pyx_XDECREF_SET(__pyx_v_uninstall_string, __pyx_mstate_global->__pyx_kp_u_);
 
-              /* "ram_booster/disk_cleaner.py":221
+              /* "ram_booster/disk_cleaner.py":270
  * 
  *                     uninstall_string = ""
  *                     try: uninstall_string, _ = winreg.QueryValueEx(sk, "UninstallString")             # <<<<<<<<<<<<<<
@@ -8893,9 +10532,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __Pyx_XGOTREF(__pyx_t_22);
                 /*try:*/ {
                   __pyx_t_6 = NULL;
-                  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 221, __pyx_L78_error)
+                  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 270, __pyx_L78_error)
                   __Pyx_GOTREF(__pyx_t_1);
-                  __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_QueryValueEx); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 221, __pyx_L78_error)
+                  __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_QueryValueEx); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 270, __pyx_L78_error)
                   __Pyx_GOTREF(__pyx_t_11);
                   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                   __pyx_t_12 = 1;
@@ -8915,7 +10554,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __pyx_t_19 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_11, __pyx_callargs+__pyx_t_12, (3-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
                     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
                     __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                    if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 221, __pyx_L78_error)
+                    if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 270, __pyx_L78_error)
                     __Pyx_GOTREF(__pyx_t_19);
                   }
                   if ((likely(PyTuple_CheckExact(__pyx_t_19))) || (PyList_CheckExact(__pyx_t_19))) {
@@ -8924,7 +10563,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     if (unlikely(size != 2)) {
                       if (size > 2) __Pyx_RaiseTooManyValuesError(2);
                       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-                      __PYX_ERR(0, 221, __pyx_L78_error)
+                      __PYX_ERR(0, 270, __pyx_L78_error)
                     }
                     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
                     if (likely(PyTuple_CheckExact(sequence))) {
@@ -8934,22 +10573,22 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                       __Pyx_INCREF(__pyx_t_6);
                     } else {
                       __pyx_t_11 = __Pyx_PyList_GetItemRefFast(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
-                      if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 221, __pyx_L78_error)
+                      if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 270, __pyx_L78_error)
                       __Pyx_XGOTREF(__pyx_t_11);
                       __pyx_t_6 = __Pyx_PyList_GetItemRefFast(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
-                      if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 221, __pyx_L78_error)
+                      if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 270, __pyx_L78_error)
                       __Pyx_XGOTREF(__pyx_t_6);
                     }
                     #else
-                    __pyx_t_11 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 221, __pyx_L78_error)
+                    __pyx_t_11 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 270, __pyx_L78_error)
                     __Pyx_GOTREF(__pyx_t_11);
-                    __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 221, __pyx_L78_error)
+                    __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 270, __pyx_L78_error)
                     __Pyx_GOTREF(__pyx_t_6);
                     #endif
                     __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
                   } else {
                     Py_ssize_t index = -1;
-                    __pyx_t_1 = PyObject_GetIter(__pyx_t_19); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 221, __pyx_L78_error)
+                    __pyx_t_1 = PyObject_GetIter(__pyx_t_19); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 270, __pyx_L78_error)
                     __Pyx_GOTREF(__pyx_t_1);
                     __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
                     __pyx_t_7 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_1);
@@ -8957,7 +10596,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __Pyx_GOTREF(__pyx_t_11);
                     index = 1; __pyx_t_6 = __pyx_t_7(__pyx_t_1); if (unlikely(!__pyx_t_6)) goto __pyx_L86_unpacking_failed;
                     __Pyx_GOTREF(__pyx_t_6);
-                    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_1), 2) < (0)) __PYX_ERR(0, 221, __pyx_L78_error)
+                    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_1), 2) < (0)) __PYX_ERR(0, 270, __pyx_L78_error)
                     __pyx_t_7 = NULL;
                     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                     goto __pyx_L87_unpacking_done;
@@ -8965,7 +10604,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                     __pyx_t_7 = NULL;
                     if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-                    __PYX_ERR(0, 221, __pyx_L78_error)
+                    __PYX_ERR(0, 270, __pyx_L78_error)
                     __pyx_L87_unpacking_done:;
                   }
                   __Pyx_DECREF_SET(__pyx_v_uninstall_string, __pyx_t_11);
@@ -8986,12 +10625,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __Pyx_XDECREF(__pyx_t_24); __pyx_t_24 = 0;
                 __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-                /* "ram_booster/disk_cleaner.py":222
+                /* "ram_booster/disk_cleaner.py":271
  *                     uninstall_string = ""
  *                     try: uninstall_string, _ = winreg.QueryValueEx(sk, "UninstallString")
  *                     except Exception: pass             # <<<<<<<<<<<<<<
  * 
- *                     size_mb = round(size_kb / 1024, 1) if size_kb else 0.0
+ *                     display_icon = ""
 */
                 __pyx_t_23 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
                 if (__pyx_t_23) {
@@ -9000,7 +10639,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 }
                 goto __pyx_L80_except_error;
 
-                /* "ram_booster/disk_cleaner.py":221
+                /* "ram_booster/disk_cleaner.py":270
  * 
  *                     uninstall_string = ""
  *                     try: uninstall_string, _ = winreg.QueryValueEx(sk, "UninstallString")             # <<<<<<<<<<<<<<
@@ -9021,17 +10660,394 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __pyx_L85_try_end:;
               }
 
-              /* "ram_booster/disk_cleaner.py":224
+              /* "ram_booster/disk_cleaner.py":273
  *                     except Exception: pass
+ * 
+ *                     display_icon = ""             # <<<<<<<<<<<<<<
+ *                     try: display_icon, _ = winreg.QueryValueEx(sk, "DisplayIcon")
+ *                     except Exception: pass
+*/
+              __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_);
+              __Pyx_XDECREF_SET(__pyx_v_display_icon, __pyx_mstate_global->__pyx_kp_u_);
+
+              /* "ram_booster/disk_cleaner.py":274
+ * 
+ *                     display_icon = ""
+ *                     try: display_icon, _ = winreg.QueryValueEx(sk, "DisplayIcon")             # <<<<<<<<<<<<<<
+ *                     except Exception: pass
+ * 
+*/
+              {
+                __Pyx_PyThreadState_declare
+                __Pyx_PyThreadState_assign
+                __Pyx_ExceptionSave(&__pyx_t_22, &__pyx_t_21, &__pyx_t_20);
+                __Pyx_XGOTREF(__pyx_t_22);
+                __Pyx_XGOTREF(__pyx_t_21);
+                __Pyx_XGOTREF(__pyx_t_20);
+                /*try:*/ {
+                  __pyx_t_6 = NULL;
+                  __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 274, __pyx_L90_error)
+                  __Pyx_GOTREF(__pyx_t_11);
+                  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_QueryValueEx); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 274, __pyx_L90_error)
+                  __Pyx_GOTREF(__pyx_t_1);
+                  __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+                  __pyx_t_12 = 1;
+                  #if CYTHON_UNPACK_METHODS
+                  if (unlikely(PyMethod_Check(__pyx_t_1))) {
+                    __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_1);
+                    assert(__pyx_t_6);
+                    PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_1);
+                    __Pyx_INCREF(__pyx_t_6);
+                    __Pyx_INCREF(__pyx__function);
+                    __Pyx_DECREF_SET(__pyx_t_1, __pyx__function);
+                    __pyx_t_12 = 0;
+                  }
+                  #endif
+                  {
+                    PyObject *__pyx_callargs[3] = {__pyx_t_6, __pyx_v_sk, __pyx_mstate_global->__pyx_n_u_DisplayIcon};
+                    __pyx_t_19 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_1, __pyx_callargs+__pyx_t_12, (3-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+                    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                    if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 274, __pyx_L90_error)
+                    __Pyx_GOTREF(__pyx_t_19);
+                  }
+                  if ((likely(PyTuple_CheckExact(__pyx_t_19))) || (PyList_CheckExact(__pyx_t_19))) {
+                    PyObject* sequence = __pyx_t_19;
+                    Py_ssize_t size = __Pyx_PySequence_SIZE(sequence);
+                    if (unlikely(size != 2)) {
+                      if (size > 2) __Pyx_RaiseTooManyValuesError(2);
+                      else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
+                      __PYX_ERR(0, 274, __pyx_L90_error)
+                    }
+                    #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                    if (likely(PyTuple_CheckExact(sequence))) {
+                      __pyx_t_1 = PyTuple_GET_ITEM(sequence, 0);
+                      __Pyx_INCREF(__pyx_t_1);
+                      __pyx_t_6 = PyTuple_GET_ITEM(sequence, 1);
+                      __Pyx_INCREF(__pyx_t_6);
+                    } else {
+                      __pyx_t_1 = __Pyx_PyList_GetItemRefFast(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
+                      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 274, __pyx_L90_error)
+                      __Pyx_XGOTREF(__pyx_t_1);
+                      __pyx_t_6 = __Pyx_PyList_GetItemRefFast(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
+                      if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 274, __pyx_L90_error)
+                      __Pyx_XGOTREF(__pyx_t_6);
+                    }
+                    #else
+                    __pyx_t_1 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 274, __pyx_L90_error)
+                    __Pyx_GOTREF(__pyx_t_1);
+                    __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 274, __pyx_L90_error)
+                    __Pyx_GOTREF(__pyx_t_6);
+                    #endif
+                    __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
+                  } else {
+                    Py_ssize_t index = -1;
+                    __pyx_t_11 = PyObject_GetIter(__pyx_t_19); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 274, __pyx_L90_error)
+                    __Pyx_GOTREF(__pyx_t_11);
+                    __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
+                    __pyx_t_7 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_11);
+                    index = 0; __pyx_t_1 = __pyx_t_7(__pyx_t_11); if (unlikely(!__pyx_t_1)) goto __pyx_L98_unpacking_failed;
+                    __Pyx_GOTREF(__pyx_t_1);
+                    index = 1; __pyx_t_6 = __pyx_t_7(__pyx_t_11); if (unlikely(!__pyx_t_6)) goto __pyx_L98_unpacking_failed;
+                    __Pyx_GOTREF(__pyx_t_6);
+                    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_11), 2) < (0)) __PYX_ERR(0, 274, __pyx_L90_error)
+                    __pyx_t_7 = NULL;
+                    __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+                    goto __pyx_L99_unpacking_done;
+                    __pyx_L98_unpacking_failed:;
+                    __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+                    __pyx_t_7 = NULL;
+                    if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
+                    __PYX_ERR(0, 274, __pyx_L90_error)
+                    __pyx_L99_unpacking_done:;
+                  }
+                  __Pyx_DECREF_SET(__pyx_v_display_icon, __pyx_t_1);
+                  __pyx_t_1 = 0;
+                  __Pyx_DECREF_SET(__pyx_v__, __pyx_t_6);
+                  __pyx_t_6 = 0;
+                }
+                __Pyx_XDECREF(__pyx_t_22); __pyx_t_22 = 0;
+                __Pyx_XDECREF(__pyx_t_21); __pyx_t_21 = 0;
+                __Pyx_XDECREF(__pyx_t_20); __pyx_t_20 = 0;
+                goto __pyx_L97_try_end;
+                __pyx_L90_error:;
+                __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+                __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+                __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+                __Pyx_XDECREF(__pyx_t_19); __pyx_t_19 = 0;
+                __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+                __Pyx_XDECREF(__pyx_t_24); __pyx_t_24 = 0;
+                __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+                /* "ram_booster/disk_cleaner.py":275
+ *                     display_icon = ""
+ *                     try: display_icon, _ = winreg.QueryValueEx(sk, "DisplayIcon")
+ *                     except Exception: pass             # <<<<<<<<<<<<<<
+ * 
+ *                     install_location = ""
+*/
+                __pyx_t_23 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+                if (__pyx_t_23) {
+                  __Pyx_ErrRestore(0,0,0);
+                  goto __pyx_L91_exception_handled;
+                }
+                goto __pyx_L92_except_error;
+
+                /* "ram_booster/disk_cleaner.py":274
+ * 
+ *                     display_icon = ""
+ *                     try: display_icon, _ = winreg.QueryValueEx(sk, "DisplayIcon")             # <<<<<<<<<<<<<<
+ *                     except Exception: pass
+ * 
+*/
+                __pyx_L92_except_error:;
+                __Pyx_XGIVEREF(__pyx_t_22);
+                __Pyx_XGIVEREF(__pyx_t_21);
+                __Pyx_XGIVEREF(__pyx_t_20);
+                __Pyx_ExceptionReset(__pyx_t_22, __pyx_t_21, __pyx_t_20);
+                goto __pyx_L17_error;
+                __pyx_L91_exception_handled:;
+                __Pyx_XGIVEREF(__pyx_t_22);
+                __Pyx_XGIVEREF(__pyx_t_21);
+                __Pyx_XGIVEREF(__pyx_t_20);
+                __Pyx_ExceptionReset(__pyx_t_22, __pyx_t_21, __pyx_t_20);
+                __pyx_L97_try_end:;
+              }
+
+              /* "ram_booster/disk_cleaner.py":277
+ *                     except Exception: pass
+ * 
+ *                     install_location = ""             # <<<<<<<<<<<<<<
+ *                     try: install_location, _ = winreg.QueryValueEx(sk, "InstallLocation")
+ *                     except Exception: pass
+*/
+              __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_);
+              __Pyx_XDECREF_SET(__pyx_v_install_location, __pyx_mstate_global->__pyx_kp_u_);
+
+              /* "ram_booster/disk_cleaner.py":278
+ * 
+ *                     install_location = ""
+ *                     try: install_location, _ = winreg.QueryValueEx(sk, "InstallLocation")             # <<<<<<<<<<<<<<
+ *                     except Exception: pass
+ * 
+*/
+              {
+                __Pyx_PyThreadState_declare
+                __Pyx_PyThreadState_assign
+                __Pyx_ExceptionSave(&__pyx_t_20, &__pyx_t_21, &__pyx_t_22);
+                __Pyx_XGOTREF(__pyx_t_20);
+                __Pyx_XGOTREF(__pyx_t_21);
+                __Pyx_XGOTREF(__pyx_t_22);
+                /*try:*/ {
+                  __pyx_t_6 = NULL;
+                  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 278, __pyx_L102_error)
+                  __Pyx_GOTREF(__pyx_t_1);
+                  __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_QueryValueEx); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 278, __pyx_L102_error)
+                  __Pyx_GOTREF(__pyx_t_11);
+                  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                  __pyx_t_12 = 1;
+                  #if CYTHON_UNPACK_METHODS
+                  if (unlikely(PyMethod_Check(__pyx_t_11))) {
+                    __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_11);
+                    assert(__pyx_t_6);
+                    PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_11);
+                    __Pyx_INCREF(__pyx_t_6);
+                    __Pyx_INCREF(__pyx__function);
+                    __Pyx_DECREF_SET(__pyx_t_11, __pyx__function);
+                    __pyx_t_12 = 0;
+                  }
+                  #endif
+                  {
+                    PyObject *__pyx_callargs[3] = {__pyx_t_6, __pyx_v_sk, __pyx_mstate_global->__pyx_n_u_InstallLocation};
+                    __pyx_t_19 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_11, __pyx_callargs+__pyx_t_12, (3-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+                    __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+                    if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 278, __pyx_L102_error)
+                    __Pyx_GOTREF(__pyx_t_19);
+                  }
+                  if ((likely(PyTuple_CheckExact(__pyx_t_19))) || (PyList_CheckExact(__pyx_t_19))) {
+                    PyObject* sequence = __pyx_t_19;
+                    Py_ssize_t size = __Pyx_PySequence_SIZE(sequence);
+                    if (unlikely(size != 2)) {
+                      if (size > 2) __Pyx_RaiseTooManyValuesError(2);
+                      else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
+                      __PYX_ERR(0, 278, __pyx_L102_error)
+                    }
+                    #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                    if (likely(PyTuple_CheckExact(sequence))) {
+                      __pyx_t_11 = PyTuple_GET_ITEM(sequence, 0);
+                      __Pyx_INCREF(__pyx_t_11);
+                      __pyx_t_6 = PyTuple_GET_ITEM(sequence, 1);
+                      __Pyx_INCREF(__pyx_t_6);
+                    } else {
+                      __pyx_t_11 = __Pyx_PyList_GetItemRefFast(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
+                      if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 278, __pyx_L102_error)
+                      __Pyx_XGOTREF(__pyx_t_11);
+                      __pyx_t_6 = __Pyx_PyList_GetItemRefFast(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
+                      if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 278, __pyx_L102_error)
+                      __Pyx_XGOTREF(__pyx_t_6);
+                    }
+                    #else
+                    __pyx_t_11 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 278, __pyx_L102_error)
+                    __Pyx_GOTREF(__pyx_t_11);
+                    __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 278, __pyx_L102_error)
+                    __Pyx_GOTREF(__pyx_t_6);
+                    #endif
+                    __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
+                  } else {
+                    Py_ssize_t index = -1;
+                    __pyx_t_1 = PyObject_GetIter(__pyx_t_19); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 278, __pyx_L102_error)
+                    __Pyx_GOTREF(__pyx_t_1);
+                    __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
+                    __pyx_t_7 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_1);
+                    index = 0; __pyx_t_11 = __pyx_t_7(__pyx_t_1); if (unlikely(!__pyx_t_11)) goto __pyx_L110_unpacking_failed;
+                    __Pyx_GOTREF(__pyx_t_11);
+                    index = 1; __pyx_t_6 = __pyx_t_7(__pyx_t_1); if (unlikely(!__pyx_t_6)) goto __pyx_L110_unpacking_failed;
+                    __Pyx_GOTREF(__pyx_t_6);
+                    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_1), 2) < (0)) __PYX_ERR(0, 278, __pyx_L102_error)
+                    __pyx_t_7 = NULL;
+                    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                    goto __pyx_L111_unpacking_done;
+                    __pyx_L110_unpacking_failed:;
+                    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                    __pyx_t_7 = NULL;
+                    if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
+                    __PYX_ERR(0, 278, __pyx_L102_error)
+                    __pyx_L111_unpacking_done:;
+                  }
+                  __Pyx_DECREF_SET(__pyx_v_install_location, __pyx_t_11);
+                  __pyx_t_11 = 0;
+                  __Pyx_DECREF_SET(__pyx_v__, __pyx_t_6);
+                  __pyx_t_6 = 0;
+                }
+                __Pyx_XDECREF(__pyx_t_20); __pyx_t_20 = 0;
+                __Pyx_XDECREF(__pyx_t_21); __pyx_t_21 = 0;
+                __Pyx_XDECREF(__pyx_t_22); __pyx_t_22 = 0;
+                goto __pyx_L109_try_end;
+                __pyx_L102_error:;
+                __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+                __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+                __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+                __Pyx_XDECREF(__pyx_t_19); __pyx_t_19 = 0;
+                __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+                __Pyx_XDECREF(__pyx_t_24); __pyx_t_24 = 0;
+                __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+                /* "ram_booster/disk_cleaner.py":279
+ *                     install_location = ""
+ *                     try: install_location, _ = winreg.QueryValueEx(sk, "InstallLocation")
+ *                     except Exception: pass             # <<<<<<<<<<<<<<
+ * 
+ *                     icon_b64 = _extract_app_icon_b64(display_icon) or _extract_app_icon_b64(install_location)
+*/
+                __pyx_t_23 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+                if (__pyx_t_23) {
+                  __Pyx_ErrRestore(0,0,0);
+                  goto __pyx_L103_exception_handled;
+                }
+                goto __pyx_L104_except_error;
+
+                /* "ram_booster/disk_cleaner.py":278
+ * 
+ *                     install_location = ""
+ *                     try: install_location, _ = winreg.QueryValueEx(sk, "InstallLocation")             # <<<<<<<<<<<<<<
+ *                     except Exception: pass
+ * 
+*/
+                __pyx_L104_except_error:;
+                __Pyx_XGIVEREF(__pyx_t_20);
+                __Pyx_XGIVEREF(__pyx_t_21);
+                __Pyx_XGIVEREF(__pyx_t_22);
+                __Pyx_ExceptionReset(__pyx_t_20, __pyx_t_21, __pyx_t_22);
+                goto __pyx_L17_error;
+                __pyx_L103_exception_handled:;
+                __Pyx_XGIVEREF(__pyx_t_20);
+                __Pyx_XGIVEREF(__pyx_t_21);
+                __Pyx_XGIVEREF(__pyx_t_22);
+                __Pyx_ExceptionReset(__pyx_t_20, __pyx_t_21, __pyx_t_22);
+                __pyx_L109_try_end:;
+              }
+
+              /* "ram_booster/disk_cleaner.py":281
+ *                     except Exception: pass
+ * 
+ *                     icon_b64 = _extract_app_icon_b64(display_icon) or _extract_app_icon_b64(install_location)             # <<<<<<<<<<<<<<
+ * 
+ *                     size_mb = round(size_kb / 1024, 1) if size_kb else 0.0
+*/
+              __pyx_t_11 = NULL;
+              __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_extract_app_icon_b64); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 281, __pyx_L17_error)
+              __Pyx_GOTREF(__pyx_t_1);
+              __pyx_t_12 = 1;
+              #if CYTHON_UNPACK_METHODS
+              if (unlikely(PyMethod_Check(__pyx_t_1))) {
+                __pyx_t_11 = PyMethod_GET_SELF(__pyx_t_1);
+                assert(__pyx_t_11);
+                PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_1);
+                __Pyx_INCREF(__pyx_t_11);
+                __Pyx_INCREF(__pyx__function);
+                __Pyx_DECREF_SET(__pyx_t_1, __pyx__function);
+                __pyx_t_12 = 0;
+              }
+              #endif
+              {
+                PyObject *__pyx_callargs[2] = {__pyx_t_11, __pyx_v_display_icon};
+                __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_1, __pyx_callargs+__pyx_t_12, (2-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+                __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 281, __pyx_L17_error)
+                __Pyx_GOTREF(__pyx_t_6);
+              }
+              __pyx_t_25 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely((__pyx_t_25 < 0))) __PYX_ERR(0, 281, __pyx_L17_error)
+              if (!__pyx_t_25) {
+                __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+              } else {
+                __Pyx_INCREF(__pyx_t_6);
+                __pyx_t_19 = __pyx_t_6;
+                __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+                goto __pyx_L114_bool_binop_done;
+              }
+              __pyx_t_1 = NULL;
+              __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_extract_app_icon_b64); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 281, __pyx_L17_error)
+              __Pyx_GOTREF(__pyx_t_11);
+              __pyx_t_12 = 1;
+              #if CYTHON_UNPACK_METHODS
+              if (unlikely(PyMethod_Check(__pyx_t_11))) {
+                __pyx_t_1 = PyMethod_GET_SELF(__pyx_t_11);
+                assert(__pyx_t_1);
+                PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_11);
+                __Pyx_INCREF(__pyx_t_1);
+                __Pyx_INCREF(__pyx__function);
+                __Pyx_DECREF_SET(__pyx_t_11, __pyx__function);
+                __pyx_t_12 = 0;
+              }
+              #endif
+              {
+                PyObject *__pyx_callargs[2] = {__pyx_t_1, __pyx_v_install_location};
+                __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_11, __pyx_callargs+__pyx_t_12, (2-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+                __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+                if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 281, __pyx_L17_error)
+                __Pyx_GOTREF(__pyx_t_6);
+              }
+              __Pyx_INCREF(__pyx_t_6);
+              __pyx_t_19 = __pyx_t_6;
+              __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+              __pyx_L114_bool_binop_done:;
+              __Pyx_XDECREF_SET(__pyx_v_icon_b64, __pyx_t_19);
+              __pyx_t_19 = 0;
+
+              /* "ram_booster/disk_cleaner.py":283
+ *                     icon_b64 = _extract_app_icon_b64(display_icon) or _extract_app_icon_b64(install_location)
  * 
  *                     size_mb = round(size_kb / 1024, 1) if size_kb else 0.0             # <<<<<<<<<<<<<<
  * 
  *                     apps.append({
 */
-              __pyx_t_25 = __Pyx_PyObject_IsTrue(__pyx_v_size_kb); if (unlikely((__pyx_t_25 < 0))) __PYX_ERR(0, 224, __pyx_L17_error)
+              __pyx_t_25 = __Pyx_PyObject_IsTrue(__pyx_v_size_kb); if (unlikely((__pyx_t_25 < 0))) __PYX_ERR(0, 283, __pyx_L17_error)
               if (__pyx_t_25) {
                 __pyx_t_11 = NULL;
-                __pyx_t_1 = __Pyx_PyLong_TrueDivideObjC(__pyx_v_size_kb, __pyx_mstate_global->__pyx_int_1024, 0x400, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 224, __pyx_L17_error)
+                __pyx_t_1 = __Pyx_PyLong_TrueDivideObjC(__pyx_v_size_kb, __pyx_mstate_global->__pyx_int_1024, 0x400, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 283, __pyx_L17_error)
                 __Pyx_GOTREF(__pyx_t_1);
                 __pyx_t_12 = 1;
                 {
@@ -9039,7 +11055,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                   __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_12, (3-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
                   __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
                   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                  if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 224, __pyx_L17_error)
+                  if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 283, __pyx_L17_error)
                   __Pyx_GOTREF(__pyx_t_6);
                 }
                 __pyx_t_19 = __pyx_t_6;
@@ -9051,89 +11067,98 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
               __Pyx_XDECREF_SET(__pyx_v_size_mb, __pyx_t_19);
               __pyx_t_19 = 0;
 
-              /* "ram_booster/disk_cleaner.py":227
+              /* "ram_booster/disk_cleaner.py":286
  * 
  *                     apps.append({
  *                         "name": name,             # <<<<<<<<<<<<<<
  *                         "publisher": publisher,
  *                         "version": str(version),
 */
-              __pyx_t_19 = __Pyx_PyDict_NewPresized(6); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 227, __pyx_L17_error)
+              __pyx_t_19 = __Pyx_PyDict_NewPresized(7); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 286, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_19);
-              if (PyDict_SetItem(__pyx_t_19, __pyx_mstate_global->__pyx_n_u_name, __pyx_v_name) < (0)) __PYX_ERR(0, 227, __pyx_L17_error)
+              if (PyDict_SetItem(__pyx_t_19, __pyx_mstate_global->__pyx_n_u_name, __pyx_v_name) < (0)) __PYX_ERR(0, 286, __pyx_L17_error)
 
-              /* "ram_booster/disk_cleaner.py":228
+              /* "ram_booster/disk_cleaner.py":287
  *                     apps.append({
  *                         "name": name,
  *                         "publisher": publisher,             # <<<<<<<<<<<<<<
  *                         "version": str(version),
  *                         "size_mb": size_mb,
 */
-              if (PyDict_SetItem(__pyx_t_19, __pyx_mstate_global->__pyx_n_u_publisher, __pyx_v_publisher) < (0)) __PYX_ERR(0, 227, __pyx_L17_error)
+              if (PyDict_SetItem(__pyx_t_19, __pyx_mstate_global->__pyx_n_u_publisher, __pyx_v_publisher) < (0)) __PYX_ERR(0, 286, __pyx_L17_error)
 
-              /* "ram_booster/disk_cleaner.py":229
+              /* "ram_booster/disk_cleaner.py":288
  *                         "name": name,
  *                         "publisher": publisher,
  *                         "version": str(version),             # <<<<<<<<<<<<<<
  *                         "size_mb": size_mb,
  *                         "uninstall_cmd": uninstall_string,
 */
-              __pyx_t_6 = __Pyx_PyObject_Unicode(__pyx_v_version); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 229, __pyx_L17_error)
+              __pyx_t_6 = __Pyx_PyObject_Unicode(__pyx_v_version); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 288, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_6);
-              if (PyDict_SetItem(__pyx_t_19, __pyx_mstate_global->__pyx_n_u_version, __pyx_t_6) < (0)) __PYX_ERR(0, 227, __pyx_L17_error)
+              if (PyDict_SetItem(__pyx_t_19, __pyx_mstate_global->__pyx_n_u_version, __pyx_t_6) < (0)) __PYX_ERR(0, 286, __pyx_L17_error)
               __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-              /* "ram_booster/disk_cleaner.py":230
+              /* "ram_booster/disk_cleaner.py":289
  *                         "publisher": publisher,
  *                         "version": str(version),
  *                         "size_mb": size_mb,             # <<<<<<<<<<<<<<
  *                         "uninstall_cmd": uninstall_string,
- *                         "key_path": f"{path}\\{subkey_name}",
+ *                         "icon_b64": icon_b64,
 */
-              if (PyDict_SetItem(__pyx_t_19, __pyx_mstate_global->__pyx_n_u_size_mb, __pyx_v_size_mb) < (0)) __PYX_ERR(0, 227, __pyx_L17_error)
+              if (PyDict_SetItem(__pyx_t_19, __pyx_mstate_global->__pyx_n_u_size_mb, __pyx_v_size_mb) < (0)) __PYX_ERR(0, 286, __pyx_L17_error)
 
-              /* "ram_booster/disk_cleaner.py":231
+              /* "ram_booster/disk_cleaner.py":290
  *                         "version": str(version),
  *                         "size_mb": size_mb,
  *                         "uninstall_cmd": uninstall_string,             # <<<<<<<<<<<<<<
+ *                         "icon_b64": icon_b64,
+ *                         "key_path": f"{path}\\{subkey_name}",
+*/
+              if (PyDict_SetItem(__pyx_t_19, __pyx_mstate_global->__pyx_n_u_uninstall_cmd, __pyx_v_uninstall_string) < (0)) __PYX_ERR(0, 286, __pyx_L17_error)
+
+              /* "ram_booster/disk_cleaner.py":291
+ *                         "size_mb": size_mb,
+ *                         "uninstall_cmd": uninstall_string,
+ *                         "icon_b64": icon_b64,             # <<<<<<<<<<<<<<
  *                         "key_path": f"{path}\\{subkey_name}",
  *                     })
 */
-              if (PyDict_SetItem(__pyx_t_19, __pyx_mstate_global->__pyx_n_u_uninstall_cmd, __pyx_v_uninstall_string) < (0)) __PYX_ERR(0, 227, __pyx_L17_error)
+              if (PyDict_SetItem(__pyx_t_19, __pyx_mstate_global->__pyx_n_u_icon_b64, __pyx_v_icon_b64) < (0)) __PYX_ERR(0, 286, __pyx_L17_error)
 
-              /* "ram_booster/disk_cleaner.py":232
- *                         "size_mb": size_mb,
+              /* "ram_booster/disk_cleaner.py":292
  *                         "uninstall_cmd": uninstall_string,
+ *                         "icon_b64": icon_b64,
  *                         "key_path": f"{path}\\{subkey_name}",             # <<<<<<<<<<<<<<
  *                     })
  *                     winreg.CloseKey(sk)
 */
-              __pyx_t_6 = __Pyx_PyObject_FormatSimple(__pyx_v_path, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 232, __pyx_L17_error)
+              __pyx_t_6 = __Pyx_PyObject_FormatSimple(__pyx_v_path, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 292, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_6);
-              __pyx_t_1 = __Pyx_PyObject_FormatSimple(__pyx_v_subkey_name, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 232, __pyx_L17_error)
+              __pyx_t_1 = __Pyx_PyObject_FormatSimple(__pyx_v_subkey_name, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 292, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_1);
               __pyx_t_18[0] = __pyx_t_6;
-              __pyx_t_18[1] = __pyx_mstate_global->__pyx_kp_u__2;
+              __pyx_t_18[1] = __pyx_mstate_global->__pyx_kp_u__5;
               __pyx_t_18[2] = __pyx_t_1;
               __pyx_t_11 = __Pyx_PyUnicode_Join(__pyx_t_18, 3, __Pyx_PyUnicode_GET_LENGTH(__pyx_t_6) + 1 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_1), 127 | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_6) | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_1));
-              if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 232, __pyx_L17_error)
+              if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 292, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_11);
               __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
               __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-              if (PyDict_SetItem(__pyx_t_19, __pyx_mstate_global->__pyx_n_u_key_path, __pyx_t_11) < (0)) __PYX_ERR(0, 227, __pyx_L17_error)
+              if (PyDict_SetItem(__pyx_t_19, __pyx_mstate_global->__pyx_n_u_key_path, __pyx_t_11) < (0)) __PYX_ERR(0, 286, __pyx_L17_error)
               __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-              /* "ram_booster/disk_cleaner.py":226
+              /* "ram_booster/disk_cleaner.py":285
  *                     size_mb = round(size_kb / 1024, 1) if size_kb else 0.0
  * 
  *                     apps.append({             # <<<<<<<<<<<<<<
  *                         "name": name,
  *                         "publisher": publisher,
 */
-              __pyx_t_28 = __Pyx_PyList_Append(__pyx_v_apps, __pyx_t_19); if (unlikely(__pyx_t_28 == ((int)-1))) __PYX_ERR(0, 226, __pyx_L17_error)
+              __pyx_t_28 = __Pyx_PyList_Append(__pyx_v_apps, __pyx_t_19); if (unlikely(__pyx_t_28 == ((int)-1))) __PYX_ERR(0, 285, __pyx_L17_error)
               __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
 
-              /* "ram_booster/disk_cleaner.py":234
+              /* "ram_booster/disk_cleaner.py":294
  *                         "key_path": f"{path}\\{subkey_name}",
  *                     })
  *                     winreg.CloseKey(sk)             # <<<<<<<<<<<<<<
@@ -9141,9 +11166,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
  *                     pass
 */
               __pyx_t_11 = NULL;
-              __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 234, __pyx_L17_error)
+              __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 294, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_1);
-              __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_CloseKey); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 234, __pyx_L17_error)
+              __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_CloseKey); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 294, __pyx_L17_error)
               __Pyx_GOTREF(__pyx_t_6);
               __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
               __pyx_t_12 = 1;
@@ -9163,12 +11188,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
                 __pyx_t_19 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_6, __pyx_callargs+__pyx_t_12, (2-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
                 __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
                 __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-                if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 234, __pyx_L17_error)
+                if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 294, __pyx_L17_error)
                 __Pyx_GOTREF(__pyx_t_19);
               }
               __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
 
-              /* "ram_booster/disk_cleaner.py":192
+              /* "ram_booster/disk_cleaner.py":241
  * 
  *             for i in range(num_subkeys):
  *                 try:             # <<<<<<<<<<<<<<
@@ -9189,7 +11214,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
             __Pyx_XDECREF(__pyx_t_24); __pyx_t_24 = 0;
             __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-            /* "ram_booster/disk_cleaner.py":235
+            /* "ram_booster/disk_cleaner.py":295
  *                     })
  *                     winreg.CloseKey(sk)
  *                 except Exception:             # <<<<<<<<<<<<<<
@@ -9203,7 +11228,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
             }
             goto __pyx_L19_except_error;
 
-            /* "ram_booster/disk_cleaner.py":192
+            /* "ram_booster/disk_cleaner.py":241
  * 
  *             for i in range(num_subkeys):
  *                 try:             # <<<<<<<<<<<<<<
@@ -9230,7 +11255,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
             __pyx_L24_try_end:;
           }
 
-          /* "ram_booster/disk_cleaner.py":191
+          /* "ram_booster/disk_cleaner.py":240
  *             num_subkeys = winreg.QueryInfoKey(hkey)[0]
  * 
  *             for i in range(num_subkeys):             # <<<<<<<<<<<<<<
@@ -9241,7 +11266,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
         }
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-        /* "ram_booster/disk_cleaner.py":237
+        /* "ram_booster/disk_cleaner.py":297
  *                 except Exception:
  *                     pass
  *             winreg.CloseKey(hkey)             # <<<<<<<<<<<<<<
@@ -9249,9 +11274,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
  *             pass
 */
         __pyx_t_19 = NULL;
-        __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 237, __pyx_L7_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_winreg); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 297, __pyx_L7_error)
         __Pyx_GOTREF(__pyx_t_6);
-        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_CloseKey); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 237, __pyx_L7_error)
+        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_CloseKey); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 297, __pyx_L7_error)
         __Pyx_GOTREF(__pyx_t_11);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         __pyx_t_12 = 1;
@@ -9271,12 +11296,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
           __pyx_t_3 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_11, __pyx_callargs+__pyx_t_12, (2-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
           __Pyx_XDECREF(__pyx_t_19); __pyx_t_19 = 0;
           __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 237, __pyx_L7_error)
+          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 297, __pyx_L7_error)
           __Pyx_GOTREF(__pyx_t_3);
         }
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-        /* "ram_booster/disk_cleaner.py":187
+        /* "ram_booster/disk_cleaner.py":236
  * 
  *     for root, path in reg_paths:
  *         try:             # <<<<<<<<<<<<<<
@@ -9298,7 +11323,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-      /* "ram_booster/disk_cleaner.py":238
+      /* "ram_booster/disk_cleaner.py":298
  *                     pass
  *             winreg.CloseKey(hkey)
  *         except Exception:             # <<<<<<<<<<<<<<
@@ -9312,7 +11337,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
       }
       goto __pyx_L9_except_error;
 
-      /* "ram_booster/disk_cleaner.py":187
+      /* "ram_booster/disk_cleaner.py":236
  * 
  *     for root, path in reg_paths:
  *         try:             # <<<<<<<<<<<<<<
@@ -9333,7 +11358,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
       __pyx_L14_try_end:;
     }
 
-    /* "ram_booster/disk_cleaner.py":186
+    /* "ram_booster/disk_cleaner.py":235
  *     ]
  * 
  *     for root, path in reg_paths:             # <<<<<<<<<<<<<<
@@ -9343,7 +11368,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "ram_booster/disk_cleaner.py":241
+  /* "ram_booster/disk_cleaner.py":301
  *             pass
  * 
  *     apps.sort(key=lambda x: x["name"].lower())             # <<<<<<<<<<<<<<
@@ -9352,24 +11377,24 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
 */
   __pyx_t_3 = __pyx_v_apps;
   __Pyx_INCREF(__pyx_t_3);
-  __pyx_t_11 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_18get_installed_apps_lambda1, 0, __pyx_mstate_global->__pyx_n_u_get_installed_apps_locals_lambda, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 241, __pyx_L1_error)
+  __pyx_t_11 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_18get_installed_apps_lambda1, 0, __pyx_mstate_global->__pyx_n_u_get_installed_apps_locals_lambda, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 301, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_11);
   __pyx_t_12 = 0;
   {
     PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 1 : 0)] = {__pyx_t_3, NULL};
-    __pyx_t_19 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 241, __pyx_L1_error)
+    __pyx_t_19 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 301, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_19);
-    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_key, __pyx_t_11, __pyx_t_19, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 241, __pyx_L1_error)
+    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_key, __pyx_t_11, __pyx_t_19, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 301, __pyx_L1_error)
     __pyx_t_4 = __Pyx_Object_VectorcallMethod_CallFromBuilder((PyObject*)__pyx_mstate_global->__pyx_n_u_sort, __pyx_callargs+__pyx_t_12, (1-__pyx_t_12) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_19);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
     __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 241, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 301, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "ram_booster/disk_cleaner.py":242
+  /* "ram_booster/disk_cleaner.py":302
  * 
  *     apps.sort(key=lambda x: x["name"].lower())
  *     return apps             # <<<<<<<<<<<<<<
@@ -9381,12 +11406,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
   __pyx_r = __pyx_v_apps;
   goto __pyx_L0;
 
-  /* "ram_booster/disk_cleaner.py":173
- * #  INSTALLED APPLICATIONS AUDITOR & UNINSTALLER
+  /* "ram_booster/disk_cleaner.py":224
+ * 
  * 
  * def get_installed_apps():             # <<<<<<<<<<<<<<
- *     """
- *     Audit and list all installed applications on Windows with estimated size, publisher, and uninstall string.
+ *     """Scan Windows Registry for installed applications with publisher, size, version, and real icons."""
+ *     apps = []
 */
 
   /* function exit code */
@@ -9419,13 +11444,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
   __Pyx_XDECREF(__pyx_v_version);
   __Pyx_XDECREF(__pyx_v_size_kb);
   __Pyx_XDECREF(__pyx_v_uninstall_string);
+  __Pyx_XDECREF(__pyx_v_display_icon);
+  __Pyx_XDECREF(__pyx_v_install_location);
+  __Pyx_XDECREF(__pyx_v_icon_b64);
   __Pyx_XDECREF(__pyx_v_size_mb);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "ram_booster/disk_cleaner.py":245
+/* "ram_booster/disk_cleaner.py":305
  * 
  * 
  * def uninstall_app(uninstall_cmd):             # <<<<<<<<<<<<<<
@@ -9434,16 +11462,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_16get_installed_apps(CYTH
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_19uninstall_app(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_21uninstall_app(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_11ram_booster_12disk_cleaner_18uninstall_app, "Trigger application uninstaller.");
-static PyMethodDef __pyx_mdef_11ram_booster_12disk_cleaner_19uninstall_app = {"uninstall_app", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_11ram_booster_12disk_cleaner_19uninstall_app, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_11ram_booster_12disk_cleaner_18uninstall_app};
-static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_19uninstall_app(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_11ram_booster_12disk_cleaner_20uninstall_app, "Trigger application uninstaller.");
+static PyMethodDef __pyx_mdef_11ram_booster_12disk_cleaner_21uninstall_app = {"uninstall_app", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_11ram_booster_12disk_cleaner_21uninstall_app, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_11ram_booster_12disk_cleaner_20uninstall_app};
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_21uninstall_app(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -9473,32 +11501,32 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_uninstall_cmd,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 245, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 305, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 245, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 305, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "uninstall_app", 0) < (0)) __PYX_ERR(0, 245, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "uninstall_app", 0) < (0)) __PYX_ERR(0, 305, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("uninstall_app", 1, 1, 1, i); __PYX_ERR(0, 245, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("uninstall_app", 1, 1, 1, i); __PYX_ERR(0, 305, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 245, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 305, __pyx_L3_error)
     }
     __pyx_v_uninstall_cmd = values[0];
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("uninstall_app", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 245, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("uninstall_app", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 305, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -9509,7 +11537,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(__pyx_self, __pyx_v_uninstall_cmd);
+  __pyx_r = __pyx_pf_11ram_booster_12disk_cleaner_20uninstall_app(__pyx_self, __pyx_v_uninstall_cmd);
 
   /* function exit code */
   for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
@@ -9519,7 +11547,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_uninstall_cmd) {
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20uninstall_app(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_uninstall_cmd) {
   PyObject *__pyx_v_e = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -9548,18 +11576,18 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("uninstall_app", 0);
 
-  /* "ram_booster/disk_cleaner.py":247
+  /* "ram_booster/disk_cleaner.py":307
  * def uninstall_app(uninstall_cmd):
  *     """Trigger application uninstaller."""
  *     if not uninstall_cmd:             # <<<<<<<<<<<<<<
  *         return {"success": False, "error": "No uninstall command specified"}
  *     try:
 */
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_uninstall_cmd); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 247, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_uninstall_cmd); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 307, __pyx_L1_error)
   __pyx_t_2 = (!__pyx_t_1);
   if (__pyx_t_2) {
 
-    /* "ram_booster/disk_cleaner.py":248
+    /* "ram_booster/disk_cleaner.py":308
  *     """Trigger application uninstaller."""
  *     if not uninstall_cmd:
  *         return {"success": False, "error": "No uninstall command specified"}             # <<<<<<<<<<<<<<
@@ -9567,15 +11595,15 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
  *         subprocess.Popen(uninstall_cmd, shell=True)
 */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_3 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 248, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 308, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_success, Py_False) < (0)) __PYX_ERR(0, 248, __pyx_L1_error)
-    if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_error, __pyx_mstate_global->__pyx_kp_u_No_uninstall_command_specified) < (0)) __PYX_ERR(0, 248, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_success, Py_False) < (0)) __PYX_ERR(0, 308, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_error, __pyx_mstate_global->__pyx_kp_u_No_uninstall_command_specified) < (0)) __PYX_ERR(0, 308, __pyx_L1_error)
     __pyx_r = __pyx_t_3;
     __pyx_t_3 = 0;
     goto __pyx_L0;
 
-    /* "ram_booster/disk_cleaner.py":247
+    /* "ram_booster/disk_cleaner.py":307
  * def uninstall_app(uninstall_cmd):
  *     """Trigger application uninstaller."""
  *     if not uninstall_cmd:             # <<<<<<<<<<<<<<
@@ -9584,7 +11612,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
 */
   }
 
-  /* "ram_booster/disk_cleaner.py":249
+  /* "ram_booster/disk_cleaner.py":309
  *     if not uninstall_cmd:
  *         return {"success": False, "error": "No uninstall command specified"}
  *     try:             # <<<<<<<<<<<<<<
@@ -9600,7 +11628,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
     __Pyx_XGOTREF(__pyx_t_6);
     /*try:*/ {
 
-      /* "ram_booster/disk_cleaner.py":250
+      /* "ram_booster/disk_cleaner.py":310
  *         return {"success": False, "error": "No uninstall command specified"}
  *     try:
  *         subprocess.Popen(uninstall_cmd, shell=True)             # <<<<<<<<<<<<<<
@@ -9608,9 +11636,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
  *     except Exception as e:
 */
       __pyx_t_7 = NULL;
-      __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_subprocess); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 250, __pyx_L4_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_subprocess); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 310, __pyx_L4_error)
       __Pyx_GOTREF(__pyx_t_8);
-      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_Popen); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 250, __pyx_L4_error)
+      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_Popen); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 310, __pyx_L4_error)
       __Pyx_GOTREF(__pyx_t_9);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __pyx_t_10 = 1;
@@ -9627,19 +11655,19 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
       #endif
       {
         PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 1 : 0)] = {__pyx_t_7, __pyx_v_uninstall_cmd};
-        __pyx_t_8 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 250, __pyx_L4_error)
+        __pyx_t_8 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 310, __pyx_L4_error)
         __Pyx_GOTREF(__pyx_t_8);
-        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_shell, Py_True, __pyx_t_8, __pyx_callargs+2, 0) < (0)) __PYX_ERR(0, 250, __pyx_L4_error)
+        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_shell, Py_True, __pyx_t_8, __pyx_callargs+2, 0) < (0)) __PYX_ERR(0, 310, __pyx_L4_error)
         __pyx_t_3 = __Pyx_Object_Vectorcall_CallFromBuilder((PyObject*)__pyx_t_9, __pyx_callargs+__pyx_t_10, (2-__pyx_t_10) | (__pyx_t_10*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_8);
         __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 250, __pyx_L4_error)
+        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 310, __pyx_L4_error)
         __Pyx_GOTREF(__pyx_t_3);
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-      /* "ram_booster/disk_cleaner.py":251
+      /* "ram_booster/disk_cleaner.py":311
  *     try:
  *         subprocess.Popen(uninstall_cmd, shell=True)
  *         return {"success": True, "msg": "Uninstaller launched"}             # <<<<<<<<<<<<<<
@@ -9647,15 +11675,15 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
  *         return {"success": False, "error": str(e)}
 */
       __Pyx_XDECREF(__pyx_r);
-      __pyx_t_3 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 251, __pyx_L4_error)
+      __pyx_t_3 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 311, __pyx_L4_error)
       __Pyx_GOTREF(__pyx_t_3);
-      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_success, Py_True) < (0)) __PYX_ERR(0, 251, __pyx_L4_error)
-      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_msg, __pyx_mstate_global->__pyx_kp_u_Uninstaller_launched) < (0)) __PYX_ERR(0, 251, __pyx_L4_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_success, Py_True) < (0)) __PYX_ERR(0, 311, __pyx_L4_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_msg, __pyx_mstate_global->__pyx_kp_u_Uninstaller_launched) < (0)) __PYX_ERR(0, 311, __pyx_L4_error)
       __pyx_r = __pyx_t_3;
       __pyx_t_3 = 0;
       goto __pyx_L8_try_return;
 
-      /* "ram_booster/disk_cleaner.py":249
+      /* "ram_booster/disk_cleaner.py":309
  *     if not uninstall_cmd:
  *         return {"success": False, "error": "No uninstall command specified"}
  *     try:             # <<<<<<<<<<<<<<
@@ -9669,7 +11697,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
     __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
     __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-    /* "ram_booster/disk_cleaner.py":252
+    /* "ram_booster/disk_cleaner.py":312
  *         subprocess.Popen(uninstall_cmd, shell=True)
  *         return {"success": True, "msg": "Uninstaller launched"}
  *     except Exception as e:             # <<<<<<<<<<<<<<
@@ -9679,7 +11707,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
     __pyx_t_11 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
     if (__pyx_t_11) {
       __Pyx_AddTraceback("ram_booster.disk_cleaner.uninstall_app", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_3, &__pyx_t_9, &__pyx_t_8) < 0) __PYX_ERR(0, 252, __pyx_L6_except_error)
+      if (__Pyx_GetException(&__pyx_t_3, &__pyx_t_9, &__pyx_t_8) < 0) __PYX_ERR(0, 312, __pyx_L6_except_error)
       __Pyx_XGOTREF(__pyx_t_3);
       __Pyx_XGOTREF(__pyx_t_9);
       __Pyx_XGOTREF(__pyx_t_8);
@@ -9687,7 +11715,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
       __pyx_v_e = __pyx_t_9;
       /*try:*/ {
 
-        /* "ram_booster/disk_cleaner.py":253
+        /* "ram_booster/disk_cleaner.py":313
  *         return {"success": True, "msg": "Uninstaller launched"}
  *     except Exception as e:
  *         return {"success": False, "error": str(e)}             # <<<<<<<<<<<<<<
@@ -9695,12 +11723,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
  * 
 */
         __Pyx_XDECREF(__pyx_r);
-        __pyx_t_7 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 253, __pyx_L15_error)
+        __pyx_t_7 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 313, __pyx_L15_error)
         __Pyx_GOTREF(__pyx_t_7);
-        if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_success, Py_False) < (0)) __PYX_ERR(0, 253, __pyx_L15_error)
-        __pyx_t_12 = __Pyx_PyObject_Unicode(__pyx_v_e); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 253, __pyx_L15_error)
+        if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_success, Py_False) < (0)) __PYX_ERR(0, 313, __pyx_L15_error)
+        __pyx_t_12 = __Pyx_PyObject_Unicode(__pyx_v_e); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 313, __pyx_L15_error)
         __Pyx_GOTREF(__pyx_t_12);
-        if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_error, __pyx_t_12) < (0)) __PYX_ERR(0, 253, __pyx_L15_error)
+        if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_error, __pyx_t_12) < (0)) __PYX_ERR(0, 313, __pyx_L15_error)
         __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
         __pyx_r = __pyx_t_7;
         __pyx_t_7 = 0;
@@ -9710,7 +11738,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
         goto __pyx_L14_return;
       }
 
-      /* "ram_booster/disk_cleaner.py":252
+      /* "ram_booster/disk_cleaner.py":312
  *         subprocess.Popen(uninstall_cmd, shell=True)
  *         return {"success": True, "msg": "Uninstaller launched"}
  *     except Exception as e:             # <<<<<<<<<<<<<<
@@ -9761,7 +11789,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
     }
     goto __pyx_L6_except_error;
 
-    /* "ram_booster/disk_cleaner.py":249
+    /* "ram_booster/disk_cleaner.py":309
  *     if not uninstall_cmd:
  *         return {"success": False, "error": "No uninstall command specified"}
  *     try:             # <<<<<<<<<<<<<<
@@ -9788,7 +11816,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
     goto __pyx_L0;
   }
 
-  /* "ram_booster/disk_cleaner.py":245
+  /* "ram_booster/disk_cleaner.py":305
  * 
  * 
  * def uninstall_app(uninstall_cmd):             # <<<<<<<<<<<<<<
@@ -9812,7 +11840,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
   return __pyx_r;
 }
 
-/* "ram_booster/disk_cleaner.py":267
+/* "ram_booster/disk_cleaner.py":327
  * 
  * 
  * def analyze_disk_categories():             # <<<<<<<<<<<<<<
@@ -9821,23 +11849,23 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_18uninstall_app(CYTHON_UN
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_21analyze_disk_categories(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-PyDoc_STRVAR(__pyx_doc_11ram_booster_12disk_cleaner_20analyze_disk_categories, "\n    Categorize user files into Audio/Music, Video/Movies, Pictures, Documents, and Installers/Archives.\n    ");
-static PyMethodDef __pyx_mdef_11ram_booster_12disk_cleaner_21analyze_disk_categories = {"analyze_disk_categories", (PyCFunction)__pyx_pw_11ram_booster_12disk_cleaner_21analyze_disk_categories, METH_NOARGS, __pyx_doc_11ram_booster_12disk_cleaner_20analyze_disk_categories};
-static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_21analyze_disk_categories(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_23analyze_disk_categories(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+PyDoc_STRVAR(__pyx_doc_11ram_booster_12disk_cleaner_22analyze_disk_categories, "\n    Categorize user files into Audio/Music, Video/Movies, Pictures, Documents, and Installers/Archives.\n    ");
+static PyMethodDef __pyx_mdef_11ram_booster_12disk_cleaner_23analyze_disk_categories = {"analyze_disk_categories", (PyCFunction)__pyx_pw_11ram_booster_12disk_cleaner_23analyze_disk_categories, METH_NOARGS, __pyx_doc_11ram_booster_12disk_cleaner_22analyze_disk_categories};
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_23analyze_disk_categories(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("analyze_disk_categories (wrapper)", 0);
   __pyx_kwvalues = __Pyx_KwValues_VARARGS(__pyx_args, __pyx_nargs);
-  __pyx_r = __pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories(__pyx_self);
+  __pyx_r = __pyx_pf_11ram_booster_12disk_cleaner_22analyze_disk_categories(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22analyze_disk_categories(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_v_user_home = NULL;
   PyObject *__pyx_v_target_dirs = NULL;
   PyObject *__pyx_v_totals = NULL;
@@ -9887,42 +11915,42 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("analyze_disk_categories", 0);
 
-  /* "ram_booster/disk_cleaner.py":271
+  /* "ram_booster/disk_cleaner.py":331
  *     Categorize user files into Audio/Music, Video/Movies, Pictures, Documents, and Installers/Archives.
  *     """
  *     user_home = os.path.expanduser("~")             # <<<<<<<<<<<<<<
  *     target_dirs = [
  *         os.path.join(user_home, "Downloads"),
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 271, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 331, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 271, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 331, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_2 = __pyx_t_4;
   __Pyx_INCREF(__pyx_t_2);
   __pyx_t_5 = 0;
   {
-    PyObject *__pyx_callargs[2] = {__pyx_t_2, __pyx_mstate_global->__pyx_kp_u__3};
+    PyObject *__pyx_callargs[2] = {__pyx_t_2, __pyx_mstate_global->__pyx_kp_u__6};
     __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_expanduser, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 271, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 331, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   }
   __pyx_v_user_home = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "ram_booster/disk_cleaner.py":273
+  /* "ram_booster/disk_cleaner.py":333
  *     user_home = os.path.expanduser("~")
  *     target_dirs = [
  *         os.path.join(user_home, "Downloads"),             # <<<<<<<<<<<<<<
  *         os.path.join(user_home, "Documents"),
  *         os.path.join(user_home, "Desktop"),
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 273, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 333, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 273, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 333, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __pyx_t_3;
@@ -9933,20 +11961,20 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 273, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 333, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   }
 
-  /* "ram_booster/disk_cleaner.py":274
+  /* "ram_booster/disk_cleaner.py":334
  *     target_dirs = [
  *         os.path.join(user_home, "Downloads"),
  *         os.path.join(user_home, "Documents"),             # <<<<<<<<<<<<<<
  *         os.path.join(user_home, "Desktop"),
  *         os.path.join(user_home, "Videos"),
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 274, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 334, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 274, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 334, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __pyx_t_6;
@@ -9957,20 +11985,20 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_3 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 274, __pyx_L1_error)
+    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 334, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
   }
 
-  /* "ram_booster/disk_cleaner.py":275
+  /* "ram_booster/disk_cleaner.py":335
  *         os.path.join(user_home, "Downloads"),
  *         os.path.join(user_home, "Documents"),
  *         os.path.join(user_home, "Desktop"),             # <<<<<<<<<<<<<<
  *         os.path.join(user_home, "Videos"),
  *         os.path.join(user_home, "Music"),
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 275, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 335, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 275, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 335, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __pyx_t_7;
@@ -9981,20 +12009,20 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_6 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 275, __pyx_L1_error)
+    if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 335, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
   }
 
-  /* "ram_booster/disk_cleaner.py":276
+  /* "ram_booster/disk_cleaner.py":336
  *         os.path.join(user_home, "Documents"),
  *         os.path.join(user_home, "Desktop"),
  *         os.path.join(user_home, "Videos"),             # <<<<<<<<<<<<<<
  *         os.path.join(user_home, "Music"),
  *         os.path.join(user_home, "Pictures"),
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 276, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 336, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 276, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 336, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __pyx_t_8;
@@ -10005,20 +12033,20 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 276, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 336, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
 
-  /* "ram_booster/disk_cleaner.py":277
+  /* "ram_booster/disk_cleaner.py":337
  *         os.path.join(user_home, "Desktop"),
  *         os.path.join(user_home, "Videos"),
  *         os.path.join(user_home, "Music"),             # <<<<<<<<<<<<<<
  *         os.path.join(user_home, "Pictures"),
  *     ]
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 277, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 337, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 277, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 337, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __pyx_t_9;
@@ -10029,20 +12057,20 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_8 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 277, __pyx_L1_error)
+    if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 337, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
   }
 
-  /* "ram_booster/disk_cleaner.py":278
+  /* "ram_booster/disk_cleaner.py":338
  *         os.path.join(user_home, "Videos"),
  *         os.path.join(user_home, "Music"),
  *         os.path.join(user_home, "Pictures"),             # <<<<<<<<<<<<<<
  *     ]
  * 
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 278, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 338, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 278, __pyx_L1_error)
+  __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 338, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __pyx_t_10;
@@ -10053,31 +12081,31 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_9 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-    if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 278, __pyx_L1_error)
+    if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 338, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
   }
 
-  /* "ram_booster/disk_cleaner.py":272
+  /* "ram_booster/disk_cleaner.py":332
  *     """
  *     user_home = os.path.expanduser("~")
  *     target_dirs = [             # <<<<<<<<<<<<<<
  *         os.path.join(user_home, "Downloads"),
  *         os.path.join(user_home, "Documents"),
 */
-  __pyx_t_10 = PyList_New(6); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 272, __pyx_L1_error)
+  __pyx_t_10 = PyList_New(6); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 332, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
   __Pyx_GIVEREF(__pyx_t_1);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 0, __pyx_t_1) != (0)) __PYX_ERR(0, 272, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 0, __pyx_t_1) != (0)) __PYX_ERR(0, 332, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_3);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 1, __pyx_t_3) != (0)) __PYX_ERR(0, 272, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 1, __pyx_t_3) != (0)) __PYX_ERR(0, 332, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_6);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 2, __pyx_t_6) != (0)) __PYX_ERR(0, 272, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 2, __pyx_t_6) != (0)) __PYX_ERR(0, 332, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_7);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 3, __pyx_t_7) != (0)) __PYX_ERR(0, 272, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 3, __pyx_t_7) != (0)) __PYX_ERR(0, 332, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_8);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 4, __pyx_t_8) != (0)) __PYX_ERR(0, 272, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 4, __pyx_t_8) != (0)) __PYX_ERR(0, 332, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_9);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 5, __pyx_t_9) != (0)) __PYX_ERR(0, 272, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 5, __pyx_t_9) != (0)) __PYX_ERR(0, 332, __pyx_L1_error);
   __pyx_t_1 = 0;
   __pyx_t_3 = 0;
   __pyx_t_6 = 0;
@@ -10087,43 +12115,43 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
   __pyx_v_target_dirs = ((PyObject*)__pyx_t_10);
   __pyx_t_10 = 0;
 
-  /* "ram_booster/disk_cleaner.py":281
+  /* "ram_booster/disk_cleaner.py":341
  *     ]
  * 
  *     totals = {"audio": 0, "video": 0, "pictures": 0, "documents": 0, "archives": 0, "other": 0}             # <<<<<<<<<<<<<<
  *     counts = {"audio": 0, "video": 0, "pictures": 0, "documents": 0, "archives": 0, "other": 0}
  * 
 */
-  __pyx_t_10 = __Pyx_PyDict_NewPresized(6); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 281, __pyx_L1_error)
+  __pyx_t_10 = __Pyx_PyDict_NewPresized(6); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 341, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_audio, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 281, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_video, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 281, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_pictures, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 281, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_documents, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 281, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_archives, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 281, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_other, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 281, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_audio, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 341, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_video, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 341, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_pictures, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 341, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_documents, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 341, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_archives, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 341, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_other, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 341, __pyx_L1_error)
   __pyx_v_totals = ((PyObject*)__pyx_t_10);
   __pyx_t_10 = 0;
 
-  /* "ram_booster/disk_cleaner.py":282
+  /* "ram_booster/disk_cleaner.py":342
  * 
  *     totals = {"audio": 0, "video": 0, "pictures": 0, "documents": 0, "archives": 0, "other": 0}
  *     counts = {"audio": 0, "video": 0, "pictures": 0, "documents": 0, "archives": 0, "other": 0}             # <<<<<<<<<<<<<<
  * 
  *     for base in target_dirs:
 */
-  __pyx_t_10 = __Pyx_PyDict_NewPresized(6); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 282, __pyx_L1_error)
+  __pyx_t_10 = __Pyx_PyDict_NewPresized(6); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 342, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_audio, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 282, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_video, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 282, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_pictures, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 282, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_documents, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 282, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_archives, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 282, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_other, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 282, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_audio, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 342, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_video, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 342, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_pictures, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 342, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_documents, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 342, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_archives, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 342, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_other, __pyx_mstate_global->__pyx_int_0) < (0)) __PYX_ERR(0, 342, __pyx_L1_error)
   __pyx_v_counts = ((PyObject*)__pyx_t_10);
   __pyx_t_10 = 0;
 
-  /* "ram_booster/disk_cleaner.py":284
+  /* "ram_booster/disk_cleaner.py":344
  *     counts = {"audio": 0, "video": 0, "pictures": 0, "documents": 0, "archives": 0, "other": 0}
  * 
  *     for base in target_dirs:             # <<<<<<<<<<<<<<
@@ -10136,27 +12164,27 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     {
       Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_10);
       #if !CYTHON_ASSUME_SAFE_SIZE
-      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 284, __pyx_L1_error)
+      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 344, __pyx_L1_error)
       #endif
       if (__pyx_t_11 >= __pyx_temp) break;
     }
     __pyx_t_9 = __Pyx_PyList_GetItemRefFast(__pyx_t_10, __pyx_t_11, __Pyx_ReferenceSharing_OwnStrongReference);
     ++__pyx_t_11;
-    if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 284, __pyx_L1_error)
+    if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 344, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
     __Pyx_XDECREF_SET(__pyx_v_base, __pyx_t_9);
     __pyx_t_9 = 0;
 
-    /* "ram_booster/disk_cleaner.py":285
+    /* "ram_booster/disk_cleaner.py":345
  * 
  *     for base in target_dirs:
  *         if not os.path.exists(base):             # <<<<<<<<<<<<<<
  *             continue
  *         for dp, _, fns in os.walk(base):
 */
-    __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 285, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 345, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 285, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 345, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __pyx_t_8 = __pyx_t_6;
@@ -10167,15 +12195,15 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
       __pyx_t_9 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_exists, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
       __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 285, __pyx_L1_error)
+      if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 345, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
     }
-    __pyx_t_12 = __Pyx_PyObject_IsTrue(__pyx_t_9); if (unlikely((__pyx_t_12 < 0))) __PYX_ERR(0, 285, __pyx_L1_error)
+    __pyx_t_12 = __Pyx_PyObject_IsTrue(__pyx_t_9); if (unlikely((__pyx_t_12 < 0))) __PYX_ERR(0, 345, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
     __pyx_t_13 = (!__pyx_t_12);
     if (__pyx_t_13) {
 
-      /* "ram_booster/disk_cleaner.py":286
+      /* "ram_booster/disk_cleaner.py":346
  *     for base in target_dirs:
  *         if not os.path.exists(base):
  *             continue             # <<<<<<<<<<<<<<
@@ -10184,7 +12212,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
 */
       goto __pyx_L3_continue;
 
-      /* "ram_booster/disk_cleaner.py":285
+      /* "ram_booster/disk_cleaner.py":345
  * 
  *     for base in target_dirs:
  *         if not os.path.exists(base):             # <<<<<<<<<<<<<<
@@ -10193,7 +12221,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
 */
     }
 
-    /* "ram_booster/disk_cleaner.py":287
+    /* "ram_booster/disk_cleaner.py":347
  *         if not os.path.exists(base):
  *             continue
  *         for dp, _, fns in os.walk(base):             # <<<<<<<<<<<<<<
@@ -10201,9 +12229,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
  *                 ext = os.path.splitext(fn)[1].lower()
 */
     __pyx_t_6 = NULL;
-    __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 287, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 347, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_walk); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 287, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_walk); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 347, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     __pyx_t_5 = 1;
@@ -10223,7 +12251,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
       __pyx_t_9 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_7, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 287, __pyx_L1_error)
+      if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 347, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
     }
     if (likely(PyList_CheckExact(__pyx_t_9)) || PyTuple_CheckExact(__pyx_t_9)) {
@@ -10231,9 +12259,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
       __pyx_t_14 = 0;
       __pyx_t_15 = NULL;
     } else {
-      __pyx_t_14 = -1; __pyx_t_7 = PyObject_GetIter(__pyx_t_9); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 287, __pyx_L1_error)
+      __pyx_t_14 = -1; __pyx_t_7 = PyObject_GetIter(__pyx_t_9); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 347, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_7); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 287, __pyx_L1_error)
+      __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_7); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 347, __pyx_L1_error)
     }
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
     for (;;) {
@@ -10242,7 +12270,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
           {
             Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_7);
             #if !CYTHON_ASSUME_SAFE_SIZE
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 287, __pyx_L1_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 347, __pyx_L1_error)
             #endif
             if (__pyx_t_14 >= __pyx_temp) break;
           }
@@ -10252,7 +12280,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
           {
             Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_7);
             #if !CYTHON_ASSUME_SAFE_SIZE
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 287, __pyx_L1_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 347, __pyx_L1_error)
             #endif
             if (__pyx_t_14 >= __pyx_temp) break;
           }
@@ -10263,13 +12291,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
           #endif
           ++__pyx_t_14;
         }
-        if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 287, __pyx_L1_error)
+        if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 347, __pyx_L1_error)
       } else {
         __pyx_t_9 = __pyx_t_15(__pyx_t_7);
         if (unlikely(!__pyx_t_9)) {
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
-            if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 287, __pyx_L1_error)
+            if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 347, __pyx_L1_error)
             PyErr_Clear();
           }
           break;
@@ -10282,7 +12310,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
         if (unlikely(size != 3)) {
           if (size > 3) __Pyx_RaiseTooManyValuesError(3);
           else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-          __PYX_ERR(0, 287, __pyx_L1_error)
+          __PYX_ERR(0, 347, __pyx_L1_error)
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
         if (likely(PyTuple_CheckExact(sequence))) {
@@ -10294,27 +12322,27 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
           __Pyx_INCREF(__pyx_t_3);
         } else {
           __pyx_t_6 = __Pyx_PyList_GetItemRefFast(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
-          if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 287, __pyx_L1_error)
+          if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 347, __pyx_L1_error)
           __Pyx_XGOTREF(__pyx_t_6);
           __pyx_t_8 = __Pyx_PyList_GetItemRefFast(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
-          if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 287, __pyx_L1_error)
+          if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 347, __pyx_L1_error)
           __Pyx_XGOTREF(__pyx_t_8);
           __pyx_t_3 = __Pyx_PyList_GetItemRefFast(sequence, 2, __Pyx_ReferenceSharing_SharedReference);
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 287, __pyx_L1_error)
+          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 347, __pyx_L1_error)
           __Pyx_XGOTREF(__pyx_t_3);
         }
         #else
-        __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 287, __pyx_L1_error)
+        __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 347, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_6);
-        __pyx_t_8 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 287, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 347, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
-        __pyx_t_3 = __Pyx_PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 287, __pyx_L1_error)
+        __pyx_t_3 = __Pyx_PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 347, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
         #endif
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       } else {
         Py_ssize_t index = -1;
-        __pyx_t_1 = PyObject_GetIter(__pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 287, __pyx_L1_error)
+        __pyx_t_1 = PyObject_GetIter(__pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 347, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
         __pyx_t_16 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_1);
@@ -10324,7 +12352,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
         __Pyx_GOTREF(__pyx_t_8);
         index = 2; __pyx_t_3 = __pyx_t_16(__pyx_t_1); if (unlikely(!__pyx_t_3)) goto __pyx_L8_unpacking_failed;
         __Pyx_GOTREF(__pyx_t_3);
-        if (__Pyx_IternextUnpackEndCheck(__pyx_t_16(__pyx_t_1), 3) < (0)) __PYX_ERR(0, 287, __pyx_L1_error)
+        if (__Pyx_IternextUnpackEndCheck(__pyx_t_16(__pyx_t_1), 3) < (0)) __PYX_ERR(0, 347, __pyx_L1_error)
         __pyx_t_16 = NULL;
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         goto __pyx_L9_unpacking_done;
@@ -10332,7 +12360,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         __pyx_t_16 = NULL;
         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-        __PYX_ERR(0, 287, __pyx_L1_error)
+        __PYX_ERR(0, 347, __pyx_L1_error)
         __pyx_L9_unpacking_done:;
       }
       __Pyx_XDECREF_SET(__pyx_v_dp, __pyx_t_6);
@@ -10342,7 +12370,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
       __Pyx_XDECREF_SET(__pyx_v_fns, __pyx_t_3);
       __pyx_t_3 = 0;
 
-      /* "ram_booster/disk_cleaner.py":288
+      /* "ram_booster/disk_cleaner.py":348
  *             continue
  *         for dp, _, fns in os.walk(base):
  *             for fn in fns:             # <<<<<<<<<<<<<<
@@ -10354,9 +12382,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
         __pyx_t_17 = 0;
         __pyx_t_18 = NULL;
       } else {
-        __pyx_t_17 = -1; __pyx_t_9 = PyObject_GetIter(__pyx_v_fns); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 288, __pyx_L1_error)
+        __pyx_t_17 = -1; __pyx_t_9 = PyObject_GetIter(__pyx_v_fns); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 348, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_9);
-        __pyx_t_18 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_9); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 288, __pyx_L1_error)
+        __pyx_t_18 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_9); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 348, __pyx_L1_error)
       }
       for (;;) {
         if (likely(!__pyx_t_18)) {
@@ -10364,7 +12392,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
             {
               Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_9);
               #if !CYTHON_ASSUME_SAFE_SIZE
-              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 288, __pyx_L1_error)
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 348, __pyx_L1_error)
               #endif
               if (__pyx_t_17 >= __pyx_temp) break;
             }
@@ -10374,7 +12402,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
             {
               Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_9);
               #if !CYTHON_ASSUME_SAFE_SIZE
-              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 288, __pyx_L1_error)
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 348, __pyx_L1_error)
               #endif
               if (__pyx_t_17 >= __pyx_temp) break;
             }
@@ -10385,13 +12413,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
             #endif
             ++__pyx_t_17;
           }
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 288, __pyx_L1_error)
+          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 348, __pyx_L1_error)
         } else {
           __pyx_t_3 = __pyx_t_18(__pyx_t_9);
           if (unlikely(!__pyx_t_3)) {
             PyObject* exc_type = PyErr_Occurred();
             if (exc_type) {
-              if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 288, __pyx_L1_error)
+              if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 348, __pyx_L1_error)
               PyErr_Clear();
             }
             break;
@@ -10401,16 +12429,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
         __Pyx_XDECREF_SET(__pyx_v_fn, __pyx_t_3);
         __pyx_t_3 = 0;
 
-        /* "ram_booster/disk_cleaner.py":289
+        /* "ram_booster/disk_cleaner.py":349
  *         for dp, _, fns in os.walk(base):
  *             for fn in fns:
  *                 ext = os.path.splitext(fn)[1].lower()             # <<<<<<<<<<<<<<
  *                 fp = os.path.join(dp, fn)
  *                 try:
 */
-        __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 289, __pyx_L1_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 349, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 289, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 349, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
         __pyx_t_1 = __pyx_t_2;
@@ -10421,10 +12449,10 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
           __pyx_t_6 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_splitext, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
           __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-          if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 289, __pyx_L1_error)
+          if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 349, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_6);
         }
-        __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_6, 1, long, 1, __Pyx_PyLong_From_long, 0, 0, 1, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 289, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_6, 1, long, 1, __Pyx_PyLong_From_long, 0, 0, 1, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 349, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         __pyx_t_8 = __pyx_t_2;
@@ -10435,22 +12463,22 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
           __pyx_t_3 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_lower, __pyx_callargs+__pyx_t_5, (1-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
           __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 289, __pyx_L1_error)
+          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 349, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
         }
         __Pyx_XDECREF_SET(__pyx_v_ext, __pyx_t_3);
         __pyx_t_3 = 0;
 
-        /* "ram_booster/disk_cleaner.py":290
+        /* "ram_booster/disk_cleaner.py":350
  *             for fn in fns:
  *                 ext = os.path.splitext(fn)[1].lower()
  *                 fp = os.path.join(dp, fn)             # <<<<<<<<<<<<<<
  *                 try:
  *                     sz = os.path.getsize(fp)
 */
-        __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 290, __pyx_L1_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 350, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
-        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 290, __pyx_L1_error)
+        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 350, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
         __pyx_t_2 = __pyx_t_6;
@@ -10461,13 +12489,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
           __pyx_t_3 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
           __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 290, __pyx_L1_error)
+          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 350, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
         }
         __Pyx_XDECREF_SET(__pyx_v_fp, __pyx_t_3);
         __pyx_t_3 = 0;
 
-        /* "ram_booster/disk_cleaner.py":291
+        /* "ram_booster/disk_cleaner.py":351
  *                 ext = os.path.splitext(fn)[1].lower()
  *                 fp = os.path.join(dp, fn)
  *                 try:             # <<<<<<<<<<<<<<
@@ -10483,16 +12511,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
           __Pyx_XGOTREF(__pyx_t_21);
           /*try:*/ {
 
-            /* "ram_booster/disk_cleaner.py":292
+            /* "ram_booster/disk_cleaner.py":352
  *                 fp = os.path.join(dp, fn)
  *                 try:
  *                     sz = os.path.getsize(fp)             # <<<<<<<<<<<<<<
  *                 except Exception:
  *                     continue
 */
-            __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 292, __pyx_L12_error)
+            __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 352, __pyx_L12_error)
             __Pyx_GOTREF(__pyx_t_2);
-            __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 292, __pyx_L12_error)
+            __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 352, __pyx_L12_error)
             __Pyx_GOTREF(__pyx_t_8);
             __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
             __pyx_t_6 = __pyx_t_8;
@@ -10503,13 +12531,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
               __pyx_t_3 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_getsize, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
               __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
               __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-              if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 292, __pyx_L12_error)
+              if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 352, __pyx_L12_error)
               __Pyx_GOTREF(__pyx_t_3);
             }
             __Pyx_XDECREF_SET(__pyx_v_sz, __pyx_t_3);
             __pyx_t_3 = 0;
 
-            /* "ram_booster/disk_cleaner.py":291
+            /* "ram_booster/disk_cleaner.py":351
  *                 ext = os.path.splitext(fn)[1].lower()
  *                 fp = os.path.join(dp, fn)
  *                 try:             # <<<<<<<<<<<<<<
@@ -10529,7 +12557,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
           __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
           __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-          /* "ram_booster/disk_cleaner.py":293
+          /* "ram_booster/disk_cleaner.py":353
  *                 try:
  *                     sz = os.path.getsize(fp)
  *                 except Exception:             # <<<<<<<<<<<<<<
@@ -10539,12 +12567,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
           __pyx_t_22 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
           if (__pyx_t_22) {
             __Pyx_AddTraceback("ram_booster.disk_cleaner.analyze_disk_categories", __pyx_clineno, __pyx_lineno, __pyx_filename);
-            if (__Pyx_GetException(&__pyx_t_3, &__pyx_t_8, &__pyx_t_6) < 0) __PYX_ERR(0, 293, __pyx_L14_except_error)
+            if (__Pyx_GetException(&__pyx_t_3, &__pyx_t_8, &__pyx_t_6) < 0) __PYX_ERR(0, 353, __pyx_L14_except_error)
             __Pyx_XGOTREF(__pyx_t_3);
             __Pyx_XGOTREF(__pyx_t_8);
             __Pyx_XGOTREF(__pyx_t_6);
 
-            /* "ram_booster/disk_cleaner.py":294
+            /* "ram_booster/disk_cleaner.py":354
  *                     sz = os.path.getsize(fp)
  *                 except Exception:
  *                     continue             # <<<<<<<<<<<<<<
@@ -10560,7 +12588,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
           }
           goto __pyx_L14_except_error;
 
-          /* "ram_booster/disk_cleaner.py":291
+          /* "ram_booster/disk_cleaner.py":351
  *                 ext = os.path.splitext(fn)[1].lower()
  *                 fp = os.path.join(dp, fn)
  *                 try:             # <<<<<<<<<<<<<<
@@ -10582,7 +12610,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
           __pyx_L19_try_end:;
         }
 
-        /* "ram_booster/disk_cleaner.py":296
+        /* "ram_booster/disk_cleaner.py":356
  *                     continue
  * 
  *                 cat_found = False             # <<<<<<<<<<<<<<
@@ -10591,7 +12619,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
 */
         __pyx_v_cat_found = 0;
 
-        /* "ram_booster/disk_cleaner.py":297
+        /* "ram_booster/disk_cleaner.py":357
  * 
  *                 cat_found = False
  *                 for cat, ext_list in EXT_CATEGORIES.items():             # <<<<<<<<<<<<<<
@@ -10599,13 +12627,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
  *                         totals[cat] += sz
 */
         __pyx_t_23 = 0;
-        __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_EXT_CATEGORIES); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 297, __pyx_L1_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_EXT_CATEGORIES); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 357, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
         if (unlikely(__pyx_t_8 == Py_None)) {
           PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "items");
-          __PYX_ERR(0, 297, __pyx_L1_error)
+          __PYX_ERR(0, 357, __pyx_L1_error)
         }
-        __pyx_t_3 = __Pyx_dict_iterator(__pyx_t_8, 0, __pyx_mstate_global->__pyx_n_u_items, (&__pyx_t_24), (&__pyx_t_22)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 297, __pyx_L1_error)
+        __pyx_t_3 = __Pyx_dict_iterator(__pyx_t_8, 0, __pyx_mstate_global->__pyx_n_u_items, (&__pyx_t_24), (&__pyx_t_22)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 357, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
         __Pyx_XDECREF(__pyx_t_6);
@@ -10614,7 +12642,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
         while (1) {
           __pyx_t_25 = __Pyx_dict_iter_next(__pyx_t_6, __pyx_t_24, &__pyx_t_23, &__pyx_t_3, &__pyx_t_8, NULL, __pyx_t_22);
           if (unlikely(__pyx_t_25 == 0)) break;
-          if (unlikely(__pyx_t_25 == -1)) __PYX_ERR(0, 297, __pyx_L1_error)
+          if (unlikely(__pyx_t_25 == -1)) __PYX_ERR(0, 357, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
           __Pyx_GOTREF(__pyx_t_8);
           __Pyx_XDECREF_SET(__pyx_v_cat, __pyx_t_3);
@@ -10622,17 +12650,17 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
           __Pyx_XDECREF_SET(__pyx_v_ext_list, __pyx_t_8);
           __pyx_t_8 = 0;
 
-          /* "ram_booster/disk_cleaner.py":298
+          /* "ram_booster/disk_cleaner.py":358
  *                 cat_found = False
  *                 for cat, ext_list in EXT_CATEGORIES.items():
  *                     if ext in ext_list:             # <<<<<<<<<<<<<<
  *                         totals[cat] += sz
  *                         counts[cat] += 1
 */
-          __pyx_t_13 = (__Pyx_PySequence_ContainsTF(__pyx_v_ext, __pyx_v_ext_list, Py_EQ)); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 298, __pyx_L1_error)
+          __pyx_t_13 = (__Pyx_PySequence_ContainsTF(__pyx_v_ext, __pyx_v_ext_list, Py_EQ)); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 358, __pyx_L1_error)
           if (__pyx_t_13) {
 
-            /* "ram_booster/disk_cleaner.py":299
+            /* "ram_booster/disk_cleaner.py":359
  *                 for cat, ext_list in EXT_CATEGORIES.items():
  *                     if ext in ext_list:
  *                         totals[cat] += sz             # <<<<<<<<<<<<<<
@@ -10641,16 +12669,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
 */
             __Pyx_INCREF(__pyx_v_cat);
             __pyx_t_8 = __pyx_v_cat;
-            __pyx_t_3 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 299, __pyx_L1_error)
+            __pyx_t_3 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 359, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_3);
-            __pyx_t_2 = PyNumber_InPlaceAdd(__pyx_t_3, __pyx_v_sz); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 299, __pyx_L1_error)
+            __pyx_t_2 = PyNumber_InPlaceAdd(__pyx_t_3, __pyx_v_sz); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 359, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_2);
             __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-            if (unlikely((PyDict_SetItem(__pyx_v_totals, __pyx_t_8, __pyx_t_2) < 0))) __PYX_ERR(0, 299, __pyx_L1_error)
+            if (unlikely((PyDict_SetItem(__pyx_v_totals, __pyx_t_8, __pyx_t_2) < 0))) __PYX_ERR(0, 359, __pyx_L1_error)
             __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
             __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-            /* "ram_booster/disk_cleaner.py":300
+            /* "ram_booster/disk_cleaner.py":360
  *                     if ext in ext_list:
  *                         totals[cat] += sz
  *                         counts[cat] += 1             # <<<<<<<<<<<<<<
@@ -10659,16 +12687,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
 */
             __Pyx_INCREF(__pyx_v_cat);
             __pyx_t_8 = __pyx_v_cat;
-            __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_counts, __pyx_t_8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 300, __pyx_L1_error)
+            __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_counts, __pyx_t_8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 360, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_2);
-            __pyx_t_3 = __Pyx_PyLong_AddObjC(__pyx_t_2, __pyx_mstate_global->__pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 300, __pyx_L1_error)
+            __pyx_t_3 = __Pyx_PyLong_AddObjC(__pyx_t_2, __pyx_mstate_global->__pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 360, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_3);
             __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-            if (unlikely((PyDict_SetItem(__pyx_v_counts, __pyx_t_8, __pyx_t_3) < 0))) __PYX_ERR(0, 300, __pyx_L1_error)
+            if (unlikely((PyDict_SetItem(__pyx_v_counts, __pyx_t_8, __pyx_t_3) < 0))) __PYX_ERR(0, 360, __pyx_L1_error)
             __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
             __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-            /* "ram_booster/disk_cleaner.py":301
+            /* "ram_booster/disk_cleaner.py":361
  *                         totals[cat] += sz
  *                         counts[cat] += 1
  *                         cat_found = True             # <<<<<<<<<<<<<<
@@ -10677,7 +12705,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
 */
             __pyx_v_cat_found = 1;
 
-            /* "ram_booster/disk_cleaner.py":302
+            /* "ram_booster/disk_cleaner.py":362
  *                         counts[cat] += 1
  *                         cat_found = True
  *                         break             # <<<<<<<<<<<<<<
@@ -10686,7 +12714,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
 */
             goto __pyx_L23_break;
 
-            /* "ram_booster/disk_cleaner.py":298
+            /* "ram_booster/disk_cleaner.py":358
  *                 cat_found = False
  *                 for cat, ext_list in EXT_CATEGORIES.items():
  *                     if ext in ext_list:             # <<<<<<<<<<<<<<
@@ -10698,7 +12726,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
         __pyx_L23_break:;
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-        /* "ram_booster/disk_cleaner.py":303
+        /* "ram_booster/disk_cleaner.py":363
  *                         cat_found = True
  *                         break
  *                 if not cat_found:             # <<<<<<<<<<<<<<
@@ -10708,7 +12736,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
         __pyx_t_13 = (!__pyx_v_cat_found);
         if (__pyx_t_13) {
 
-          /* "ram_booster/disk_cleaner.py":304
+          /* "ram_booster/disk_cleaner.py":364
  *                         break
  *                 if not cat_found:
  *                     totals["other"] += sz             # <<<<<<<<<<<<<<
@@ -10717,16 +12745,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
 */
           __Pyx_INCREF(__pyx_mstate_global->__pyx_n_u_other);
           __pyx_t_26 = __pyx_mstate_global->__pyx_n_u_other;
-          __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_t_26); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 304, __pyx_L1_error)
+          __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_t_26); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 364, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_6);
-          __pyx_t_8 = PyNumber_InPlaceAdd(__pyx_t_6, __pyx_v_sz); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 304, __pyx_L1_error)
+          __pyx_t_8 = PyNumber_InPlaceAdd(__pyx_t_6, __pyx_v_sz); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 364, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_8);
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-          if (unlikely((PyDict_SetItem(__pyx_v_totals, __pyx_t_26, __pyx_t_8) < 0))) __PYX_ERR(0, 304, __pyx_L1_error)
+          if (unlikely((PyDict_SetItem(__pyx_v_totals, __pyx_t_26, __pyx_t_8) < 0))) __PYX_ERR(0, 364, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
           __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
 
-          /* "ram_booster/disk_cleaner.py":305
+          /* "ram_booster/disk_cleaner.py":365
  *                 if not cat_found:
  *                     totals["other"] += sz
  *                     counts["other"] += 1             # <<<<<<<<<<<<<<
@@ -10735,16 +12763,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
 */
           __Pyx_INCREF(__pyx_mstate_global->__pyx_n_u_other);
           __pyx_t_26 = __pyx_mstate_global->__pyx_n_u_other;
-          __pyx_t_8 = __Pyx_PyDict_GetItem(__pyx_v_counts, __pyx_t_26); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 305, __pyx_L1_error)
+          __pyx_t_8 = __Pyx_PyDict_GetItem(__pyx_v_counts, __pyx_t_26); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 365, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_8);
-          __pyx_t_6 = __Pyx_PyLong_AddObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 305, __pyx_L1_error)
+          __pyx_t_6 = __Pyx_PyLong_AddObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 365, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_6);
           __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-          if (unlikely((PyDict_SetItem(__pyx_v_counts, __pyx_t_26, __pyx_t_6) < 0))) __PYX_ERR(0, 305, __pyx_L1_error)
+          if (unlikely((PyDict_SetItem(__pyx_v_counts, __pyx_t_26, __pyx_t_6) < 0))) __PYX_ERR(0, 365, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
           __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
 
-          /* "ram_booster/disk_cleaner.py":303
+          /* "ram_booster/disk_cleaner.py":363
  *                         cat_found = True
  *                         break
  *                 if not cat_found:             # <<<<<<<<<<<<<<
@@ -10753,7 +12781,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
 */
         }
 
-        /* "ram_booster/disk_cleaner.py":288
+        /* "ram_booster/disk_cleaner.py":348
  *             continue
  *         for dp, _, fns in os.walk(base):
  *             for fn in fns:             # <<<<<<<<<<<<<<
@@ -10764,7 +12792,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
       }
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-      /* "ram_booster/disk_cleaner.py":287
+      /* "ram_booster/disk_cleaner.py":347
  *         if not os.path.exists(base):
  *             continue
  *         for dp, _, fns in os.walk(base):             # <<<<<<<<<<<<<<
@@ -10774,7 +12802,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     }
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-    /* "ram_booster/disk_cleaner.py":284
+    /* "ram_booster/disk_cleaner.py":344
  *     counts = {"audio": 0, "video": 0, "pictures": 0, "documents": 0, "archives": 0, "other": 0}
  * 
  *     for base in target_dirs:             # <<<<<<<<<<<<<<
@@ -10785,7 +12813,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
   }
   __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
 
-  /* "ram_booster/disk_cleaner.py":307
+  /* "ram_booster/disk_cleaner.py":367
  *                     counts["other"] += 1
  * 
  *     total_bytes = sum(totals.values()) or 1             # <<<<<<<<<<<<<<
@@ -10793,7 +12821,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
  *     return {
 */
   __pyx_t_9 = NULL;
-  __pyx_t_6 = __Pyx_PyDict_Values(__pyx_v_totals); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 307, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyDict_Values(__pyx_v_totals); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 367, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __pyx_t_5 = 1;
   {
@@ -10801,10 +12829,10 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_7 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_sum, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 307, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 367, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
-  __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 307, __pyx_L1_error)
+  __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 367, __pyx_L1_error)
   if (!__pyx_t_13) {
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   } else {
@@ -10813,7 +12841,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     goto __pyx_L29_bool_binop_done;
   }
-  __pyx_t_7 = __Pyx_PyLong_From_long(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 307, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyLong_From_long(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 367, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __pyx_t_10 = __pyx_t_7;
   __pyx_t_7 = 0;
@@ -10821,7 +12849,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
   __pyx_v_total_bytes = __pyx_t_10;
   __pyx_t_10 = 0;
 
-  /* "ram_booster/disk_cleaner.py":309
+  /* "ram_booster/disk_cleaner.py":369
  *     total_bytes = sum(totals.values()) or 1
  * 
  *     return {             # <<<<<<<<<<<<<<
@@ -10830,19 +12858,19 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
 */
   __Pyx_XDECREF(__pyx_r);
 
-  /* "ram_booster/disk_cleaner.py":310
+  /* "ram_booster/disk_cleaner.py":370
  * 
  *     return {
  *         "audio_mb": round(totals["audio"] / (1024**2), 1),             # <<<<<<<<<<<<<<
  *         "video_mb": round(totals["video"] / (1024**2), 1),
  *         "pictures_mb": round(totals["pictures"] / (1024**2), 1),
 */
-  __pyx_t_10 = __Pyx_PyDict_NewPresized(12); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 310, __pyx_L1_error)
+  __pyx_t_10 = __Pyx_PyDict_NewPresized(12); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
   __pyx_t_6 = NULL;
-  __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_audio); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 310, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_audio); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
-  __pyx_t_8 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_9, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 310, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_9, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
   __pyx_t_5 = 1;
@@ -10851,13 +12879,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_7 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 310, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 370, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_audio_mb, __pyx_t_7) < (0)) __PYX_ERR(0, 310, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_audio_mb, __pyx_t_7) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "ram_booster/disk_cleaner.py":311
+  /* "ram_booster/disk_cleaner.py":371
  *     return {
  *         "audio_mb": round(totals["audio"] / (1024**2), 1),
  *         "video_mb": round(totals["video"] / (1024**2), 1),             # <<<<<<<<<<<<<<
@@ -10865,9 +12893,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
  *         "documents_mb": round(totals["documents"] / (1024**2), 1),
 */
   __pyx_t_8 = NULL;
-  __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_video); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 311, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_video); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 371, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_9 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_6, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 311, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_6, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 371, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __pyx_t_5 = 1;
@@ -10876,13 +12904,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_7 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 311, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 371, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_video_mb, __pyx_t_7) < (0)) __PYX_ERR(0, 310, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_video_mb, __pyx_t_7) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "ram_booster/disk_cleaner.py":312
+  /* "ram_booster/disk_cleaner.py":372
  *         "audio_mb": round(totals["audio"] / (1024**2), 1),
  *         "video_mb": round(totals["video"] / (1024**2), 1),
  *         "pictures_mb": round(totals["pictures"] / (1024**2), 1),             # <<<<<<<<<<<<<<
@@ -10890,9 +12918,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
  *         "archives_mb": round(totals["archives"] / (1024**2), 1),
 */
   __pyx_t_9 = NULL;
-  __pyx_t_8 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_pictures); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 312, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_pictures); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 372, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_6 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 312, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 372, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __pyx_t_5 = 1;
@@ -10901,13 +12929,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_7 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 312, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 372, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_pictures_mb, __pyx_t_7) < (0)) __PYX_ERR(0, 310, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_pictures_mb, __pyx_t_7) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "ram_booster/disk_cleaner.py":313
+  /* "ram_booster/disk_cleaner.py":373
  *         "video_mb": round(totals["video"] / (1024**2), 1),
  *         "pictures_mb": round(totals["pictures"] / (1024**2), 1),
  *         "documents_mb": round(totals["documents"] / (1024**2), 1),             # <<<<<<<<<<<<<<
@@ -10915,9 +12943,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
  *         "other_mb": round(totals["other"] / (1024**2), 1),
 */
   __pyx_t_6 = NULL;
-  __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_documents); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 313, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_documents); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 373, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
-  __pyx_t_8 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_9, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 313, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_9, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 373, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
   __pyx_t_5 = 1;
@@ -10926,13 +12954,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_7 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 313, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 373, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_documents_mb, __pyx_t_7) < (0)) __PYX_ERR(0, 310, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_documents_mb, __pyx_t_7) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "ram_booster/disk_cleaner.py":314
+  /* "ram_booster/disk_cleaner.py":374
  *         "pictures_mb": round(totals["pictures"] / (1024**2), 1),
  *         "documents_mb": round(totals["documents"] / (1024**2), 1),
  *         "archives_mb": round(totals["archives"] / (1024**2), 1),             # <<<<<<<<<<<<<<
@@ -10940,9 +12968,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
  *         "audio_pct": round((totals["audio"] / total_bytes) * 100, 1),
 */
   __pyx_t_8 = NULL;
-  __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_archives); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 314, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_archives); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 374, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_9 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_6, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 314, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_6, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 374, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __pyx_t_5 = 1;
@@ -10951,13 +12979,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_7 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 314, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 374, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_archives_mb, __pyx_t_7) < (0)) __PYX_ERR(0, 310, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_archives_mb, __pyx_t_7) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "ram_booster/disk_cleaner.py":315
+  /* "ram_booster/disk_cleaner.py":375
  *         "documents_mb": round(totals["documents"] / (1024**2), 1),
  *         "archives_mb": round(totals["archives"] / (1024**2), 1),
  *         "other_mb": round(totals["other"] / (1024**2), 1),             # <<<<<<<<<<<<<<
@@ -10965,9 +12993,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
  *         "video_pct": round((totals["video"] / total_bytes) * 100, 1),
 */
   __pyx_t_9 = NULL;
-  __pyx_t_8 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_other); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 315, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_other); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 375, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_6 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 315, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 375, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __pyx_t_5 = 1;
@@ -10976,13 +13004,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_7 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 315, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 375, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_other_mb, __pyx_t_7) < (0)) __PYX_ERR(0, 310, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_other_mb, __pyx_t_7) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "ram_booster/disk_cleaner.py":316
+  /* "ram_booster/disk_cleaner.py":376
  *         "archives_mb": round(totals["archives"] / (1024**2), 1),
  *         "other_mb": round(totals["other"] / (1024**2), 1),
  *         "audio_pct": round((totals["audio"] / total_bytes) * 100, 1),             # <<<<<<<<<<<<<<
@@ -10990,12 +13018,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
  *         "pictures_pct": round((totals["pictures"] / total_bytes) * 100, 1),
 */
   __pyx_t_6 = NULL;
-  __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_audio); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 316, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_audio); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 376, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
-  __pyx_t_8 = __Pyx_PyNumber_Divide(__pyx_t_9, __pyx_v_total_bytes); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 316, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyNumber_Divide(__pyx_t_9, __pyx_v_total_bytes); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 376, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-  __pyx_t_9 = __Pyx_PyLong_MultiplyObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_100, 0x64, 0, 0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 316, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyLong_MultiplyObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_100, 0x64, 0, 0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 376, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __pyx_t_5 = 1;
@@ -11004,13 +13032,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_7 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 316, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 376, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_audio_pct, __pyx_t_7) < (0)) __PYX_ERR(0, 310, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_audio_pct, __pyx_t_7) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "ram_booster/disk_cleaner.py":317
+  /* "ram_booster/disk_cleaner.py":377
  *         "other_mb": round(totals["other"] / (1024**2), 1),
  *         "audio_pct": round((totals["audio"] / total_bytes) * 100, 1),
  *         "video_pct": round((totals["video"] / total_bytes) * 100, 1),             # <<<<<<<<<<<<<<
@@ -11018,12 +13046,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
  *         "documents_pct": round((totals["documents"] / total_bytes) * 100, 1),
 */
   __pyx_t_9 = NULL;
-  __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_video); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 317, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_video); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 377, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_8 = __Pyx_PyNumber_Divide(__pyx_t_6, __pyx_v_total_bytes); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 317, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyNumber_Divide(__pyx_t_6, __pyx_v_total_bytes); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 377, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyLong_MultiplyObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_100, 0x64, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 317, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyLong_MultiplyObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_100, 0x64, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 377, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __pyx_t_5 = 1;
@@ -11032,13 +13060,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_7 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 317, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 377, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_video_pct, __pyx_t_7) < (0)) __PYX_ERR(0, 310, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_video_pct, __pyx_t_7) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "ram_booster/disk_cleaner.py":318
+  /* "ram_booster/disk_cleaner.py":378
  *         "audio_pct": round((totals["audio"] / total_bytes) * 100, 1),
  *         "video_pct": round((totals["video"] / total_bytes) * 100, 1),
  *         "pictures_pct": round((totals["pictures"] / total_bytes) * 100, 1),             # <<<<<<<<<<<<<<
@@ -11046,12 +13074,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
  *         "archives_pct": round((totals["archives"] / total_bytes) * 100, 1),
 */
   __pyx_t_6 = NULL;
-  __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_pictures); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 318, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_pictures); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 378, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
-  __pyx_t_8 = __Pyx_PyNumber_Divide(__pyx_t_9, __pyx_v_total_bytes); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 318, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyNumber_Divide(__pyx_t_9, __pyx_v_total_bytes); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 378, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-  __pyx_t_9 = __Pyx_PyLong_MultiplyObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_100, 0x64, 0, 0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 318, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyLong_MultiplyObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_100, 0x64, 0, 0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 378, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __pyx_t_5 = 1;
@@ -11060,13 +13088,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_7 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 318, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 378, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_pictures_pct, __pyx_t_7) < (0)) __PYX_ERR(0, 310, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_pictures_pct, __pyx_t_7) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "ram_booster/disk_cleaner.py":319
+  /* "ram_booster/disk_cleaner.py":379
  *         "video_pct": round((totals["video"] / total_bytes) * 100, 1),
  *         "pictures_pct": round((totals["pictures"] / total_bytes) * 100, 1),
  *         "documents_pct": round((totals["documents"] / total_bytes) * 100, 1),             # <<<<<<<<<<<<<<
@@ -11074,12 +13102,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
  *         "counts": counts,
 */
   __pyx_t_9 = NULL;
-  __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_documents); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 319, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_documents); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 379, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_8 = __Pyx_PyNumber_Divide(__pyx_t_6, __pyx_v_total_bytes); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 319, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyNumber_Divide(__pyx_t_6, __pyx_v_total_bytes); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 379, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyLong_MultiplyObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_100, 0x64, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 319, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyLong_MultiplyObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_100, 0x64, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 379, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __pyx_t_5 = 1;
@@ -11088,13 +13116,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_7 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 319, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 379, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_documents_pct, __pyx_t_7) < (0)) __PYX_ERR(0, 310, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_documents_pct, __pyx_t_7) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "ram_booster/disk_cleaner.py":320
+  /* "ram_booster/disk_cleaner.py":380
  *         "pictures_pct": round((totals["pictures"] / total_bytes) * 100, 1),
  *         "documents_pct": round((totals["documents"] / total_bytes) * 100, 1),
  *         "archives_pct": round((totals["archives"] / total_bytes) * 100, 1),             # <<<<<<<<<<<<<<
@@ -11102,12 +13130,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
  *     }
 */
   __pyx_t_6 = NULL;
-  __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_archives); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 320, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_totals, __pyx_mstate_global->__pyx_n_u_archives); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 380, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
-  __pyx_t_8 = __Pyx_PyNumber_Divide(__pyx_t_9, __pyx_v_total_bytes); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 320, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyNumber_Divide(__pyx_t_9, __pyx_v_total_bytes); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 380, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-  __pyx_t_9 = __Pyx_PyLong_MultiplyObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_100, 0x64, 0, 0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 320, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyLong_MultiplyObjC(__pyx_t_8, __pyx_mstate_global->__pyx_int_100, 0x64, 0, 0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 380, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __pyx_t_5 = 1;
@@ -11116,25 +13144,25 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
     __pyx_t_7 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 320, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 380, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_archives_pct, __pyx_t_7) < (0)) __PYX_ERR(0, 310, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_archives_pct, __pyx_t_7) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "ram_booster/disk_cleaner.py":321
+  /* "ram_booster/disk_cleaner.py":381
  *         "documents_pct": round((totals["documents"] / total_bytes) * 100, 1),
  *         "archives_pct": round((totals["archives"] / total_bytes) * 100, 1),
  *         "counts": counts,             # <<<<<<<<<<<<<<
  *     }
  * 
 */
-  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_counts, __pyx_v_counts) < (0)) __PYX_ERR(0, 310, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_10, __pyx_mstate_global->__pyx_n_u_counts, __pyx_v_counts) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
   __pyx_r = __pyx_t_10;
   __pyx_t_10 = 0;
   goto __pyx_L0;
 
-  /* "ram_booster/disk_cleaner.py":267
+  /* "ram_booster/disk_cleaner.py":327
  * 
  * 
  * def analyze_disk_categories():             # <<<<<<<<<<<<<<
@@ -11177,7 +13205,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
   return __pyx_r;
 }
 
-/* "ram_booster/disk_cleaner.py":325
+/* "ram_booster/disk_cleaner.py":385
  * 
  * 
  * def find_large_files(min_size_mb=30):             # <<<<<<<<<<<<<<
@@ -11186,16 +13214,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_20analyze_disk_categories
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_23find_large_files(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_25find_large_files(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_11ram_booster_12disk_cleaner_22find_large_files, "\n    Scan user directories for files larger than specified MB threshold.\n    Returns sorted list of largest space hogs.\n    ");
-static PyMethodDef __pyx_mdef_11ram_booster_12disk_cleaner_23find_large_files = {"find_large_files", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_11ram_booster_12disk_cleaner_23find_large_files, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_11ram_booster_12disk_cleaner_22find_large_files};
-static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_23find_large_files(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_11ram_booster_12disk_cleaner_24find_large_files, "\n    Scan user directories for files larger than specified MB threshold.\n    Returns sorted list of largest space hogs.\n    ");
+static PyMethodDef __pyx_mdef_11ram_booster_12disk_cleaner_25find_large_files = {"find_large_files", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_11ram_booster_12disk_cleaner_25find_large_files, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_11ram_booster_12disk_cleaner_24find_large_files};
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_25find_large_files(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -11225,24 +13253,24 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_min_size_mb,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 325, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 385, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 325, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 385, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "find_large_files", 0) < (0)) __PYX_ERR(0, 325, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "find_large_files", 0) < (0)) __PYX_ERR(0, 385, __pyx_L3_error)
       if (!values[0]) values[0] = __Pyx_NewRef(((PyObject *)((PyObject*)__pyx_mstate_global->__pyx_int_30)));
     } else {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 325, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 385, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
@@ -11253,7 +13281,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("find_large_files", 0, 0, 1, __pyx_nargs); __PYX_ERR(0, 325, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("find_large_files", 0, 0, 1, __pyx_nargs); __PYX_ERR(0, 385, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -11264,7 +13292,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(__pyx_self, __pyx_v_min_size_mb);
+  __pyx_r = __pyx_pf_11ram_booster_12disk_cleaner_24find_large_files(__pyx_self, __pyx_v_min_size_mb);
 
   /* function exit code */
   for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
@@ -11274,7 +13302,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-/* "ram_booster/disk_cleaner.py":362
+/* "ram_booster/disk_cleaner.py":422
  *                     pass
  * 
  *     large_files.sort(key=lambda x: x["size_mb"], reverse=True)             # <<<<<<<<<<<<<<
@@ -11321,32 +13349,32 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_x,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 362, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 422, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 362, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 422, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "lambda2", 0) < (0)) __PYX_ERR(0, 362, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "lambda2", 0) < (0)) __PYX_ERR(0, 422, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("lambda2", 1, 1, 1, i); __PYX_ERR(0, 362, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("lambda2", 1, 1, 1, i); __PYX_ERR(0, 422, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 362, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 422, __pyx_L3_error)
     }
     __pyx_v_x = values[0];
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("lambda2", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 362, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("lambda2", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 422, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -11376,7 +13404,7 @@ static PyObject *__pyx_lambda_funcdef_lambda2(CYTHON_UNUSED PyObject *__pyx_self
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("lambda2", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_x, __pyx_mstate_global->__pyx_n_u_size_mb); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 362, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_x, __pyx_mstate_global->__pyx_n_u_size_mb); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 422, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -11393,7 +13421,7 @@ static PyObject *__pyx_lambda_funcdef_lambda2(CYTHON_UNUSED PyObject *__pyx_self
   return __pyx_r;
 }
 
-/* "ram_booster/disk_cleaner.py":325
+/* "ram_booster/disk_cleaner.py":385
  * 
  * 
  * def find_large_files(min_size_mb=30):             # <<<<<<<<<<<<<<
@@ -11401,7 +13429,7 @@ static PyObject *__pyx_lambda_funcdef_lambda2(CYTHON_UNUSED PyObject *__pyx_self
  *     Scan user directories for files larger than specified MB threshold.
 */
 
-static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_min_size_mb) {
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24find_large_files(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_min_size_mb) {
   PyObject *__pyx_v_user_home = NULL;
   PyObject *__pyx_v_target_dirs = NULL;
   PyObject *__pyx_v_min_bytes = NULL;
@@ -11444,42 +13472,42 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("find_large_files", 0);
 
-  /* "ram_booster/disk_cleaner.py":330
+  /* "ram_booster/disk_cleaner.py":390
  *     Returns sorted list of largest space hogs.
  *     """
  *     user_home = os.path.expanduser("~")             # <<<<<<<<<<<<<<
  *     target_dirs = [
  *         os.path.join(user_home, "Downloads"),
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 330, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 390, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 330, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 390, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_2 = __pyx_t_4;
   __Pyx_INCREF(__pyx_t_2);
   __pyx_t_5 = 0;
   {
-    PyObject *__pyx_callargs[2] = {__pyx_t_2, __pyx_mstate_global->__pyx_kp_u__3};
+    PyObject *__pyx_callargs[2] = {__pyx_t_2, __pyx_mstate_global->__pyx_kp_u__6};
     __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_expanduser, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 330, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 390, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   }
   __pyx_v_user_home = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "ram_booster/disk_cleaner.py":332
+  /* "ram_booster/disk_cleaner.py":392
  *     user_home = os.path.expanduser("~")
  *     target_dirs = [
  *         os.path.join(user_home, "Downloads"),             # <<<<<<<<<<<<<<
  *         os.path.join(user_home, "Documents"),
  *         os.path.join(user_home, "Desktop"),
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 332, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 392, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 332, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 392, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __pyx_t_3;
@@ -11490,20 +13518,20 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
     __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 332, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 392, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   }
 
-  /* "ram_booster/disk_cleaner.py":333
+  /* "ram_booster/disk_cleaner.py":393
  *     target_dirs = [
  *         os.path.join(user_home, "Downloads"),
  *         os.path.join(user_home, "Documents"),             # <<<<<<<<<<<<<<
  *         os.path.join(user_home, "Desktop"),
  *         os.path.join(user_home, "Videos"),
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 333, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 393, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 333, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 393, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __pyx_t_6;
@@ -11514,20 +13542,20 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
     __pyx_t_3 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 333, __pyx_L1_error)
+    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 393, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
   }
 
-  /* "ram_booster/disk_cleaner.py":334
+  /* "ram_booster/disk_cleaner.py":394
  *         os.path.join(user_home, "Downloads"),
  *         os.path.join(user_home, "Documents"),
  *         os.path.join(user_home, "Desktop"),             # <<<<<<<<<<<<<<
  *         os.path.join(user_home, "Videos"),
  *         os.path.join(user_home, "Music"),
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 334, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 394, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 334, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 394, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __pyx_t_7;
@@ -11538,20 +13566,20 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
     __pyx_t_6 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 334, __pyx_L1_error)
+    if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 394, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
   }
 
-  /* "ram_booster/disk_cleaner.py":335
+  /* "ram_booster/disk_cleaner.py":395
  *         os.path.join(user_home, "Documents"),
  *         os.path.join(user_home, "Desktop"),
  *         os.path.join(user_home, "Videos"),             # <<<<<<<<<<<<<<
  *         os.path.join(user_home, "Music"),
  *         os.path.join(user_home, "Pictures"),
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 335, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 395, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 335, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 395, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __pyx_t_8;
@@ -11562,20 +13590,20 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
     __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 335, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 395, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
   }
 
-  /* "ram_booster/disk_cleaner.py":336
+  /* "ram_booster/disk_cleaner.py":396
  *         os.path.join(user_home, "Desktop"),
  *         os.path.join(user_home, "Videos"),
  *         os.path.join(user_home, "Music"),             # <<<<<<<<<<<<<<
  *         os.path.join(user_home, "Pictures"),
  *     ]
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 336, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 396, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 336, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 396, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __pyx_t_9;
@@ -11586,20 +13614,20 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
     __pyx_t_8 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 336, __pyx_L1_error)
+    if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 396, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
   }
 
-  /* "ram_booster/disk_cleaner.py":337
+  /* "ram_booster/disk_cleaner.py":397
  *         os.path.join(user_home, "Videos"),
  *         os.path.join(user_home, "Music"),
  *         os.path.join(user_home, "Pictures"),             # <<<<<<<<<<<<<<
  *     ]
  * 
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 337, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 397, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 337, __pyx_L1_error)
+  __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 397, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __pyx_t_10;
@@ -11610,31 +13638,31 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
     __pyx_t_9 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-    if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 337, __pyx_L1_error)
+    if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 397, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
   }
 
-  /* "ram_booster/disk_cleaner.py":331
+  /* "ram_booster/disk_cleaner.py":391
  *     """
  *     user_home = os.path.expanduser("~")
  *     target_dirs = [             # <<<<<<<<<<<<<<
  *         os.path.join(user_home, "Downloads"),
  *         os.path.join(user_home, "Documents"),
 */
-  __pyx_t_10 = PyList_New(6); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 331, __pyx_L1_error)
+  __pyx_t_10 = PyList_New(6); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 391, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
   __Pyx_GIVEREF(__pyx_t_1);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 0, __pyx_t_1) != (0)) __PYX_ERR(0, 331, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 0, __pyx_t_1) != (0)) __PYX_ERR(0, 391, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_3);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 1, __pyx_t_3) != (0)) __PYX_ERR(0, 331, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 1, __pyx_t_3) != (0)) __PYX_ERR(0, 391, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_6);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 2, __pyx_t_6) != (0)) __PYX_ERR(0, 331, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 2, __pyx_t_6) != (0)) __PYX_ERR(0, 391, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_7);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 3, __pyx_t_7) != (0)) __PYX_ERR(0, 331, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 3, __pyx_t_7) != (0)) __PYX_ERR(0, 391, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_8);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 4, __pyx_t_8) != (0)) __PYX_ERR(0, 331, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 4, __pyx_t_8) != (0)) __PYX_ERR(0, 391, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_9);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 5, __pyx_t_9) != (0)) __PYX_ERR(0, 331, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_10, 5, __pyx_t_9) != (0)) __PYX_ERR(0, 391, __pyx_L1_error);
   __pyx_t_1 = 0;
   __pyx_t_3 = 0;
   __pyx_t_6 = 0;
@@ -11644,34 +13672,34 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
   __pyx_v_target_dirs = ((PyObject*)__pyx_t_10);
   __pyx_t_10 = 0;
 
-  /* "ram_booster/disk_cleaner.py":340
+  /* "ram_booster/disk_cleaner.py":400
  *     ]
  * 
  *     min_bytes = min_size_mb * 1024 * 1024             # <<<<<<<<<<<<<<
  *     large_files = []
  * 
 */
-  __pyx_t_10 = __Pyx_PyLong_MultiplyObjC(__pyx_v_min_size_mb, __pyx_mstate_global->__pyx_int_1024, 0x400, 0, 0); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 340, __pyx_L1_error)
+  __pyx_t_10 = __Pyx_PyLong_MultiplyObjC(__pyx_v_min_size_mb, __pyx_mstate_global->__pyx_int_1024, 0x400, 0, 0); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 400, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
-  __pyx_t_9 = __Pyx_PyLong_MultiplyObjC(__pyx_t_10, __pyx_mstate_global->__pyx_int_1024, 0x400, 0, 0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 340, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyLong_MultiplyObjC(__pyx_t_10, __pyx_mstate_global->__pyx_int_1024, 0x400, 0, 0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 400, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
   __pyx_v_min_bytes = __pyx_t_9;
   __pyx_t_9 = 0;
 
-  /* "ram_booster/disk_cleaner.py":341
+  /* "ram_booster/disk_cleaner.py":401
  * 
  *     min_bytes = min_size_mb * 1024 * 1024
  *     large_files = []             # <<<<<<<<<<<<<<
  * 
  *     for base in target_dirs:
 */
-  __pyx_t_9 = PyList_New(0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 341, __pyx_L1_error)
+  __pyx_t_9 = PyList_New(0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 401, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __pyx_v_large_files = ((PyObject*)__pyx_t_9);
   __pyx_t_9 = 0;
 
-  /* "ram_booster/disk_cleaner.py":343
+  /* "ram_booster/disk_cleaner.py":403
  *     large_files = []
  * 
  *     for base in target_dirs:             # <<<<<<<<<<<<<<
@@ -11684,27 +13712,27 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
     {
       Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_9);
       #if !CYTHON_ASSUME_SAFE_SIZE
-      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 343, __pyx_L1_error)
+      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 403, __pyx_L1_error)
       #endif
       if (__pyx_t_11 >= __pyx_temp) break;
     }
     __pyx_t_10 = __Pyx_PyList_GetItemRefFast(__pyx_t_9, __pyx_t_11, __Pyx_ReferenceSharing_OwnStrongReference);
     ++__pyx_t_11;
-    if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 343, __pyx_L1_error)
+    if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 403, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __Pyx_XDECREF_SET(__pyx_v_base, __pyx_t_10);
     __pyx_t_10 = 0;
 
-    /* "ram_booster/disk_cleaner.py":344
+    /* "ram_booster/disk_cleaner.py":404
  * 
  *     for base in target_dirs:
  *         if not os.path.exists(base):             # <<<<<<<<<<<<<<
  *             continue
  *         for dp, _, fns in os.walk(base):
 */
-    __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 344, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 404, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 344, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 404, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __pyx_t_8 = __pyx_t_6;
@@ -11715,15 +13743,15 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
       __pyx_t_10 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_exists, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
       __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 344, __pyx_L1_error)
+      if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 404, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
     }
-    __pyx_t_12 = __Pyx_PyObject_IsTrue(__pyx_t_10); if (unlikely((__pyx_t_12 < 0))) __PYX_ERR(0, 344, __pyx_L1_error)
+    __pyx_t_12 = __Pyx_PyObject_IsTrue(__pyx_t_10); if (unlikely((__pyx_t_12 < 0))) __PYX_ERR(0, 404, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
     __pyx_t_13 = (!__pyx_t_12);
     if (__pyx_t_13) {
 
-      /* "ram_booster/disk_cleaner.py":345
+      /* "ram_booster/disk_cleaner.py":405
  *     for base in target_dirs:
  *         if not os.path.exists(base):
  *             continue             # <<<<<<<<<<<<<<
@@ -11732,7 +13760,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
 */
       goto __pyx_L3_continue;
 
-      /* "ram_booster/disk_cleaner.py":344
+      /* "ram_booster/disk_cleaner.py":404
  * 
  *     for base in target_dirs:
  *         if not os.path.exists(base):             # <<<<<<<<<<<<<<
@@ -11741,7 +13769,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
 */
     }
 
-    /* "ram_booster/disk_cleaner.py":346
+    /* "ram_booster/disk_cleaner.py":406
  *         if not os.path.exists(base):
  *             continue
  *         for dp, _, fns in os.walk(base):             # <<<<<<<<<<<<<<
@@ -11749,9 +13777,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
  *                 fp = os.path.join(dp, fn)
 */
     __pyx_t_6 = NULL;
-    __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 346, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 406, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_walk); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 346, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_walk); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 406, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     __pyx_t_5 = 1;
@@ -11771,7 +13799,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
       __pyx_t_10 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_7, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 346, __pyx_L1_error)
+      if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 406, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
     }
     if (likely(PyList_CheckExact(__pyx_t_10)) || PyTuple_CheckExact(__pyx_t_10)) {
@@ -11779,9 +13807,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
       __pyx_t_14 = 0;
       __pyx_t_15 = NULL;
     } else {
-      __pyx_t_14 = -1; __pyx_t_7 = PyObject_GetIter(__pyx_t_10); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 346, __pyx_L1_error)
+      __pyx_t_14 = -1; __pyx_t_7 = PyObject_GetIter(__pyx_t_10); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 406, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_7); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 346, __pyx_L1_error)
+      __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_7); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 406, __pyx_L1_error)
     }
     __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
     for (;;) {
@@ -11790,7 +13818,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
           {
             Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_7);
             #if !CYTHON_ASSUME_SAFE_SIZE
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 346, __pyx_L1_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 406, __pyx_L1_error)
             #endif
             if (__pyx_t_14 >= __pyx_temp) break;
           }
@@ -11800,7 +13828,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
           {
             Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_7);
             #if !CYTHON_ASSUME_SAFE_SIZE
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 346, __pyx_L1_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 406, __pyx_L1_error)
             #endif
             if (__pyx_t_14 >= __pyx_temp) break;
           }
@@ -11811,13 +13839,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
           #endif
           ++__pyx_t_14;
         }
-        if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 346, __pyx_L1_error)
+        if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 406, __pyx_L1_error)
       } else {
         __pyx_t_10 = __pyx_t_15(__pyx_t_7);
         if (unlikely(!__pyx_t_10)) {
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
-            if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 346, __pyx_L1_error)
+            if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 406, __pyx_L1_error)
             PyErr_Clear();
           }
           break;
@@ -11830,7 +13858,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
         if (unlikely(size != 3)) {
           if (size > 3) __Pyx_RaiseTooManyValuesError(3);
           else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-          __PYX_ERR(0, 346, __pyx_L1_error)
+          __PYX_ERR(0, 406, __pyx_L1_error)
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
         if (likely(PyTuple_CheckExact(sequence))) {
@@ -11842,27 +13870,27 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
           __Pyx_INCREF(__pyx_t_3);
         } else {
           __pyx_t_6 = __Pyx_PyList_GetItemRefFast(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
-          if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 346, __pyx_L1_error)
+          if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 406, __pyx_L1_error)
           __Pyx_XGOTREF(__pyx_t_6);
           __pyx_t_8 = __Pyx_PyList_GetItemRefFast(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
-          if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 346, __pyx_L1_error)
+          if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 406, __pyx_L1_error)
           __Pyx_XGOTREF(__pyx_t_8);
           __pyx_t_3 = __Pyx_PyList_GetItemRefFast(sequence, 2, __Pyx_ReferenceSharing_SharedReference);
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 346, __pyx_L1_error)
+          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 406, __pyx_L1_error)
           __Pyx_XGOTREF(__pyx_t_3);
         }
         #else
-        __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 346, __pyx_L1_error)
+        __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 406, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_6);
-        __pyx_t_8 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 346, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 406, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
-        __pyx_t_3 = __Pyx_PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 346, __pyx_L1_error)
+        __pyx_t_3 = __Pyx_PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 406, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
         #endif
         __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
       } else {
         Py_ssize_t index = -1;
-        __pyx_t_1 = PyObject_GetIter(__pyx_t_10); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 346, __pyx_L1_error)
+        __pyx_t_1 = PyObject_GetIter(__pyx_t_10); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 406, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
         __pyx_t_16 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_1);
@@ -11872,7 +13900,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
         __Pyx_GOTREF(__pyx_t_8);
         index = 2; __pyx_t_3 = __pyx_t_16(__pyx_t_1); if (unlikely(!__pyx_t_3)) goto __pyx_L8_unpacking_failed;
         __Pyx_GOTREF(__pyx_t_3);
-        if (__Pyx_IternextUnpackEndCheck(__pyx_t_16(__pyx_t_1), 3) < (0)) __PYX_ERR(0, 346, __pyx_L1_error)
+        if (__Pyx_IternextUnpackEndCheck(__pyx_t_16(__pyx_t_1), 3) < (0)) __PYX_ERR(0, 406, __pyx_L1_error)
         __pyx_t_16 = NULL;
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         goto __pyx_L9_unpacking_done;
@@ -11880,7 +13908,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         __pyx_t_16 = NULL;
         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-        __PYX_ERR(0, 346, __pyx_L1_error)
+        __PYX_ERR(0, 406, __pyx_L1_error)
         __pyx_L9_unpacking_done:;
       }
       __Pyx_XDECREF_SET(__pyx_v_dp, __pyx_t_6);
@@ -11890,7 +13918,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
       __Pyx_XDECREF_SET(__pyx_v_fns, __pyx_t_3);
       __pyx_t_3 = 0;
 
-      /* "ram_booster/disk_cleaner.py":347
+      /* "ram_booster/disk_cleaner.py":407
  *             continue
  *         for dp, _, fns in os.walk(base):
  *             for fn in fns:             # <<<<<<<<<<<<<<
@@ -11902,9 +13930,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
         __pyx_t_17 = 0;
         __pyx_t_18 = NULL;
       } else {
-        __pyx_t_17 = -1; __pyx_t_10 = PyObject_GetIter(__pyx_v_fns); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 347, __pyx_L1_error)
+        __pyx_t_17 = -1; __pyx_t_10 = PyObject_GetIter(__pyx_v_fns); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 407, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_10);
-        __pyx_t_18 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_10); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 347, __pyx_L1_error)
+        __pyx_t_18 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_10); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 407, __pyx_L1_error)
       }
       for (;;) {
         if (likely(!__pyx_t_18)) {
@@ -11912,7 +13940,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
             {
               Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_10);
               #if !CYTHON_ASSUME_SAFE_SIZE
-              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 347, __pyx_L1_error)
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 407, __pyx_L1_error)
               #endif
               if (__pyx_t_17 >= __pyx_temp) break;
             }
@@ -11922,7 +13950,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
             {
               Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_10);
               #if !CYTHON_ASSUME_SAFE_SIZE
-              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 347, __pyx_L1_error)
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 407, __pyx_L1_error)
               #endif
               if (__pyx_t_17 >= __pyx_temp) break;
             }
@@ -11933,13 +13961,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
             #endif
             ++__pyx_t_17;
           }
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 347, __pyx_L1_error)
+          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 407, __pyx_L1_error)
         } else {
           __pyx_t_3 = __pyx_t_18(__pyx_t_10);
           if (unlikely(!__pyx_t_3)) {
             PyObject* exc_type = PyErr_Occurred();
             if (exc_type) {
-              if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 347, __pyx_L1_error)
+              if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 407, __pyx_L1_error)
               PyErr_Clear();
             }
             break;
@@ -11949,16 +13977,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
         __Pyx_XDECREF_SET(__pyx_v_fn, __pyx_t_3);
         __pyx_t_3 = 0;
 
-        /* "ram_booster/disk_cleaner.py":348
+        /* "ram_booster/disk_cleaner.py":408
  *         for dp, _, fns in os.walk(base):
  *             for fn in fns:
  *                 fp = os.path.join(dp, fn)             # <<<<<<<<<<<<<<
  *                 try:
  *                     sz = os.path.getsize(fp)
 */
-        __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 348, __pyx_L1_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 408, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_6);
-        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 348, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 408, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         __pyx_t_8 = __pyx_t_1;
@@ -11969,13 +13997,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
           __pyx_t_3 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_join, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
           __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
           __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 348, __pyx_L1_error)
+          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 408, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
         }
         __Pyx_XDECREF_SET(__pyx_v_fp, __pyx_t_3);
         __pyx_t_3 = 0;
 
-        /* "ram_booster/disk_cleaner.py":349
+        /* "ram_booster/disk_cleaner.py":409
  *             for fn in fns:
  *                 fp = os.path.join(dp, fn)
  *                 try:             # <<<<<<<<<<<<<<
@@ -11991,16 +14019,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
           __Pyx_XGOTREF(__pyx_t_21);
           /*try:*/ {
 
-            /* "ram_booster/disk_cleaner.py":350
+            /* "ram_booster/disk_cleaner.py":410
  *                 fp = os.path.join(dp, fn)
  *                 try:
  *                     sz = os.path.getsize(fp)             # <<<<<<<<<<<<<<
  *                     if sz >= min_bytes:
  *                         ext = os.path.splitext(fn)[1].lower()
 */
-            __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 350, __pyx_L12_error)
+            __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 410, __pyx_L12_error)
             __Pyx_GOTREF(__pyx_t_8);
-            __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 350, __pyx_L12_error)
+            __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 410, __pyx_L12_error)
             __Pyx_GOTREF(__pyx_t_6);
             __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
             __pyx_t_1 = __pyx_t_6;
@@ -12011,34 +14039,34 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
               __pyx_t_3 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_getsize, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
               __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
               __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-              if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 350, __pyx_L12_error)
+              if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 410, __pyx_L12_error)
               __Pyx_GOTREF(__pyx_t_3);
             }
             __Pyx_XDECREF_SET(__pyx_v_sz, __pyx_t_3);
             __pyx_t_3 = 0;
 
-            /* "ram_booster/disk_cleaner.py":351
+            /* "ram_booster/disk_cleaner.py":411
  *                 try:
  *                     sz = os.path.getsize(fp)
  *                     if sz >= min_bytes:             # <<<<<<<<<<<<<<
  *                         ext = os.path.splitext(fn)[1].lower()
  *                         large_files.append({
 */
-            __pyx_t_3 = PyObject_RichCompare(__pyx_v_sz, __pyx_v_min_bytes, Py_GE); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 351, __pyx_L12_error)
-            __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 351, __pyx_L12_error)
+            __pyx_t_3 = PyObject_RichCompare(__pyx_v_sz, __pyx_v_min_bytes, Py_GE); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 411, __pyx_L12_error)
+            __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 411, __pyx_L12_error)
             __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
             if (__pyx_t_13) {
 
-              /* "ram_booster/disk_cleaner.py":352
+              /* "ram_booster/disk_cleaner.py":412
  *                     sz = os.path.getsize(fp)
  *                     if sz >= min_bytes:
  *                         ext = os.path.splitext(fn)[1].lower()             # <<<<<<<<<<<<<<
  *                         large_files.append({
  *                             "name": fn,
 */
-              __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 352, __pyx_L12_error)
+              __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 412, __pyx_L12_error)
               __Pyx_GOTREF(__pyx_t_4);
-              __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 352, __pyx_L12_error)
+              __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 412, __pyx_L12_error)
               __Pyx_GOTREF(__pyx_t_2);
               __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
               __pyx_t_8 = __pyx_t_2;
@@ -12049,10 +14077,10 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
                 __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_splitext, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
                 __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
                 __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-                if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 352, __pyx_L12_error)
+                if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 412, __pyx_L12_error)
                 __Pyx_GOTREF(__pyx_t_1);
               }
-              __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_1, 1, long, 1, __Pyx_PyLong_From_long, 0, 0, 1, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 352, __pyx_L12_error)
+              __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_1, 1, long, 1, __Pyx_PyLong_From_long, 0, 0, 1, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 412, __pyx_L12_error)
               __Pyx_GOTREF(__pyx_t_2);
               __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
               __pyx_t_6 = __pyx_t_2;
@@ -12063,33 +14091,33 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
                 __pyx_t_3 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_lower, __pyx_callargs+__pyx_t_5, (1-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
                 __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
                 __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-                if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 352, __pyx_L12_error)
+                if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 412, __pyx_L12_error)
                 __Pyx_GOTREF(__pyx_t_3);
               }
               __Pyx_XDECREF_SET(__pyx_v_ext, __pyx_t_3);
               __pyx_t_3 = 0;
 
-              /* "ram_booster/disk_cleaner.py":354
+              /* "ram_booster/disk_cleaner.py":414
  *                         ext = os.path.splitext(fn)[1].lower()
  *                         large_files.append({
  *                             "name": fn,             # <<<<<<<<<<<<<<
  *                             "path": fp,
  *                             "size_mb": round(sz / (1024**2), 1),
 */
-              __pyx_t_3 = __Pyx_PyDict_NewPresized(4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 354, __pyx_L12_error)
+              __pyx_t_3 = __Pyx_PyDict_NewPresized(4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 414, __pyx_L12_error)
               __Pyx_GOTREF(__pyx_t_3);
-              if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_name, __pyx_v_fn) < (0)) __PYX_ERR(0, 354, __pyx_L12_error)
+              if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_name, __pyx_v_fn) < (0)) __PYX_ERR(0, 414, __pyx_L12_error)
 
-              /* "ram_booster/disk_cleaner.py":355
+              /* "ram_booster/disk_cleaner.py":415
  *                         large_files.append({
  *                             "name": fn,
  *                             "path": fp,             # <<<<<<<<<<<<<<
  *                             "size_mb": round(sz / (1024**2), 1),
  *                             "ext": ext,
 */
-              if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_path, __pyx_v_fp) < (0)) __PYX_ERR(0, 354, __pyx_L12_error)
+              if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_path, __pyx_v_fp) < (0)) __PYX_ERR(0, 414, __pyx_L12_error)
 
-              /* "ram_booster/disk_cleaner.py":356
+              /* "ram_booster/disk_cleaner.py":416
  *                             "name": fn,
  *                             "path": fp,
  *                             "size_mb": round(sz / (1024**2), 1),             # <<<<<<<<<<<<<<
@@ -12097,7 +14125,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
  *                         })
 */
               __pyx_t_6 = NULL;
-              __pyx_t_1 = __Pyx_PyLong_TrueDivideObjC(__pyx_v_sz, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 356, __pyx_L12_error)
+              __pyx_t_1 = __Pyx_PyLong_TrueDivideObjC(__pyx_v_sz, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 416, __pyx_L12_error)
               __Pyx_GOTREF(__pyx_t_1);
               __pyx_t_5 = 1;
               {
@@ -12105,32 +14133,32 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
                 __pyx_t_2 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
                 __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
                 __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 356, __pyx_L12_error)
+                if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 416, __pyx_L12_error)
                 __Pyx_GOTREF(__pyx_t_2);
               }
-              if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_size_mb, __pyx_t_2) < (0)) __PYX_ERR(0, 354, __pyx_L12_error)
+              if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_size_mb, __pyx_t_2) < (0)) __PYX_ERR(0, 414, __pyx_L12_error)
               __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-              /* "ram_booster/disk_cleaner.py":357
+              /* "ram_booster/disk_cleaner.py":417
  *                             "path": fp,
  *                             "size_mb": round(sz / (1024**2), 1),
  *                             "ext": ext,             # <<<<<<<<<<<<<<
  *                         })
  *                 except Exception:
 */
-              if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_ext, __pyx_v_ext) < (0)) __PYX_ERR(0, 354, __pyx_L12_error)
+              if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_ext, __pyx_v_ext) < (0)) __PYX_ERR(0, 414, __pyx_L12_error)
 
-              /* "ram_booster/disk_cleaner.py":353
+              /* "ram_booster/disk_cleaner.py":413
  *                     if sz >= min_bytes:
  *                         ext = os.path.splitext(fn)[1].lower()
  *                         large_files.append({             # <<<<<<<<<<<<<<
  *                             "name": fn,
  *                             "path": fp,
 */
-              __pyx_t_22 = __Pyx_PyList_Append(__pyx_v_large_files, __pyx_t_3); if (unlikely(__pyx_t_22 == ((int)-1))) __PYX_ERR(0, 353, __pyx_L12_error)
+              __pyx_t_22 = __Pyx_PyList_Append(__pyx_v_large_files, __pyx_t_3); if (unlikely(__pyx_t_22 == ((int)-1))) __PYX_ERR(0, 413, __pyx_L12_error)
               __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-              /* "ram_booster/disk_cleaner.py":351
+              /* "ram_booster/disk_cleaner.py":411
  *                 try:
  *                     sz = os.path.getsize(fp)
  *                     if sz >= min_bytes:             # <<<<<<<<<<<<<<
@@ -12139,7 +14167,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
 */
             }
 
-            /* "ram_booster/disk_cleaner.py":349
+            /* "ram_booster/disk_cleaner.py":409
  *             for fn in fns:
  *                 fp = os.path.join(dp, fn)
  *                 try:             # <<<<<<<<<<<<<<
@@ -12159,7 +14187,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
           __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
           __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-          /* "ram_booster/disk_cleaner.py":359
+          /* "ram_booster/disk_cleaner.py":419
  *                             "ext": ext,
  *                         })
  *                 except Exception:             # <<<<<<<<<<<<<<
@@ -12173,7 +14201,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
           }
           goto __pyx_L14_except_error;
 
-          /* "ram_booster/disk_cleaner.py":349
+          /* "ram_booster/disk_cleaner.py":409
  *             for fn in fns:
  *                 fp = os.path.join(dp, fn)
  *                 try:             # <<<<<<<<<<<<<<
@@ -12194,7 +14222,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
           __pyx_L19_try_end:;
         }
 
-        /* "ram_booster/disk_cleaner.py":347
+        /* "ram_booster/disk_cleaner.py":407
  *             continue
  *         for dp, _, fns in os.walk(base):
  *             for fn in fns:             # <<<<<<<<<<<<<<
@@ -12204,7 +14232,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
       }
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
 
-      /* "ram_booster/disk_cleaner.py":346
+      /* "ram_booster/disk_cleaner.py":406
  *         if not os.path.exists(base):
  *             continue
  *         for dp, _, fns in os.walk(base):             # <<<<<<<<<<<<<<
@@ -12214,7 +14242,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
     }
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-    /* "ram_booster/disk_cleaner.py":343
+    /* "ram_booster/disk_cleaner.py":403
  *     large_files = []
  * 
  *     for base in target_dirs:             # <<<<<<<<<<<<<<
@@ -12225,7 +14253,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
   }
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-  /* "ram_booster/disk_cleaner.py":362
+  /* "ram_booster/disk_cleaner.py":422
  *                     pass
  * 
  *     large_files.sort(key=lambda x: x["size_mb"], reverse=True)             # <<<<<<<<<<<<<<
@@ -12234,25 +14262,25 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
 */
   __pyx_t_7 = __pyx_v_large_files;
   __Pyx_INCREF(__pyx_t_7);
-  __pyx_t_10 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_16find_large_files_lambda2, 0, __pyx_mstate_global->__pyx_n_u_find_large_files_locals_lambda, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 362, __pyx_L1_error)
+  __pyx_t_10 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_16find_large_files_lambda2, 0, __pyx_mstate_global->__pyx_n_u_find_large_files_locals_lambda, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 422, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
   __pyx_t_5 = 0;
   {
     PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 2 : 0)] = {__pyx_t_7, NULL};
-    __pyx_t_3 = __Pyx_MakeVectorcallBuilderKwds(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 362, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_MakeVectorcallBuilderKwds(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 422, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_key, __pyx_t_10, __pyx_t_3, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 362, __pyx_L1_error)
-    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_reverse, Py_True, __pyx_t_3, __pyx_callargs+1, 1) < (0)) __PYX_ERR(0, 362, __pyx_L1_error)
+    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_key, __pyx_t_10, __pyx_t_3, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 422, __pyx_L1_error)
+    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_reverse, Py_True, __pyx_t_3, __pyx_callargs+1, 1) < (0)) __PYX_ERR(0, 422, __pyx_L1_error)
     __pyx_t_9 = __Pyx_Object_VectorcallMethod_CallFromBuilder((PyObject*)__pyx_mstate_global->__pyx_n_u_sort, __pyx_callargs+__pyx_t_5, (1-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_3);
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 362, __pyx_L1_error)
+    if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 422, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
   }
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-  /* "ram_booster/disk_cleaner.py":363
+  /* "ram_booster/disk_cleaner.py":423
  * 
  *     large_files.sort(key=lambda x: x["size_mb"], reverse=True)
  *     return large_files[:30]             # <<<<<<<<<<<<<<
@@ -12260,13 +14288,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
  * 
 */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_9 = __Pyx_PyList_GetSlice(__pyx_v_large_files, 0, 30); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 363, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyList_GetSlice(__pyx_v_large_files, 0, 30); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 423, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __pyx_r = __pyx_t_9;
   __pyx_t_9 = 0;
   goto __pyx_L0;
 
-  /* "ram_booster/disk_cleaner.py":325
+  /* "ram_booster/disk_cleaner.py":385
  * 
  * 
  * def find_large_files(min_size_mb=30):             # <<<<<<<<<<<<<<
@@ -12305,7 +14333,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
   return __pyx_r;
 }
 
-/* "ram_booster/disk_cleaner.py":366
+/* "ram_booster/disk_cleaner.py":426
  * 
  * 
  * def get_drive_partitions():             # <<<<<<<<<<<<<<
@@ -12314,23 +14342,23 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_22find_large_files(CYTHON
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_25get_drive_partitions(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-PyDoc_STRVAR(__pyx_doc_11ram_booster_12disk_cleaner_24get_drive_partitions, "\n    Get detailed partition metrics for all mounted drives (C:, D:, E:, USBs).\n    ");
-static PyMethodDef __pyx_mdef_11ram_booster_12disk_cleaner_25get_drive_partitions = {"get_drive_partitions", (PyCFunction)__pyx_pw_11ram_booster_12disk_cleaner_25get_drive_partitions, METH_NOARGS, __pyx_doc_11ram_booster_12disk_cleaner_24get_drive_partitions};
-static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_25get_drive_partitions(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_27get_drive_partitions(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+PyDoc_STRVAR(__pyx_doc_11ram_booster_12disk_cleaner_26get_drive_partitions, "\n    Get detailed partition metrics for all mounted drives (C:, D:, E:, USBs).\n    ");
+static PyMethodDef __pyx_mdef_11ram_booster_12disk_cleaner_27get_drive_partitions = {"get_drive_partitions", (PyCFunction)__pyx_pw_11ram_booster_12disk_cleaner_27get_drive_partitions, METH_NOARGS, __pyx_doc_11ram_booster_12disk_cleaner_26get_drive_partitions};
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_27get_drive_partitions(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_drive_partitions (wrapper)", 0);
   __pyx_kwvalues = __Pyx_KwValues_VARARGS(__pyx_args, __pyx_nargs);
-  __pyx_r = __pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(__pyx_self);
+  __pyx_r = __pyx_pf_11ram_booster_12disk_cleaner_26get_drive_partitions(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26get_drive_partitions(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_v_partitions = NULL;
   PyObject *__pyx_v_part = NULL;
   PyObject *__pyx_v_usage = NULL;
@@ -12355,19 +14383,19 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_drive_partitions", 0);
 
-  /* "ram_booster/disk_cleaner.py":370
+  /* "ram_booster/disk_cleaner.py":430
  *     Get detailed partition metrics for all mounted drives (C:, D:, E:, USBs).
  *     """
  *     partitions = []             # <<<<<<<<<<<<<<
  *     for part in psutil.disk_partitions(all=False):
  *         try:
 */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 370, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 430, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_partitions = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "ram_booster/disk_cleaner.py":371
+  /* "ram_booster/disk_cleaner.py":431
  *     """
  *     partitions = []
  *     for part in psutil.disk_partitions(all=False):             # <<<<<<<<<<<<<<
@@ -12375,9 +14403,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
  *             usage = psutil.disk_usage(part.mountpoint)
 */
   __pyx_t_2 = NULL;
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 371, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 431, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_disk_partitions); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 371, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_disk_partitions); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 431, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_5 = 1;
@@ -12394,14 +14422,14 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
   #endif
   {
     PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 1 : 0)] = {__pyx_t_2, NULL};
-    __pyx_t_3 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 371, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 431, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_all, Py_False, __pyx_t_3, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 371, __pyx_L1_error)
+    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_all, Py_False, __pyx_t_3, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 431, __pyx_L1_error)
     __pyx_t_1 = __Pyx_Object_Vectorcall_CallFromBuilder((PyObject*)__pyx_t_4, __pyx_callargs+__pyx_t_5, (1-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_3);
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 371, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 431, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   }
   if (likely(PyList_CheckExact(__pyx_t_1)) || PyTuple_CheckExact(__pyx_t_1)) {
@@ -12409,9 +14437,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
     __pyx_t_6 = 0;
     __pyx_t_7 = NULL;
   } else {
-    __pyx_t_6 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 371, __pyx_L1_error)
+    __pyx_t_6 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 431, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_7 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 371, __pyx_L1_error)
+    __pyx_t_7 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 431, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   for (;;) {
@@ -12420,7 +14448,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
         {
           Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_4);
           #if !CYTHON_ASSUME_SAFE_SIZE
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 371, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 431, __pyx_L1_error)
           #endif
           if (__pyx_t_6 >= __pyx_temp) break;
         }
@@ -12430,7 +14458,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
         {
           Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_4);
           #if !CYTHON_ASSUME_SAFE_SIZE
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 371, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 431, __pyx_L1_error)
           #endif
           if (__pyx_t_6 >= __pyx_temp) break;
         }
@@ -12441,13 +14469,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
         #endif
         ++__pyx_t_6;
       }
-      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 371, __pyx_L1_error)
+      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 431, __pyx_L1_error)
     } else {
       __pyx_t_1 = __pyx_t_7(__pyx_t_4);
       if (unlikely(!__pyx_t_1)) {
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
-          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 371, __pyx_L1_error)
+          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 431, __pyx_L1_error)
           PyErr_Clear();
         }
         break;
@@ -12457,7 +14485,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
     __Pyx_XDECREF_SET(__pyx_v_part, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "ram_booster/disk_cleaner.py":372
+    /* "ram_booster/disk_cleaner.py":432
  *     partitions = []
  *     for part in psutil.disk_partitions(all=False):
  *         try:             # <<<<<<<<<<<<<<
@@ -12473,7 +14501,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
       __Pyx_XGOTREF(__pyx_t_10);
       /*try:*/ {
 
-        /* "ram_booster/disk_cleaner.py":373
+        /* "ram_booster/disk_cleaner.py":433
  *     for part in psutil.disk_partitions(all=False):
  *         try:
  *             usage = psutil.disk_usage(part.mountpoint)             # <<<<<<<<<<<<<<
@@ -12481,12 +14509,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
  *                 "device": part.device,
 */
         __pyx_t_3 = NULL;
-        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 373, __pyx_L5_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 433, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_disk_usage); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 373, __pyx_L5_error)
+        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_disk_usage); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 433, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_11);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_part, __pyx_mstate_global->__pyx_n_u_mountpoint); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 373, __pyx_L5_error)
+        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_part, __pyx_mstate_global->__pyx_n_u_mountpoint); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 433, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_2);
         __pyx_t_5 = 1;
         #if CYTHON_UNPACK_METHODS
@@ -12506,51 +14534,51 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
           __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
           __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-          if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 373, __pyx_L5_error)
+          if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 433, __pyx_L5_error)
           __Pyx_GOTREF(__pyx_t_1);
         }
         __Pyx_XDECREF_SET(__pyx_v_usage, __pyx_t_1);
         __pyx_t_1 = 0;
 
-        /* "ram_booster/disk_cleaner.py":375
+        /* "ram_booster/disk_cleaner.py":435
  *             usage = psutil.disk_usage(part.mountpoint)
  *             partitions.append({
  *                 "device": part.device,             # <<<<<<<<<<<<<<
  *                 "mountpoint": part.mountpoint,
  *                 "fstype": part.fstype,
 */
-        __pyx_t_1 = __Pyx_PyDict_NewPresized(7); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 375, __pyx_L5_error)
+        __pyx_t_1 = __Pyx_PyDict_NewPresized(7); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 435, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_1);
-        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_part, __pyx_mstate_global->__pyx_n_u_device); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 375, __pyx_L5_error)
+        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_part, __pyx_mstate_global->__pyx_n_u_device); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 435, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_11);
-        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_device, __pyx_t_11) < (0)) __PYX_ERR(0, 375, __pyx_L5_error)
+        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_device, __pyx_t_11) < (0)) __PYX_ERR(0, 435, __pyx_L5_error)
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-        /* "ram_booster/disk_cleaner.py":376
+        /* "ram_booster/disk_cleaner.py":436
  *             partitions.append({
  *                 "device": part.device,
  *                 "mountpoint": part.mountpoint,             # <<<<<<<<<<<<<<
  *                 "fstype": part.fstype,
  *                 "total_gb": round(usage.total / (1024**3), 1),
 */
-        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_part, __pyx_mstate_global->__pyx_n_u_mountpoint); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 376, __pyx_L5_error)
+        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_part, __pyx_mstate_global->__pyx_n_u_mountpoint); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 436, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_11);
-        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_mountpoint, __pyx_t_11) < (0)) __PYX_ERR(0, 375, __pyx_L5_error)
+        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_mountpoint, __pyx_t_11) < (0)) __PYX_ERR(0, 435, __pyx_L5_error)
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-        /* "ram_booster/disk_cleaner.py":377
+        /* "ram_booster/disk_cleaner.py":437
  *                 "device": part.device,
  *                 "mountpoint": part.mountpoint,
  *                 "fstype": part.fstype,             # <<<<<<<<<<<<<<
  *                 "total_gb": round(usage.total / (1024**3), 1),
  *                 "used_gb": round(usage.used / (1024**3), 1),
 */
-        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_part, __pyx_mstate_global->__pyx_n_u_fstype); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 377, __pyx_L5_error)
+        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_part, __pyx_mstate_global->__pyx_n_u_fstype); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 437, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_11);
-        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_fstype, __pyx_t_11) < (0)) __PYX_ERR(0, 375, __pyx_L5_error)
+        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_fstype, __pyx_t_11) < (0)) __PYX_ERR(0, 435, __pyx_L5_error)
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-        /* "ram_booster/disk_cleaner.py":378
+        /* "ram_booster/disk_cleaner.py":438
  *                 "mountpoint": part.mountpoint,
  *                 "fstype": part.fstype,
  *                 "total_gb": round(usage.total / (1024**3), 1),             # <<<<<<<<<<<<<<
@@ -12558,9 +14586,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
  *                 "free_gb": round(usage.free / (1024**3), 1),
 */
         __pyx_t_2 = NULL;
-        __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_usage, __pyx_mstate_global->__pyx_n_u_total); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 378, __pyx_L5_error)
+        __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_usage, __pyx_mstate_global->__pyx_n_u_total); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 438, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_12 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_3, __pyx_mstate_global->__pyx_int_1073741824, 0x40000000, 0, 0); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 378, __pyx_L5_error)
+        __pyx_t_12 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_3, __pyx_mstate_global->__pyx_int_1073741824, 0x40000000, 0, 0); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 438, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_12);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __pyx_t_5 = 1;
@@ -12569,13 +14597,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
           __pyx_t_11 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
           __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
           __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-          if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 378, __pyx_L5_error)
+          if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 438, __pyx_L5_error)
           __Pyx_GOTREF(__pyx_t_11);
         }
-        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_total_gb, __pyx_t_11) < (0)) __PYX_ERR(0, 375, __pyx_L5_error)
+        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_total_gb, __pyx_t_11) < (0)) __PYX_ERR(0, 435, __pyx_L5_error)
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-        /* "ram_booster/disk_cleaner.py":379
+        /* "ram_booster/disk_cleaner.py":439
  *                 "fstype": part.fstype,
  *                 "total_gb": round(usage.total / (1024**3), 1),
  *                 "used_gb": round(usage.used / (1024**3), 1),             # <<<<<<<<<<<<<<
@@ -12583,9 +14611,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
  *                 "percent": usage.percent,
 */
         __pyx_t_12 = NULL;
-        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_usage, __pyx_mstate_global->__pyx_n_u_used); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 379, __pyx_L5_error)
+        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_usage, __pyx_mstate_global->__pyx_n_u_used); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 439, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_3 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_2, __pyx_mstate_global->__pyx_int_1073741824, 0x40000000, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 379, __pyx_L5_error)
+        __pyx_t_3 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_2, __pyx_mstate_global->__pyx_int_1073741824, 0x40000000, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 439, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_3);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         __pyx_t_5 = 1;
@@ -12594,13 +14622,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
           __pyx_t_11 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
           __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-          if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 379, __pyx_L5_error)
+          if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 439, __pyx_L5_error)
           __Pyx_GOTREF(__pyx_t_11);
         }
-        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_used_gb, __pyx_t_11) < (0)) __PYX_ERR(0, 375, __pyx_L5_error)
+        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_used_gb, __pyx_t_11) < (0)) __PYX_ERR(0, 435, __pyx_L5_error)
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-        /* "ram_booster/disk_cleaner.py":380
+        /* "ram_booster/disk_cleaner.py":440
  *                 "total_gb": round(usage.total / (1024**3), 1),
  *                 "used_gb": round(usage.used / (1024**3), 1),
  *                 "free_gb": round(usage.free / (1024**3), 1),             # <<<<<<<<<<<<<<
@@ -12608,9 +14636,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
  *             })
 */
         __pyx_t_3 = NULL;
-        __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_v_usage, __pyx_mstate_global->__pyx_n_u_free); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 380, __pyx_L5_error)
+        __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_v_usage, __pyx_mstate_global->__pyx_n_u_free); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 440, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_12);
-        __pyx_t_2 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_12, __pyx_mstate_global->__pyx_int_1073741824, 0x40000000, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 380, __pyx_L5_error)
+        __pyx_t_2 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_12, __pyx_mstate_global->__pyx_int_1073741824, 0x40000000, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 440, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
         __pyx_t_5 = 1;
@@ -12619,35 +14647,35 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
           __pyx_t_11 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
           __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-          if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 380, __pyx_L5_error)
+          if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 440, __pyx_L5_error)
           __Pyx_GOTREF(__pyx_t_11);
         }
-        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_free_gb, __pyx_t_11) < (0)) __PYX_ERR(0, 375, __pyx_L5_error)
+        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_free_gb, __pyx_t_11) < (0)) __PYX_ERR(0, 435, __pyx_L5_error)
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-        /* "ram_booster/disk_cleaner.py":381
+        /* "ram_booster/disk_cleaner.py":441
  *                 "used_gb": round(usage.used / (1024**3), 1),
  *                 "free_gb": round(usage.free / (1024**3), 1),
  *                 "percent": usage.percent,             # <<<<<<<<<<<<<<
  *             })
  *         except Exception:
 */
-        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_usage, __pyx_mstate_global->__pyx_n_u_percent); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 381, __pyx_L5_error)
+        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_usage, __pyx_mstate_global->__pyx_n_u_percent); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 441, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_11);
-        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_percent, __pyx_t_11) < (0)) __PYX_ERR(0, 375, __pyx_L5_error)
+        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_percent, __pyx_t_11) < (0)) __PYX_ERR(0, 435, __pyx_L5_error)
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-        /* "ram_booster/disk_cleaner.py":374
+        /* "ram_booster/disk_cleaner.py":434
  *         try:
  *             usage = psutil.disk_usage(part.mountpoint)
  *             partitions.append({             # <<<<<<<<<<<<<<
  *                 "device": part.device,
  *                 "mountpoint": part.mountpoint,
 */
-        __pyx_t_13 = __Pyx_PyList_Append(__pyx_v_partitions, __pyx_t_1); if (unlikely(__pyx_t_13 == ((int)-1))) __PYX_ERR(0, 374, __pyx_L5_error)
+        __pyx_t_13 = __Pyx_PyList_Append(__pyx_v_partitions, __pyx_t_1); if (unlikely(__pyx_t_13 == ((int)-1))) __PYX_ERR(0, 434, __pyx_L5_error)
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-        /* "ram_booster/disk_cleaner.py":372
+        /* "ram_booster/disk_cleaner.py":432
  *     partitions = []
  *     for part in psutil.disk_partitions(all=False):
  *         try:             # <<<<<<<<<<<<<<
@@ -12666,7 +14694,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-      /* "ram_booster/disk_cleaner.py":383
+      /* "ram_booster/disk_cleaner.py":443
  *                 "percent": usage.percent,
  *             })
  *         except Exception:             # <<<<<<<<<<<<<<
@@ -12680,7 +14708,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
       }
       goto __pyx_L7_except_error;
 
-      /* "ram_booster/disk_cleaner.py":372
+      /* "ram_booster/disk_cleaner.py":432
  *     partitions = []
  *     for part in psutil.disk_partitions(all=False):
  *         try:             # <<<<<<<<<<<<<<
@@ -12701,7 +14729,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
       __pyx_L12_try_end:;
     }
 
-    /* "ram_booster/disk_cleaner.py":371
+    /* "ram_booster/disk_cleaner.py":431
  *     """
  *     partitions = []
  *     for part in psutil.disk_partitions(all=False):             # <<<<<<<<<<<<<<
@@ -12711,7 +14739,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "ram_booster/disk_cleaner.py":385
+  /* "ram_booster/disk_cleaner.py":445
  *         except Exception:
  *             pass
  *     return partitions             # <<<<<<<<<<<<<<
@@ -12723,7 +14751,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
   __pyx_r = __pyx_v_partitions;
   goto __pyx_L0;
 
-  /* "ram_booster/disk_cleaner.py":366
+  /* "ram_booster/disk_cleaner.py":426
  * 
  * 
  * def get_drive_partitions():             # <<<<<<<<<<<<<<
@@ -12750,7 +14778,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
   return __pyx_r;
 }
 
-/* "ram_booster/disk_cleaner.py":388
+/* "ram_booster/disk_cleaner.py":448
  * 
  * 
  * def delete_specific_file(filepath):             # <<<<<<<<<<<<<<
@@ -12759,16 +14787,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_24get_drive_partitions(CY
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_27delete_specific_file(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_29delete_specific_file(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_11ram_booster_12disk_cleaner_26delete_specific_file, "Delete a specific file selected by the user.");
-static PyMethodDef __pyx_mdef_11ram_booster_12disk_cleaner_27delete_specific_file = {"delete_specific_file", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_11ram_booster_12disk_cleaner_27delete_specific_file, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_11ram_booster_12disk_cleaner_26delete_specific_file};
-static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_27delete_specific_file(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_11ram_booster_12disk_cleaner_28delete_specific_file, "Delete a specific file selected by the user.");
+static PyMethodDef __pyx_mdef_11ram_booster_12disk_cleaner_29delete_specific_file = {"delete_specific_file", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_11ram_booster_12disk_cleaner_29delete_specific_file, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_11ram_booster_12disk_cleaner_28delete_specific_file};
+static PyObject *__pyx_pw_11ram_booster_12disk_cleaner_29delete_specific_file(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -12798,32 +14826,32 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_filepath,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 388, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 448, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 388, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 448, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "delete_specific_file", 0) < (0)) __PYX_ERR(0, 388, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "delete_specific_file", 0) < (0)) __PYX_ERR(0, 448, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("delete_specific_file", 1, 1, 1, i); __PYX_ERR(0, 388, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("delete_specific_file", 1, 1, 1, i); __PYX_ERR(0, 448, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 388, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 448, __pyx_L3_error)
     }
     __pyx_v_filepath = values[0];
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("delete_specific_file", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 388, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("delete_specific_file", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 448, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -12834,7 +14862,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(__pyx_self, __pyx_v_filepath);
+  __pyx_r = __pyx_pf_11ram_booster_12disk_cleaner_28delete_specific_file(__pyx_self, __pyx_v_filepath);
 
   /* function exit code */
   for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
@@ -12844,7 +14872,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_filepath) {
+static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_28delete_specific_file(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_filepath) {
   PyObject *__pyx_v_size_mb = NULL;
   PyObject *__pyx_v_e = NULL;
   PyObject *__pyx_r = NULL;
@@ -12876,23 +14904,23 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("delete_specific_file", 0);
 
-  /* "ram_booster/disk_cleaner.py":390
+  /* "ram_booster/disk_cleaner.py":450
  * def delete_specific_file(filepath):
  *     """Delete a specific file selected by the user."""
  *     if not filepath or not os.path.exists(filepath):             # <<<<<<<<<<<<<<
  *         return {"success": False, "error": "File does not exist"}
  *     try:
 */
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_filepath); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 390, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_filepath); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 450, __pyx_L1_error)
   __pyx_t_3 = (!__pyx_t_2);
   if (!__pyx_t_3) {
   } else {
     __pyx_t_1 = __pyx_t_3;
     goto __pyx_L4_bool_binop_done;
   }
-  __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 390, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 450, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 390, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 450, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __pyx_t_5 = __pyx_t_7;
@@ -12903,17 +14931,17 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
     __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_exists, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 390, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 450, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
   }
-  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely((__pyx_t_3 < 0))) __PYX_ERR(0, 390, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely((__pyx_t_3 < 0))) __PYX_ERR(0, 450, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_2 = (!__pyx_t_3);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "ram_booster/disk_cleaner.py":391
+    /* "ram_booster/disk_cleaner.py":451
  *     """Delete a specific file selected by the user."""
  *     if not filepath or not os.path.exists(filepath):
  *         return {"success": False, "error": "File does not exist"}             # <<<<<<<<<<<<<<
@@ -12921,15 +14949,15 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
  *         size_mb = round(os.path.getsize(filepath) / (1024**2), 1)
 */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_4 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 391, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 451, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_success, Py_False) < (0)) __PYX_ERR(0, 391, __pyx_L1_error)
-    if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_error, __pyx_mstate_global->__pyx_kp_u_File_does_not_exist) < (0)) __PYX_ERR(0, 391, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_success, Py_False) < (0)) __PYX_ERR(0, 451, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_error, __pyx_mstate_global->__pyx_kp_u_File_does_not_exist) < (0)) __PYX_ERR(0, 451, __pyx_L1_error)
     __pyx_r = __pyx_t_4;
     __pyx_t_4 = 0;
     goto __pyx_L0;
 
-    /* "ram_booster/disk_cleaner.py":390
+    /* "ram_booster/disk_cleaner.py":450
  * def delete_specific_file(filepath):
  *     """Delete a specific file selected by the user."""
  *     if not filepath or not os.path.exists(filepath):             # <<<<<<<<<<<<<<
@@ -12938,7 +14966,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
 */
   }
 
-  /* "ram_booster/disk_cleaner.py":392
+  /* "ram_booster/disk_cleaner.py":452
  *     if not filepath or not os.path.exists(filepath):
  *         return {"success": False, "error": "File does not exist"}
  *     try:             # <<<<<<<<<<<<<<
@@ -12954,7 +14982,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
     __Pyx_XGOTREF(__pyx_t_11);
     /*try:*/ {
 
-      /* "ram_booster/disk_cleaner.py":393
+      /* "ram_booster/disk_cleaner.py":453
  *         return {"success": False, "error": "File does not exist"}
  *     try:
  *         size_mb = round(os.path.getsize(filepath) / (1024**2), 1)             # <<<<<<<<<<<<<<
@@ -12962,9 +14990,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
  *         return {"success": True, "freed_mb": size_mb, "path": filepath}
 */
       __pyx_t_7 = NULL;
-      __Pyx_GetModuleGlobalName(__pyx_t_12, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 393, __pyx_L6_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_12, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 453, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_12);
-      __pyx_t_13 = __Pyx_PyObject_GetAttrStr(__pyx_t_12, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 393, __pyx_L6_error)
+      __pyx_t_13 = __Pyx_PyObject_GetAttrStr(__pyx_t_12, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 453, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_13);
       __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
       __pyx_t_6 = __pyx_t_13;
@@ -12975,10 +15003,10 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
         __pyx_t_5 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_getsize, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
         __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
         __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 393, __pyx_L6_error)
+        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 453, __pyx_L6_error)
         __Pyx_GOTREF(__pyx_t_5);
       }
-      __pyx_t_13 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_5, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 393, __pyx_L6_error)
+      __pyx_t_13 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_5, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 453, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_13);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __pyx_t_8 = 1;
@@ -12987,13 +15015,13 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
         __pyx_t_4 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_8, (3-__pyx_t_8) | (__pyx_t_8*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
         __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
         __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
-        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 393, __pyx_L6_error)
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 453, __pyx_L6_error)
         __Pyx_GOTREF(__pyx_t_4);
       }
       __pyx_v_size_mb = __pyx_t_4;
       __pyx_t_4 = 0;
 
-      /* "ram_booster/disk_cleaner.py":394
+      /* "ram_booster/disk_cleaner.py":454
  *     try:
  *         size_mb = round(os.path.getsize(filepath) / (1024**2), 1)
  *         os.remove(filepath)             # <<<<<<<<<<<<<<
@@ -13001,9 +15029,9 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
  *     except Exception as e:
 */
       __pyx_t_13 = NULL;
-      __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 394, __pyx_L6_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 454, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_remove); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 394, __pyx_L6_error)
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_remove); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 454, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       __pyx_t_8 = 1;
@@ -13023,12 +15051,12 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
         __pyx_t_4 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_5, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (__pyx_t_8*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
         __Pyx_XDECREF(__pyx_t_13); __pyx_t_13 = 0;
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 394, __pyx_L6_error)
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 454, __pyx_L6_error)
         __Pyx_GOTREF(__pyx_t_4);
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "ram_booster/disk_cleaner.py":395
+      /* "ram_booster/disk_cleaner.py":455
  *         size_mb = round(os.path.getsize(filepath) / (1024**2), 1)
  *         os.remove(filepath)
  *         return {"success": True, "freed_mb": size_mb, "path": filepath}             # <<<<<<<<<<<<<<
@@ -13036,16 +15064,16 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
  *         return {"success": False, "error": str(e)}
 */
       __Pyx_XDECREF(__pyx_r);
-      __pyx_t_4 = __Pyx_PyDict_NewPresized(3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 395, __pyx_L6_error)
+      __pyx_t_4 = __Pyx_PyDict_NewPresized(3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 455, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_4);
-      if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_success, Py_True) < (0)) __PYX_ERR(0, 395, __pyx_L6_error)
-      if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_freed_mb, __pyx_v_size_mb) < (0)) __PYX_ERR(0, 395, __pyx_L6_error)
-      if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_path, __pyx_v_filepath) < (0)) __PYX_ERR(0, 395, __pyx_L6_error)
+      if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_success, Py_True) < (0)) __PYX_ERR(0, 455, __pyx_L6_error)
+      if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_freed_mb, __pyx_v_size_mb) < (0)) __PYX_ERR(0, 455, __pyx_L6_error)
+      if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_path, __pyx_v_filepath) < (0)) __PYX_ERR(0, 455, __pyx_L6_error)
       __pyx_r = __pyx_t_4;
       __pyx_t_4 = 0;
       goto __pyx_L10_try_return;
 
-      /* "ram_booster/disk_cleaner.py":392
+      /* "ram_booster/disk_cleaner.py":452
  *     if not filepath or not os.path.exists(filepath):
  *         return {"success": False, "error": "File does not exist"}
  *     try:             # <<<<<<<<<<<<<<
@@ -13061,7 +15089,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-    /* "ram_booster/disk_cleaner.py":396
+    /* "ram_booster/disk_cleaner.py":456
  *         os.remove(filepath)
  *         return {"success": True, "freed_mb": size_mb, "path": filepath}
  *     except Exception as e:             # <<<<<<<<<<<<<<
@@ -13070,7 +15098,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
     __pyx_t_14 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
     if (__pyx_t_14) {
       __Pyx_AddTraceback("ram_booster.disk_cleaner.delete_specific_file", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_4, &__pyx_t_5, &__pyx_t_13) < 0) __PYX_ERR(0, 396, __pyx_L8_except_error)
+      if (__Pyx_GetException(&__pyx_t_4, &__pyx_t_5, &__pyx_t_13) < 0) __PYX_ERR(0, 456, __pyx_L8_except_error)
       __Pyx_XGOTREF(__pyx_t_4);
       __Pyx_XGOTREF(__pyx_t_5);
       __Pyx_XGOTREF(__pyx_t_13);
@@ -13078,18 +15106,18 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
       __pyx_v_e = __pyx_t_5;
       /*try:*/ {
 
-        /* "ram_booster/disk_cleaner.py":397
+        /* "ram_booster/disk_cleaner.py":457
  *         return {"success": True, "freed_mb": size_mb, "path": filepath}
  *     except Exception as e:
  *         return {"success": False, "error": str(e)}             # <<<<<<<<<<<<<<
 */
         __Pyx_XDECREF(__pyx_r);
-        __pyx_t_7 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 397, __pyx_L17_error)
+        __pyx_t_7 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 457, __pyx_L17_error)
         __Pyx_GOTREF(__pyx_t_7);
-        if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_success, Py_False) < (0)) __PYX_ERR(0, 397, __pyx_L17_error)
-        __pyx_t_6 = __Pyx_PyObject_Unicode(__pyx_v_e); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 397, __pyx_L17_error)
+        if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_success, Py_False) < (0)) __PYX_ERR(0, 457, __pyx_L17_error)
+        __pyx_t_6 = __Pyx_PyObject_Unicode(__pyx_v_e); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 457, __pyx_L17_error)
         __Pyx_GOTREF(__pyx_t_6);
-        if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_error, __pyx_t_6) < (0)) __PYX_ERR(0, 397, __pyx_L17_error)
+        if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_error, __pyx_t_6) < (0)) __PYX_ERR(0, 457, __pyx_L17_error)
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         __pyx_r = __pyx_t_7;
         __pyx_t_7 = 0;
@@ -13099,7 +15127,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
         goto __pyx_L16_return;
       }
 
-      /* "ram_booster/disk_cleaner.py":396
+      /* "ram_booster/disk_cleaner.py":456
  *         os.remove(filepath)
  *         return {"success": True, "freed_mb": size_mb, "path": filepath}
  *     except Exception as e:             # <<<<<<<<<<<<<<
@@ -13150,7 +15178,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
     }
     goto __pyx_L8_except_error;
 
-    /* "ram_booster/disk_cleaner.py":392
+    /* "ram_booster/disk_cleaner.py":452
  *     if not filepath or not os.path.exists(filepath):
  *         return {"success": False, "error": "File does not exist"}
  *     try:             # <<<<<<<<<<<<<<
@@ -13177,7 +15205,7 @@ static PyObject *__pyx_pf_11ram_booster_12disk_cleaner_26delete_specific_file(CY
     goto __pyx_L0;
   }
 
-  /* "ram_booster/disk_cleaner.py":388
+  /* "ram_booster/disk_cleaner.py":448
  * 
  * 
  * def delete_specific_file(filepath):             # <<<<<<<<<<<<<<
@@ -14042,156 +16070,171 @@ __Pyx_RefNannySetupContext("PyInit_disk_cleaner", 0);
   /* "ram_booster/disk_cleaner.py":173
  * #  INSTALLED APPLICATIONS AUDITOR & UNINSTALLER
  * 
- * def get_installed_apps():             # <<<<<<<<<<<<<<
- *     """
- *     Audit and list all installed applications on Windows with estimated size, publisher, and uninstall string.
+ * def _extract_app_icon_b64(icon_path):             # <<<<<<<<<<<<<<
+ *     """Extract real high-res 32x32 PNG Base64 icon from EXE, ICO or DisplayIcon path."""
+ *     if not icon_path or not isinstance(icon_path, str):
 */
-  __pyx_t_6 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_17get_installed_apps, 0, __pyx_mstate_global->__pyx_n_u_get_installed_apps, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[11])); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 173, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_17_extract_app_icon_b64, 0, __pyx_mstate_global->__pyx_n_u_extract_app_icon_b64, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[11])); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 173, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_6);
   #endif
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_get_installed_apps, __pyx_t_6) < (0)) __PYX_ERR(0, 173, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_extract_app_icon_b64, __pyx_t_6) < (0)) __PYX_ERR(0, 173, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "ram_booster/disk_cleaner.py":245
+  /* "ram_booster/disk_cleaner.py":224
+ * 
+ * 
+ * def get_installed_apps():             # <<<<<<<<<<<<<<
+ *     """Scan Windows Registry for installed applications with publisher, size, version, and real icons."""
+ *     apps = []
+*/
+  __pyx_t_6 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_19get_installed_apps, 0, __pyx_mstate_global->__pyx_n_u_get_installed_apps, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[12])); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 224, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
+  PyUnstable_Object_EnableDeferredRefcount(__pyx_t_6);
+  #endif
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_get_installed_apps, __pyx_t_6) < (0)) __PYX_ERR(0, 224, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+  /* "ram_booster/disk_cleaner.py":305
  * 
  * 
  * def uninstall_app(uninstall_cmd):             # <<<<<<<<<<<<<<
  *     """Trigger application uninstaller."""
  *     if not uninstall_cmd:
 */
-  __pyx_t_6 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_19uninstall_app, 0, __pyx_mstate_global->__pyx_n_u_uninstall_app, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[12])); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 245, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_21uninstall_app, 0, __pyx_mstate_global->__pyx_n_u_uninstall_app, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[13])); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 305, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_6);
   #endif
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_uninstall_app, __pyx_t_6) < (0)) __PYX_ERR(0, 245, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_uninstall_app, __pyx_t_6) < (0)) __PYX_ERR(0, 305, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "ram_booster/disk_cleaner.py":259
+  /* "ram_booster/disk_cleaner.py":319
  * 
  * EXT_CATEGORIES = {
  *     "audio": [".mp3", ".wav", ".flac", ".m4a", ".aac", ".ogg", ".wma"],             # <<<<<<<<<<<<<<
  *     "video": [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm", ".m4v"],
  *     "pictures": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg", ".ico", ".raw"],
 */
-  __pyx_t_6 = __Pyx_PyDict_NewPresized(5); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 259, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyDict_NewPresized(5); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 319, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_2 = __Pyx_PyList_Pack(7, __pyx_mstate_global->__pyx_kp_u_mp3, __pyx_mstate_global->__pyx_kp_u_wav, __pyx_mstate_global->__pyx_kp_u_flac, __pyx_mstate_global->__pyx_kp_u_m4a, __pyx_mstate_global->__pyx_kp_u_aac, __pyx_mstate_global->__pyx_kp_u_ogg, __pyx_mstate_global->__pyx_kp_u_wma); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 259, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyList_Pack(7, __pyx_mstate_global->__pyx_kp_u_mp3, __pyx_mstate_global->__pyx_kp_u_wav, __pyx_mstate_global->__pyx_kp_u_flac, __pyx_mstate_global->__pyx_kp_u_m4a, __pyx_mstate_global->__pyx_kp_u_aac, __pyx_mstate_global->__pyx_kp_u_ogg, __pyx_mstate_global->__pyx_kp_u_wma); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 319, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_audio, __pyx_t_2) < (0)) __PYX_ERR(0, 259, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_audio, __pyx_t_2) < (0)) __PYX_ERR(0, 319, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "ram_booster/disk_cleaner.py":260
+  /* "ram_booster/disk_cleaner.py":320
  * EXT_CATEGORIES = {
  *     "audio": [".mp3", ".wav", ".flac", ".m4a", ".aac", ".ogg", ".wma"],
  *     "video": [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm", ".m4v"],             # <<<<<<<<<<<<<<
  *     "pictures": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg", ".ico", ".raw"],
  *     "documents": [".pdf", ".docx", ".xlsx", ".pptx", ".txt", ".csv", ".doc", ".xls"],
 */
-  __pyx_t_2 = __Pyx_PyList_Pack(8, __pyx_mstate_global->__pyx_kp_u_mp4, __pyx_mstate_global->__pyx_kp_u_mkv, __pyx_mstate_global->__pyx_kp_u_avi, __pyx_mstate_global->__pyx_kp_u_mov, __pyx_mstate_global->__pyx_kp_u_wmv, __pyx_mstate_global->__pyx_kp_u_flv, __pyx_mstate_global->__pyx_kp_u_webm, __pyx_mstate_global->__pyx_kp_u_m4v); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 260, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyList_Pack(8, __pyx_mstate_global->__pyx_kp_u_mp4, __pyx_mstate_global->__pyx_kp_u_mkv, __pyx_mstate_global->__pyx_kp_u_avi, __pyx_mstate_global->__pyx_kp_u_mov, __pyx_mstate_global->__pyx_kp_u_wmv, __pyx_mstate_global->__pyx_kp_u_flv, __pyx_mstate_global->__pyx_kp_u_webm, __pyx_mstate_global->__pyx_kp_u_m4v); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 320, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_video, __pyx_t_2) < (0)) __PYX_ERR(0, 259, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_video, __pyx_t_2) < (0)) __PYX_ERR(0, 319, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "ram_booster/disk_cleaner.py":261
+  /* "ram_booster/disk_cleaner.py":321
  *     "audio": [".mp3", ".wav", ".flac", ".m4a", ".aac", ".ogg", ".wma"],
  *     "video": [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm", ".m4v"],
  *     "pictures": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg", ".ico", ".raw"],             # <<<<<<<<<<<<<<
  *     "documents": [".pdf", ".docx", ".xlsx", ".pptx", ".txt", ".csv", ".doc", ".xls"],
  *     "archives": [".exe", ".msi", ".iso", ".zip", ".rar", ".7z", ".tar", ".gz"],
 */
-  __pyx_t_2 = __Pyx_PyList_Pack(9, __pyx_mstate_global->__pyx_kp_u_jpg, __pyx_mstate_global->__pyx_kp_u_jpeg, __pyx_mstate_global->__pyx_kp_u_png, __pyx_mstate_global->__pyx_kp_u_gif, __pyx_mstate_global->__pyx_kp_u_webp, __pyx_mstate_global->__pyx_kp_u_bmp, __pyx_mstate_global->__pyx_kp_u_svg, __pyx_mstate_global->__pyx_kp_u_ico, __pyx_mstate_global->__pyx_kp_u_raw); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 261, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyList_Pack(9, __pyx_mstate_global->__pyx_kp_u_jpg, __pyx_mstate_global->__pyx_kp_u_jpeg, __pyx_mstate_global->__pyx_kp_u_png, __pyx_mstate_global->__pyx_kp_u_gif, __pyx_mstate_global->__pyx_kp_u_webp, __pyx_mstate_global->__pyx_kp_u_bmp, __pyx_mstate_global->__pyx_kp_u_svg, __pyx_mstate_global->__pyx_kp_u_ico, __pyx_mstate_global->__pyx_kp_u_raw_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 321, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_pictures, __pyx_t_2) < (0)) __PYX_ERR(0, 259, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_pictures, __pyx_t_2) < (0)) __PYX_ERR(0, 319, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "ram_booster/disk_cleaner.py":262
+  /* "ram_booster/disk_cleaner.py":322
  *     "video": [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm", ".m4v"],
  *     "pictures": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg", ".ico", ".raw"],
  *     "documents": [".pdf", ".docx", ".xlsx", ".pptx", ".txt", ".csv", ".doc", ".xls"],             # <<<<<<<<<<<<<<
  *     "archives": [".exe", ".msi", ".iso", ".zip", ".rar", ".7z", ".tar", ".gz"],
  * }
 */
-  __pyx_t_2 = __Pyx_PyList_Pack(8, __pyx_mstate_global->__pyx_kp_u_pdf, __pyx_mstate_global->__pyx_kp_u_docx, __pyx_mstate_global->__pyx_kp_u_xlsx, __pyx_mstate_global->__pyx_kp_u_pptx, __pyx_mstate_global->__pyx_kp_u_txt, __pyx_mstate_global->__pyx_kp_u_csv, __pyx_mstate_global->__pyx_kp_u_doc, __pyx_mstate_global->__pyx_kp_u_xls); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 262, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyList_Pack(8, __pyx_mstate_global->__pyx_kp_u_pdf, __pyx_mstate_global->__pyx_kp_u_docx, __pyx_mstate_global->__pyx_kp_u_xlsx, __pyx_mstate_global->__pyx_kp_u_pptx, __pyx_mstate_global->__pyx_kp_u_txt, __pyx_mstate_global->__pyx_kp_u_csv, __pyx_mstate_global->__pyx_kp_u_doc, __pyx_mstate_global->__pyx_kp_u_xls); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 322, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_documents, __pyx_t_2) < (0)) __PYX_ERR(0, 259, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_documents, __pyx_t_2) < (0)) __PYX_ERR(0, 319, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "ram_booster/disk_cleaner.py":263
+  /* "ram_booster/disk_cleaner.py":323
  *     "pictures": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg", ".ico", ".raw"],
  *     "documents": [".pdf", ".docx", ".xlsx", ".pptx", ".txt", ".csv", ".doc", ".xls"],
  *     "archives": [".exe", ".msi", ".iso", ".zip", ".rar", ".7z", ".tar", ".gz"],             # <<<<<<<<<<<<<<
  * }
  * 
 */
-  __pyx_t_2 = __Pyx_PyList_Pack(8, __pyx_mstate_global->__pyx_kp_u_exe, __pyx_mstate_global->__pyx_kp_u_msi, __pyx_mstate_global->__pyx_kp_u_iso, __pyx_mstate_global->__pyx_kp_u_zip, __pyx_mstate_global->__pyx_kp_u_rar, __pyx_mstate_global->__pyx_kp_u_7z, __pyx_mstate_global->__pyx_kp_u_tar, __pyx_mstate_global->__pyx_kp_u_gz); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 263, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyList_Pack(8, __pyx_mstate_global->__pyx_kp_u_exe, __pyx_mstate_global->__pyx_kp_u_msi, __pyx_mstate_global->__pyx_kp_u_iso, __pyx_mstate_global->__pyx_kp_u_zip, __pyx_mstate_global->__pyx_kp_u_rar, __pyx_mstate_global->__pyx_kp_u_7z, __pyx_mstate_global->__pyx_kp_u_tar, __pyx_mstate_global->__pyx_kp_u_gz); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 323, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_archives, __pyx_t_2) < (0)) __PYX_ERR(0, 259, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_archives, __pyx_t_2) < (0)) __PYX_ERR(0, 319, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_EXT_CATEGORIES, __pyx_t_6) < (0)) __PYX_ERR(0, 258, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_EXT_CATEGORIES, __pyx_t_6) < (0)) __PYX_ERR(0, 318, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "ram_booster/disk_cleaner.py":267
+  /* "ram_booster/disk_cleaner.py":327
  * 
  * 
  * def analyze_disk_categories():             # <<<<<<<<<<<<<<
  *     """
  *     Categorize user files into Audio/Music, Video/Movies, Pictures, Documents, and Installers/Archives.
 */
-  __pyx_t_6 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_21analyze_disk_categories, 0, __pyx_mstate_global->__pyx_n_u_analyze_disk_categories, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[13])); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 267, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_23analyze_disk_categories, 0, __pyx_mstate_global->__pyx_n_u_analyze_disk_categories, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[14])); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 327, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_6);
   #endif
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_analyze_disk_categories, __pyx_t_6) < (0)) __PYX_ERR(0, 267, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_analyze_disk_categories, __pyx_t_6) < (0)) __PYX_ERR(0, 327, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "ram_booster/disk_cleaner.py":325
+  /* "ram_booster/disk_cleaner.py":385
  * 
  * 
  * def find_large_files(min_size_mb=30):             # <<<<<<<<<<<<<<
  *     """
  *     Scan user directories for files larger than specified MB threshold.
 */
-  __pyx_t_6 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_23find_large_files, 0, __pyx_mstate_global->__pyx_n_u_find_large_files, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[14])); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 325, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_25find_large_files, 0, __pyx_mstate_global->__pyx_n_u_find_large_files, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[15])); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 385, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_6);
   #endif
-  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_6, __pyx_mstate_global->__pyx_tuple[4]);
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_find_large_files, __pyx_t_6) < (0)) __PYX_ERR(0, 325, __pyx_L1_error)
+  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_6, __pyx_mstate_global->__pyx_tuple[7]);
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_find_large_files, __pyx_t_6) < (0)) __PYX_ERR(0, 385, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "ram_booster/disk_cleaner.py":366
+  /* "ram_booster/disk_cleaner.py":426
  * 
  * 
  * def get_drive_partitions():             # <<<<<<<<<<<<<<
  *     """
  *     Get detailed partition metrics for all mounted drives (C:, D:, E:, USBs).
 */
-  __pyx_t_6 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_25get_drive_partitions, 0, __pyx_mstate_global->__pyx_n_u_get_drive_partitions, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[15])); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 366, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_27get_drive_partitions, 0, __pyx_mstate_global->__pyx_n_u_get_drive_partitions, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[16])); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 426, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_6);
   #endif
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_get_drive_partitions, __pyx_t_6) < (0)) __PYX_ERR(0, 366, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_get_drive_partitions, __pyx_t_6) < (0)) __PYX_ERR(0, 426, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "ram_booster/disk_cleaner.py":388
+  /* "ram_booster/disk_cleaner.py":448
  * 
  * 
  * def delete_specific_file(filepath):             # <<<<<<<<<<<<<<
  *     """Delete a specific file selected by the user."""
  *     if not filepath or not os.path.exists(filepath):
 */
-  __pyx_t_6 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_27delete_specific_file, 0, __pyx_mstate_global->__pyx_n_u_delete_specific_file, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[16])); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 388, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_12disk_cleaner_29delete_specific_file, 0, __pyx_mstate_global->__pyx_n_u_delete_specific_file, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_disk_cleaner, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[17])); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 448, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_6);
   #endif
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_delete_specific_file, __pyx_t_6) < (0)) __PYX_ERR(0, 388, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_delete_specific_file, __pyx_t_6) < (0)) __PYX_ERR(0, 448, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
   /* "ram_booster/disk_cleaner.py":1
@@ -14245,6 +16288,7 @@ static int __Pyx_InitCachedBuiltins(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   __pyx_builtin_sum = __Pyx_GetBuiltinName(__pyx_mstate->__pyx_n_u_sum); if (!__pyx_builtin_sum) __PYX_ERR(0, 34, __pyx_L1_error)
   __pyx_builtin_round = __Pyx_GetBuiltinName(__pyx_mstate->__pyx_n_u_round); if (!__pyx_builtin_round) __PYX_ERR(0, 145, __pyx_L1_error)
+  __pyx_builtin_open = __Pyx_GetBuiltinName(__pyx_mstate->__pyx_n_u_open); if (!__pyx_builtin_open) __PYX_ERR(0, 190, __pyx_L1_error)
 
   /* Cached unbound methods */
   __pyx_mstate->__pyx_umethod_PyDict_Type_items.type = (PyObject*)&PyDict_Type;
@@ -14308,20 +16352,53 @@ static int __Pyx_InitCachedConstants(__pyx_mstatetype *__pyx_mstate) {
   __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[3]);
   __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[3]);
 
-  /* "ram_booster/disk_cleaner.py":325
+  /* "ram_booster/disk_cleaner.py":189
+ *                 return ""
+ * 
+ *         if clean_path.lower().endswith((".png", ".ico")):             # <<<<<<<<<<<<<<
+ *             with open(clean_path, "rb") as f:
+ *                 import base64
+*/
+  __pyx_mstate_global->__pyx_tuple[4] = PyTuple_Pack(2, __pyx_mstate_global->__pyx_kp_u_png, __pyx_mstate_global->__pyx_kp_u_ico); if (unlikely(!__pyx_mstate_global->__pyx_tuple[4])) __PYX_ERR(0, 189, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[4]);
+  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[4]);
+
+  /* "ram_booster/disk_cleaner.py":190
+ * 
+ *         if clean_path.lower().endswith((".png", ".ico")):
+ *             with open(clean_path, "rb") as f:             # <<<<<<<<<<<<<<
+ *                 import base64
+ *                 return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+*/
+  __pyx_mstate_global->__pyx_tuple[5] = PyTuple_Pack(3, Py_None, Py_None, Py_None); if (unlikely(!__pyx_mstate_global->__pyx_tuple[5])) __PYX_ERR(0, 190, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[5]);
+  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[5]);
+
+  /* "ram_booster/disk_cleaner.py":212
+ *         bmpbits = hbmp.GetBitmapBits(True)
+ * 
+ *         im = Image.frombuffer('RGBA', (32, 32), bmpbits, 'raw', 'BGRA', 0, 1)             # <<<<<<<<<<<<<<
+ * 
+ *         for h in large: win32gui.DestroyIcon(h)
+*/
+  __pyx_mstate_global->__pyx_tuple[6] = PyTuple_Pack(2, __pyx_mstate_global->__pyx_int_32, __pyx_mstate_global->__pyx_int_32); if (unlikely(!__pyx_mstate_global->__pyx_tuple[6])) __PYX_ERR(0, 212, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[6]);
+  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[6]);
+
+  /* "ram_booster/disk_cleaner.py":385
  * 
  * 
  * def find_large_files(min_size_mb=30):             # <<<<<<<<<<<<<<
  *     """
  *     Scan user directories for files larger than specified MB threshold.
 */
-  __pyx_mstate_global->__pyx_tuple[4] = PyTuple_Pack(1, ((PyObject*)__pyx_mstate_global->__pyx_int_30)); if (unlikely(!__pyx_mstate_global->__pyx_tuple[4])) __PYX_ERR(0, 325, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[4]);
-  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[4]);
+  __pyx_mstate_global->__pyx_tuple[7] = PyTuple_Pack(1, ((PyObject*)__pyx_mstate_global->__pyx_int_30)); if (unlikely(!__pyx_mstate_global->__pyx_tuple[7])) __PYX_ERR(0, 385, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[7]);
+  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[7]);
   #if CYTHON_IMMORTAL_CONSTANTS
   {
     PyObject **table = __pyx_mstate->__pyx_tuple;
-    for (Py_ssize_t i=0; i<5; ++i) {
+    for (Py_ssize_t i=0; i<8; ++i) {
       #if PY_VERSION_HEX >= 0x030F0000
       PyUnstable_SetImmortal(table[i]);
       #elif CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
@@ -14352,34 +16429,34 @@ static int __Pyx_InitCachedConstants(__pyx_mstatetype *__pyx_mstate) {
 static int __Pyx_InitConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   {
-    const struct { const unsigned int length: 10; } index[] = {{0},{3},{3},{51},{14},{19},{40},{46},{15},{22},{19},{37},{42},{40},{9},{38},{43},{26},{24},{24},{30},{33},{22},{51},{63},{15},{51},{22},{11},{21},{20},{17},{10},{22},{1},{1},{1},{1},{4},{4},{4},{4},{7},{4},{5},{6},{4},{6},{5},{4},{2},{4},{3},{4},{9},{4},{5},{4},{4},{4},{4},{4},{4},{4},{4},{4},{4},{4},{5},{27},{4},{4},{4},{4},{4},{4},{5},{5},{4},{4},{4},{5},{4},{7},{16},{8},{7},{11},{14},{9},{9},{14},{7},{13},{7},{17},{18},{8},{12},{5},{7},{8},{5},{8},{9},{20},{12},{12},{2},{4},{3},{18},{15},{6},{1},{3},{23},{12},{7},{4},{8},{11},{12},{18},{5},{8},{9},{4},{11},{6},{11},{3},{9},{20},{14},{12},{17},{16},{20},{18},{5},{18},{6},{2},{15},{20},{6},{12},{15},{10},{9},{12},{13},{2},{1},{7},{5},{6},{6},{10},{3},{8},{1},{8},{13},{16},{34},{2},{3},{2},{4},{7},{8},{6},{8},{7},{3},{9},{20},{18},{36},{7},{4},{4},{1},{13},{4},{13},{5},{6},{4},{5},{4},{3},{8},{8},{11},{7},{5},{6},{7},{5},{8},{9},{11},{10},{10},{3},{4},{8},{4},{11},{2},{5},{8},{1},{7},{4},{10},{4},{5},{7},{2},{8},{11},{12},{3},{7},{6},{9},{12},{24},{6},{9},{6},{7},{7},{6},{4},{5},{2},{2},{2},{2},{12},{29},{8},{4},{4},{12},{10},{5},{6},{4},{7},{7},{2},{4},{8},{11},{11},{10},{7},{3},{2},{11},{8},{5},{5},{10},{5},{11},{14},{8},{8},{6},{13},{13},{16},{5},{4},{7},{9},{5},{6},{7},{5},{8},{9},{4},{6},{1},{8},{446},{601},{130},{12},{65},{122},{87},{234},{300},{72},{135},{2},{344},{52},{69},{106}};
-    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (3110 bytes) */
-const char* const cstring = "BZh91AY&SY\037\262\021;\000\001\372\177\377\377\377\377\377\377\377\377\377\277\357\377\357\377\377\377\373@@@@@@@@@@@@@\000@\000`\013\234\371\357\013\322\307\257@\327\256\272P\000!\n:\001\274\000\007\274p\224\"Dj\236I\345\017SO\3256\024\321\3721\030\324\236#\022l\njy\2453'\225\r\224z\203@\364\236\2434\215\251\264\365OS\306\2247\242\236\240\224@L\200\231\003A\032\032jzS\332\223\323T\315&\214jh\3104\320\000\000\000\000\000\014\201\246 4LL\205Sz\246\200\036\240\003\020\000\000\323@\000\000\000\000\000\000\000\032\000\003\021\t\r\032&\247\352O$i\220444h\000\000\000\000\000\006\206\200d\000\000b4\320\203\000L&\004\302a4\3011\030\002`\010\320\311\200L\000\000\000\214\004\300\000\000\311D\364\217T\365\030\203'\250\003 \000\000\000\000\000\000\000\000\000\000\r\000\001#Q\005Y\231,\334\314\254\242\0219df\001\001\373w@\210\230\214\324\232\021\213\004\331\277\300D X\304L\020xMS;8 \212\005$\n@\244\002!\024\002\024\010\205\330|H\375\013d\205\200\362@\217\342Z\r\005\006\300aD;e\260\035\200\331\r\242 B\204\020Z!`<\013\017\024`\226\210\215!l\006\t!L\020$\010\311\301L\025\014\0030E\216\206\002`\246\327*V\227\211A\235\313h\261Z\321\327#\rI@\004\205$J\202!!6\216F\331Z\005bX\205c21\357\030\3060z\363#\021\301D\351ETRn\n\020\302Fr\213\342%+\034\231\001QP\025\025E\310\214Z\353\010\305cU\251\014\036D\264\211\220\311\322U\032\241R\027\226\226\332\025\314\024\2520\020)\013JR\021TZh\243\255%\"1\025B$Q\230$b\341Y6\025\010Rd\267\352\002\020Jh\210R\365\205\210\334\344b#\037\213\350\037\014Y(\236\006\345\324\364\021 \213\203\226\377:\306\215\375\261\275\213\207\311\211\321\331\310\310\253#\266\275\220\311\023(|yI\004@1\246d\321\\\030\224\216f&\246d+\002\025k\207\243\220\207\026\016\0344\301\270;\001\026\030 \210AD\347\265U!\207pbv!\236Qf\026\002\341\240\201Q\021\177\031\351\212F\007:Fl\035\254}\275\275\343$\203\257/\353\345\350\314\315\202,\013\204\322#7?Vln\202n\004\372w\261\237%\267\271}\306\262\331r\302\246\337\356\307\353{\216\353\342\242t\002\365!\321\307\241\333\302\"\261\220\025\214\211""\0105U4\363N)*\010H\224\217\r\372\273)\234\346\223#\366\341\234\255(\211\023\201S\211\200\367\270\376\317yjvfp\340\241\371\007#\276\245P0\351\374\200\351\236\332\245\003K\323i\205{C\333\364\311\2345\337u\350\364\210\312\366\364\222-\020)7!n\005@1H\240\021u}x\377\236\335?\206dh\235)N\0321\305\237\310\366\277h\276\316C\321UU\025=Fb\324..\376\244\274\024\354\031f\001\250\020\231p\335\2525\300\340\2079\020M\275F<\274W\020\272\nl4\375\356\003\247\246\t\031\320\270\335\271;\271\2154\316D\210\360w\216\003\346q\363p\265\366\301\334\376\306\0260\262\256\315\276\205h_\321\313\2032\346\274vz\365\361\266(\276t\247\234\300\334UNfn\375\335\307A\354k\315\277\311\227/\224^w\222\363\213\243m\034\313\253\273\002\204\364\245\243o>\375\302*\r\023c\332\356O\203\232(\3261\323\360p\314sq\361\\\233\362\345\352\272\262\300\366eO_.\325\331QYY\343yg\213\0373\2772x\027\177\262h\017\361\306\353a\243N\263\021\3336\320b\262\322\255V\211\261&\024\234\374\346l\235\006)\360\"G\036\223\247\270[\355\345{\020.\002\203\252\324\221\235\250\372\353#\027\002;ONDPS\212q\336\"\264;\264'F\030H\t\033P\"2\003\236\221\302\276\031VM\345\323H\246\020\375e\210\345\215\215\024a\255\360\331\206l\247{s\373nF\256\365\205KH\343\303\357I\020n2\364A\262\230\244\031\0062\243)3YR\311E\230\330\311\2022;\033\034\325\035\246\003\340J\316\207\201W0w\316\025\377\t\243[;Z\256\030Fl\351\333\2615xK\312\351\275/D\263\322e\225\261i\352\204\371gQ\020 @\344\010\010\330\021Ob\300\275@\004\024+\374B\300\205|\036O\276\017\315C\242\037\022\314c9\224+U0R\212\256\275r!4q {.\364\02141Q\253[`&X\317\317D\255=qu8\304\304\030'\014\207\003\002\030\252;\0061p\232@ \234\214\326\220\204\243+zW2\211\326\270s\232\201R\031\037\250k\0077\255\251B\257\2542\017J\354,K\n\212\326s\332\273<\224\232\350\013\365\272\372erb\264m\222A\002\265B\t\001\255\361\331W\243G;l\202\225n5\020\203\335\220\211,\2461L\002\262\003\330MK\270\241\004\203\"\202\026\314\220cV\010\332\351\036\244\202\017^\343\004\256\210\277}\255?\275\330P\305\266\206\304\261\020\234\231u\332\350v""\275z\315\246~\3376\362\315]=\355\320\255\035Z\333\264\307\341\270\305RR\204\201iR]\n\252\375\260hp)\214S=\216Jj\244\214\320N\216\005\275\203\313H\270\363\360\225vuF\267\224=\034\325\256\347\324\"\325\331\225\326\264F\265\t\275\227\315\226U\024+z\017_x)Aue\205Q\264TT\314\r\244\024\246\242\204E\244\255d\307\275pV\013Zemb\315\361(\335\036@\272Hn\260b\307C-\213\225Vpk\363gd]\224bemY\020\311\212-\0106\225\037\030\346\352\352\221i\312\270\265\236\250v!\327\274\337\277M\233\000\340*M\306\333tlm\354\320\321\363\312z\370%\020\250\217;\035\305\343\231H#e\307\003\000\302r\327^\345t\321\267\030\246wWA\235\345\342\341\034\201\342\242\206\245U\313C\\\346CHeL\246\036\345\333\220J\225Q\203\001U4`\336\035\350\304HRS\217n\030\303H\273[\177\250\211\327\357\271\221\347\025\214\247\224\327\347m<\221\020\362\263nQx\232\236zb\034\271D\321u\313\276\033\300\230\255\277\202Q!QAm\270q\225I/\\\252\261\035\212\211\255\207\205\303\006G+\254J\016\304\356\271\016\223\211\343\033Y\264`\0313x9\251\322\325\201u\306eCj\252)\267\333FTv\362\352.\2557'\212\361\017)U\323 \n\242kA\356L\225N\324\010\252\021[\312\265\\\2252\212\353\204\366L\265D\317d\026A\033k\014\n\r\345\321\t \241\246\267rv1\221`\310\244h{\205\001\000\023B\366\255h@3\211\3301\300f\251M\214C\253j\363\314\021\024:A \223\211\332\233\024\241\\_\325\225J\242.\304\206h;$Y\240%O\022\027Q\251\303\001\024\312\201Z\305\375\376,\324Qa\213\222\034\224\247@%\265\271<\241\262\232\372\250h%He\251A\217\201\241\270\2273^M\023\300\2077\222e\210\317wWC\244\234\033p\213S\232\207\304N\377\257\324?K\251f\205\331t9\253\030e\305\343Q\033\221#@\212\347:M\317&\014%*1/D \024\036e\024-\312`\265.\334\220\343\274\275\254[\331\241hT#\324\222\313\257\256F\032\375;\224u\271^\334\032\304\276p\037\321%G-\320}\314T\301qX\361\217\205\236_\214o$\035\311\343\301\333\311<C\247\203\005\004\035\r\322SW$Y\010\332I\020/+\332\243N\024f\006d.\330\356\316$\367\231w\r\352\306!3\235\n\334\265\202\312\202\nJ;Y\002\0056#\235Js\2422S2\033(}@\251\"\226DT+A\214?\032l5j\305\376Z\222^l\277C""\340z\356G\366f\213I .\213\257cR\n*\275\333\014\243\254\\\313R\321\035l\247:\3253.\357}\202\010\303\t\334\016\257h\270\360\231\212\344\244\002\212^\207x\000,\312W\021jt,\252}\370QASV\016K\307\261\250\203\233 \2223\276\014&\2752k\230\253m\375\016\352v\210\341\316\234\016\026\337\302\312\232\325\nP\264UB\310i\211b\224+\000\356\230A\020R\357=\262r\302)R\275\316\032\242\212(\255\0144\340\306\246tj\326\347F3\024\212\246\246l\330EB\204\253\"YV\310_\226U%\262\221:\364\266$\226\346\240\311\312L\256iR\231\220\307>I\3605\006\257\232\343\260\241\206\224\263\326\024\351j#\260:\022\340m\317\314mu2q,z\020\231\346\243w\307V\326x\252\272\241\344\356\355@M\001\332i\365ze\237\246\342\306\233^\3475\027\027\271\366\350*8yi\034D\334\224ckF\210\027\336Z\336+\340\271\272\030P+T\244T5\316\340v\327\356^\274\214\030\306\005\220g\004np\216\214\365\373X\340\250e\302{0\027?\311\371\352)Z\361\313\310\303I\345\352#\317\216\202\001_\224\006I\000\372\310\030\370,\nE\202\030hy\2175D\363\372\017f\257\0329\356\340r\363\023\317\315\316\004\035\342r?\2042\021\275%\261\221\3131D~W?\253-\007\320L\241\345U\036\241\370\213\306.\302^\032;\004\205M7\265\341\223\317\260\"\013\344\300\341\300\252|\024\203\236k\221s\230\315r\010_1\266\024$\236\036\237L\020a\216\317\227\371!'=MSh`\230i\221L\376\020\300\267\272\206\233\013*\300\244E|\340\232\0138\342QE\335V\321^%7V,\033\360\337(\321\r\221\343k\300i9\031^\347<\213\324\236\272E\224\344E\323\013B+\314\027\371\222\230\334!\361\203\35385\372\372L\"#\0365\331\256V*\330\300\373/H\005\262(\312U\3517\353\235\341\305\256F-*Y\2109\\G\255\016\255\313U\303\275b\002\251a7\377\241\005\034\302\245\204\256\304\006\242\026=Z\245j\354\215\326m\225\n\305\205,\212Lu\202\310X\255\267x\325\010Q\312\362\317\355q\361\014\351\264\224V`\271\255\335\036\224i\177\324\213\305M\007@\261\n\264\351\312\247u\214q\251\246\346\240\361\311\204\\*m-\3268\335MY\236\257_mn\023w>f\246jT\365\273\"+2\257\260T\324)\223\025V\354\375\"\212\321{9t\322\216\021.\356\216\223\307\272\204=\315\303\256\211\345S\301""\243B\222\317\2330\331\241>{4\365\371(Q\212\366!-\251<\317\356kB\274g\004\311\301\345\234U\2317\200<w\346N\320\264son\230\233\232\361\315\010vM\311\333\023m\302h\313\231*U\324\0255\277N\376\207\021&\325\304bY*\324\273G\207\212H\244\202L\216N\322d\224\273\244r\336A7\034\330\030\354b\366\005+\373\270\277\t\231/\374\362T;\364\374X\337\356]\270~~\336f\"g\014\026X6\263\234f*]\374\377\000~2V\006\257\261\313\206m}\016\005\206\200\2004\\/\251\"aY\326I\256-jDF\024\350\\a\233\022k\343\222\024\010\0043\001\0263\214[`\244k'\024b\207\ns@\213!UP\315@p\026\rL\2403\004j\211L\246\302F\0336\201\020\332\211Pj[:\250\024P\222'Q\001C4q\271*\241j\211\016\247Cf9\255\0022\031c\032\313=\\\206\"\333\314\236\265G\n\250\212\024I\350\306\264*\213F\312\265D\355Zt\350\343M\377\027rE8P\220\037\262\021;";
-    PyObject *data = __Pyx_DecompressString(cstring, 3110, 2);
+    const struct { const unsigned int length: 10; } index[] = {{0},{3},{3},{51},{14},{19},{40},{46},{15},{22},{19},{37},{42},{40},{9},{38},{43},{26},{24},{24},{30},{33},{22},{51},{63},{15},{51},{22},{11},{21},{20},{17},{10},{22},{2},{1},{1},{1},{1},{1},{4},{4},{4},{4},{22},{7},{4},{5},{6},{4},{6},{5},{4},{2},{4},{3},{4},{9},{4},{5},{4},{4},{4},{4},{4},{4},{4},{4},{4},{4},{4},{5},{27},{4},{4},{4},{4},{4},{4},{5},{5},{4},{4},{4},{5},{4},{7},{4},{7},{16},{8},{12},{22},{18},{18},{9},{7},{11},{11},{11},{14},{9},{9},{10},{14},{7},{13},{13},{7},{13},{5},{15},{7},{17},{18},{5},{15},{8},{12},{5},{7},{3},{3},{8},{5},{8},{9},{20},{12},{12},{4},{2},{12},{4},{3},{18},{15},{6},{1},{3},{23},{12},{7},{4},{8},{11},{12},{18},{5},{8},{9},{9},{4},{6},{7},{7},{3},{11},{6},{11},{3},{9},{20},{10},{14},{12},{17},{16},{20},{18},{5},{18},{6},{2},{6},{15},{20},{6},{12},{15},{10},{12},{9},{12},{13},{2},{1},{8},{9},{7},{5},{6},{4},{6},{8},{10},{3},{8},{21},{1},{8},{13},{16},{34},{2},{3},{6},{2},{4},{7},{8},{10},{6},{8},{7},{3},{9},{20},{18},{36},{7},{8},{4},{1},{4},{3},{7},{5},{4},{1},{8},{9},{13},{2},{4},{16},{2},{13},{5},{6},{4},{5},{4},{3},{8},{8},{5},{11},{7},{5},{6},{7},{5},{8},{9},{11},{10},{10},{3},{4},{8},{4},{11},{4},{2},{5},{8},{1},{7},{4},{10},{4},{5},{7},{2},{8},{11},{12},{3},{7},{6},{9},{12},{24},{3},{2},{4},{6},{9},{6},{7},{7},{6},{4},{5},{2},{2},{2},{2},{12},{29},{4},{8},{4},{4},{12},{10},{5},{6},{4},{7},{7},{2},{5},{4},{5},{8},{11},{5},{11},{10},{7},{3},{2},{11},{8},{5},{5},{10},{5},{11},{14},{8},{8},{6},{13},{13},{16},{5},{4},{7},{9},{5},{6},{7},{5},{8},{9},{4},{8},{8},{7},{6},{1},{8},{521},{601},{130},{12},{65},{122},{87},{234},{300},{72},{135},{2},{344},{52},{69},{106},{501}};
+    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (3728 bytes) */
+const char* const cstring = "BZh91AY&SY\243\"\240\025\000\002M\377\377\377\377\377\377\377\377\377\377\277\377\377\377\377\377\377\373@@@@@@@@@@@@@\000@\000`\r\373\276\201\347zm\331\344\001\257!\244\264\000\320\330\332[1d\016\325\345\000\003\303\302T\312d\204\215OQ\345=&\331\n\033\002O\003\3213@&\004S\322xS\303*l\211\345\017SOP\365\007\251\265\003\312f\230\247\204\236\240\224A\003M\0012\000\214\203$\323MLi\032F\324\364L\203\3244\323M\000\000\000h\000\007\246\240z\206\200\323@\202&\251=\225?SS\032\237\252\036\246\232=G\265F\207\2503Ph\000\000\000\000\000\000h\000i\246\215\000\221\022hM4\215\006\243@#\323I\204\003\324\365\036\220\000\000\000\032\003@\000h\032h\032\000d\320\203&\000L\002bd\311\200\0010&\002b`\230\000\000\000\00120\023\002\030@\014T\236\246T\364'\351Fh\233\324e=\t\223\004\332\006\246\000\t\223\021\223\000\023\004\300\023j`\032\001\030C\004\240\255\325I\347\363\271\274\324\005\023\371A\316@\343\372\037\333\274(A)\016\343\236K\265\"dqoH\025.\261Ii)\223Kn\037S\2506\332i6\304\330\233h\242\021@\"\202E\302\310 \217\021\000\260\210\000@n\020>D\270\034\r\206\311\204\324WR\201u\313\001`\333\032i!\2646\233c\006\323hJ\324d\013\325\346C!\215\253B\271\031s\243+\221\244\213k\"%\003Y\022\224\262\260m%\234\240X\005\230\021\261]:\320\255o\337+,q\021\245f\027\274\0035\252\353\267\362Kz\333\3657\244^\300c//\274\262\340ipJ\330\251\233\024\030\213253\032\264\326\233m\"\"\013_\tB\240d\3072m4e\240\\\214\267\231K\265-\014\032n\332\347\322\006\232C\006\323\036t\307\216!u\316\355:\352\230\261'\342\3119\004\270 @\206\342\022\306H\211bX\226K`M\025\240\030D\215\024IB N\026\021I\350TX\321T9\202\212\022i\205T\301I\322ta\316\212Db\261\324\335\022\357)\031\240\006@\326\334D\266[X\213\241\251R+l\027b9\237`\374\371\212\2034\327\327?\214}\321;=|\376\304\270\270\351Sr\3467\371\337\350\276\367\274\024\260\244'\300\016\300\031\202:\373\344\007\350\216\353\0065\026\232\002\025L\221.t\252\013X[jc4\346\337\333Q\205\3069\013\240\270\232\002*\016@Z\326\034dD\026K\nR\375\304B\r\374\302S\225iA\227\026R\271J\302\262\353\250""\"O\352\024IK\322\322\0105U\274\373\317c\333\227\217/\265\355}Ch\375\336\317\325\362\363\341\341?\021\311\025q\356\027\233\267\307q\316A\326\315\277\007\272\350\311u%;\036[\250\331\227\235\367\256\373b{\363\266\373\037\307\310Al\241\355\013g\225\325\323\214\026\216\"\243p\355+Y+Y\236\313\217e\2648\032L\312\360I$I(!\002\0315x\023\2520\204\022\007\271G\330\202\315\241\200\265\241D\344\351\350\364\226\220$\"\004\262\216/\376k\347Ie$&Ls\274xP\374G#\276\235r\020\337\370\203k\316E\226\037\344e\003\341\354-\237'a\016\216y;\256\264\231\022L\340\272\336\r\372\036x\222%\311\023`\316\226\010L)\246\230\021H\242\021i?w\203~41\353\240\355\370\263i\307D\254\263\260L\027\236\207=\025\256c\375gJ\232\3375\347\221UTT\371L\330\323\003\303\234\330\344\304\307\207\224\230\326\266yf\210\220`\234\214\217\016\351:,\230\233\r\206\255V\3577\330\254\363\177O\201\357#\207\304\222\332\313=\267\262\3044!\241\013\223\233\231<<\207\245\252\372x\340@\236\376\2512\367'\325F\322\362\026\212\357Z\236\251p\223\t\2119y\274\261\355j=ZpV\333\217-t\033\037s/\275\014\363\360+\351\345n\3335\327\234\2276\3149:\262N\213\343\204u\226\226\032\352)\320\315_\267\266K\274\357sn\320\313=\2140\302\322\310\344;\010\360\026{\250\332\272;\330\223\007\257\035\2327q\356\001Q\034\211\261\036\327s\276I\036\256\030\216b\265\243\355\207\016L\016\215\335'~\3445c\216\313\353,\0171<9\370V\274\273\"TTxd+\354\2577|\357\305$^ox\304?\267E\225\311\226:L\303\265k\204\346e\243*\265Z&\220\200Rqq\230W\003q\202|\031\347'3r\034{z\305\311oVF A\002r\356KR\2033RB\262\262ioS\t\001V\274\n\377;:\023\006rW'hNI\230\246f\251\3260\252\326\242,\250s\033Zg\247\260\377?\341\\\226\354\014\306m\017\036\366\313\347%\363\235\357\005\226a\307$\273p\313\217y\255\235\335\216\317\353\271\030\356\032P\342\245\307_Q\310\004Cv\026\356@k\\\021++p\304.,\2133\016\3305\253\2735\034\225\240j\325\355&M\235\246/@+e\302\255\210]x\330\202\364\n\377\216\321\255\205mW\014%\241\2345\361&\256\371y\030[z*%\\\254\252,Xs\311Gw\025\021E\024\314\323\014\005\201P\244\031Hx\224C\025J""\035\357\261\032r{)7n%\211\350\271\n\300l\031\3438\230\025+\221\211\221I\343m\353r\020\007\024\003\321\226\345\370H\212\305\"\n\345\213\226Q\006\030M\017\022$)\210\354\354G\007g|\343N\241\032\033|\035\335\326\313\267r\025\262\016.\0069GN*R\266V\315\033\006\215\353\376\240\201q\336\363c\225\3056\0370Q\2116n\035\2750\250\221\204\272]\322\344\255kVDf\311\023\023)\2251\312^Aa\016U\334|:M\323\006\234\034\323$'\3010W\362N\224\312\201\025BT\224k}G\323\230\233T\346\253/\330\214\223\232\315\260\205,\324\257\002\362\211Fj\223\030)r\0178N\0165\346J\261\262\032c5\227&\324g\243\262.\n8\317\211c0\nU\355\232\026\224\322\277\334\275\247\365\273\031\245\210\346\332\326\3141\020\242\352\032\305\263\212\206\354\331\260\330f\337\276\342\254\374<\r\264Xm\306\310\340D:\205'c\246\034O\nE\254\242\206\366\253\200q\"\365$\306\251`\345!,\251\215NHS\002R\201\021C\226\252\272N\261\345\204\317\222o}\236<\216\256\316i\353y3\321\3249\225\335%BT\316\271\235cDkP\242F_\214\033\\i\266\204+\2241Y\227\322\024\244\276\336\225\262\221\354\232\361Qw)\000dA\344k(DX\226-\014{\325\331X\321iL\315\317X\310I9Df\357\202\340I\272\261\225\262m\014l\256UZ$kp\2236vM&#\021\330\272?\020/B\374\210\264 \332\225$\232l\274\363s\256%\347e\2235\315\362\007Z\0347\233\367\351\257`\027t\031Z\215\335!U\322q7#34|1>v\010L\371\"a\271\217\351x\346f\210#\241\322\230\246!\211\n5W\310\243\250F\346/*F+\2431k\213\205\276\211\255\017\t<\355G\306|\255w\240\366\313\2440\014\014\215\367\313yE\320\2542\250\205j\250\321\200\271\366\261\251}y]\321\351\243\021'\211a\253\257\321\316l\226cX\3167f\253V\326e\362\"tz\272\022s\251a\032\363\224x\264\036\304\242\035\314\234\313\353\256=\324w\031\204\307\220A\376\204\306In\271y\026\354\245\017\001\306\264r\226\226\t\246\207\236\375B\303C2>F\025\323T\3371p\241Gf\341\243\tnu\265\247\310\016\016\201\251:\316\314\210p:\223\341\022N\373\216\347G\001\300e\325/,\372\332\262\030\\hQ7*\212\252n\377h\312M\035\336\367([Pq\213\312\232r\"\035j\264>\222`U\021\250=\311M\320,D%T%R\362\235v\244\364\266x\306Xm\2022eV6""\261\030\242\205\353\327\326\032mK\365\022f\235\202\277\222>,\231t\362\243\362\275'\241\030)BF\007K\262\020\031\300V\305\357V\315\020\025\206J\0248e#\007ka\226}5\303\234\330\254\242\274h\206L8d1\2712\306\214\332\031\211\303\266\373b\362\311T\224\211\245)HmDI]\032\345\r\201\252\335\342\203N&3\0311\303\205\301\334\272\3731\2058\264\212\000\336V\r\367{\334\266\321\350\335\273}\201\005[\327!\317U\001\341==\247\006\342\216#\215\322\024\242t!\266\020,Fz\225k\245\364!\275\265\212Z\242\210\250e\n\301\016\372ok\342\211\341>\214\315\221\325\236\235,b\030W\205!\221)\235\r\202\026\227\253e\235\203\t\347\2339r! L/\202i\2662\3252kFT\267J\275\034\305\356`\253z\347YAP\227\231#\206\276y\314\232\375[\005\035^/\251\331\034\326\211t<s\022\344 \250\365\272X\316\2454\351^\031\275\270\366\343\356\206\034dma\034k\020 \007^D\220\360\024\370\2172\344\025e\031\336\216b\354\311\032\203Z\255\261\031\226:\232\\a\354\354\3667d\026F=\234\335\001O\036\301+\340h\3247\177\025\201\023\231\013\034\245\210,\363\022*O-,\221\353!\017\004mId\212s\2422\232\014K\346s\352\005I\310\262aP\255\0060\375)\304\032\266ql\236\031\027;{>\237+\307t\215z(Y,\200\025\350\2664+\243\220L>\241\244>F\224\340\266%\253\251vF$\305\306\252S6\350B c\2205\241\246Gs4&Mj\204\255\270\225\245*\000y\033\305\270\010\232\350\270\337\262\321Z\201\210c.\231\304)d\010\353p,\233\322\342\211\232\335\327=\317U\213\267;~g\346\233'\032v\216\326\335\2757\343\323Y\256\366\\\243\330\3661R\304k\r\242u\355\216\r\304\352\301{\204\033yB\304&h\355\346\372:\332\261vR\204\2611\214r\030pw\221*\335\370Q\343e\2678y\006\252\327\0168\222j\2301\212,\251\033Q\211\032x\345\273%\021J\350\234\204\325@\322\371\310)b\266\2460b\221\245\264\266zR\225\221pC^3\303\202k\ri\334\372/:\211\330fK\017\226)\230\337\321\313\"$\271M\351\220\033\221\371\3167U;\211\365\357B\203\255\033T\272,gd)\262$\204;-\353@M\001\326\232{^\267<3s\345\310Z\343l\216sQ\314\324\307>\355\005Gl\251% '\"MT\321\322\265HH\223*\"_}\344\235C\325{W73\002\201Z\245b\203\024\243\\\013\302M2nZk\340\255\030\301""\201\\\254\350F\367s\204\3724W\347\313\212\241^\020\311\220\313\326\321\236\316_7k*\021\351\326'\033\344\371\276Px$ \200QJ\002H \361\002'\320\001\004\004\200\r\350\347\234\375\304\316\207\342\264\366\276e%'\235/\367l{m\256tH\"y\222*|\201\256Z\344\027\341\241\r\006Fi\"_\263\365\321\355!\221\314@\020`\267A\210\215\200\2178_U\321#bd8\255\033\266GD\205\366\370\342C\370:RH6q9a\365mO\\\3276%\343\031\255\006\243\006\2403\240\273\362 c\233\\\037\333\242\276#\036\310\212\335\245\306\310\340`\271(\312\206\270\241\226M-E2\270\203\2559`\355\036\342\2225\344\324X\210EK\221\371A\000$\243\371c\037\260\343q\364\032\324v\2739\273\177\301\273\272\036aB<\233\016Y*\035&h[\323_\347\203D\365h\034H\254J \341\210\343\263{\273\247\235\231\342\361\260\323\006\331x5\"t\021G\324\215\025c=\253a\225J\276\335\016\327\235\242\240\370\232\"\n\252W\366\225\026\253*\21549\224\320FYy\361\250\321/kAV\326\205{\001\242\256\037\250Yg\r\221\202\017(\214\256\312\252Y\037)\260\261\313\231\236U\254\254^\343`\242U+\241`B\007\253\226\r\364\037\261[3f\271vp\240\320j8\263\307i\257\236?\306\214\234\365Q\032\254-\3518hM\241J\235#\224\247\004F\304UFV\245G&\227u\267\213\301i\017\241\347\2508y\221\213D\375\201-\2539\036\246\212\255GX}\353\324'\222\217=\265)\2253\377\256\246\370R*-e[\222\255b\241%\025T\267B\231I(\265^J,\241\024\312\266\263((\321\351\316}5\311p\375'\262yo\211M\230z\246\321B\205D\241/8\331\235>z\254\364\331\241I\"5Q\342a\261\310\245\026f\316\222\220\302\326\302n\267W:d\304g\246\022\313\362\346kj\004\337GL\351p\341\303\246ton\340\244\333\315\335g\023\034\233Ft:\331\33790\204\231\004\2712v\345#\t7c\314\365i\311\364\332^B\0102\330\246d\033\211\302\366\236l\251RO6\344\002\031$\032Y[\374\330\254\3061\267\353\343\230\230\237b\030\270v\261$x\211\346\001\264)#^<\330\344\201\rI\330\262#\307/\2749GW\347\271\036\301\245\267\177\242e\307\353\310\311\256pg\354\316\340\361fyoBp\360T\277\245\222\340\363\036\214[\355'^y$H\245O\210\2775p7\256\203\341\247C\251\235v\216\361\013%\235L\310\3013~\323\343#\376\030\214\357?O""\313\251S\n\342\3463\221\021\3174\272A\316\325s\370kGJ\205\0102\014\365\353^\001>@\204\205\2655\275\250\035hD\272Vx3qB\360\031\245\2061\002\"\300\315\004YV\n8\207\n\321\210YG\200\244F\215\307\016\346\376-U\361\006\023\t.\005\33440\024X&\242\004\315}OY\334=Y\253Z\301\261\231\016\264\211\r,@\314\271\325\255\365\250M-B\330U\201\260\202\370`,\254uM\367_-m\260\234u\206\245\202\244\325\322\310R\255S\335\227\377\213\271\"\234(HQ\221P\n\200";
+    PyObject *data = __Pyx_DecompressString(cstring, 3728, 2);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (2980 bytes) */
-const char* const cstring = "x\332\275VKs\333F\022\016c\311\226m\331\242d\311\242l'!m\331\2627\033\354R\222\355$\233M\212\022\351G\331\222E=\343\262ld\010\014ID \000a@\212\322V\266|\344\021G\034q\304\021G\036u\324\221G\036\371\023\362\023\362\315\200\244\344\207\362\250\255\332*`03\350\351\351\351\376\372\353IK\377\224\036\036,\330\244F\327\314\242\263Gl\272-F_-\330\346\036\243\366\366\006\232d\2268d;K\213\244\252;\333\213D)\323\356\357\244\030\260\305o\267\2674C\305\324\366\212M\213\324Q\312'\246z\232\263\032sl\255Pu4\323\330\316\232{\206n\022\365\017\345\260\365\232c\302\256\347f\351\344F\353\264be)\265\222\252\306v\222\212N\211\221TM\203~\233|\244\351\024]\312\222\206\351$i\035\352\036\233fI\247\333\213e\333\254\320\323\316\364\207B\246J\223\177J\362\361\312\206\220K.-$\2136\245\352\222\246\330&\303\371\266sj\351T\003\376X\252o\301\261h\317\037\271\272\245\303M\366\207\177V\251B\rg\311<\320t\235l?\322\020!\263\216@\231E8\212-\233\311\252\241\031\314!\272\236T\314J\205\030j\222YT\321\212\032U_X\324&\311>6\272C\207\024\370\361\271!\253\244\262`\232\314\241\266\204\270\355,\3628P{\355\305\243\365\255\314jn\373Ck\026\253\266\rs6\251\315x|7z{\367\227l\275\330z0?7\273\214\263\376\225\345T\251\332\232\263\237\334\260T\342\034\243\371/h\330\307)*]D'\357$#\267ug9\332\272]\274V\2047\252~\233\354/G\254tR5\260X\3350v\014\300;\271R-\350\032+S;\262)Y4\355\256\021]+\223\302]Uk\373\277\322\017\022!\212Dj\232T\250X\222\302j\2005\367\262\244\232\n\177\353\324\020CZ\207\036\0367\251\250cAQ\257\225\024\251\244\025\245\322\201\244)\246\306\"9U\322\230)\375l\321\022\232\222T\231'xkRe\007\257\211\327\232\303;/U\230&\231\245\222d\251E\3112\360\265\234\272M*r!\n\351?xn\311\321Ym\311\332\227lb\343\335\223X\255$9\350;uG\332#5i\217\026*\274\261\244\275\n\301[\223\352:\343o]:\320\254\314\312J6\263\236Y\\\315e\326s\362\362\013y\353\351r\366\305\326\242n2\372\214\356g)\333qL\013\360\261t\262\277L*\264\333\355\206(k*\325\nB\301z\234\301r?\256\313\213\320\365\370\305\352\323\334Z\316\250V\240&\307\034\255\002\247\252k\332""\001\355\242\374\311\263\334Kyqcu5\267\274.o\254\345V\305\304\363\027\213\231\347\362Rf\361\311\323\345\034\237\200aY1\331\265t\251\3124\005X7\240vES\234\252M\331\212\211q\217\335\372\221\225\345\225\375:\336,\244\344eZwVi1_\245\366\376S\243hb\265\350o\022\275Js\365\265\255\365\334\322\312:\236\262M\211\272b\232z\256\016\330\202\335\216A\010\3463J\233\232JM&cL\014\242\357\037P9\n\004NW2m\2152Y&\006\310\rc\364,\216%\202\017#\266R\326j\264\377\225+\205~\327R\034\302\366\rE3%\305\264M\260\253\001\301\252\252\231\242\341\242\342\013\271\002a\264\260\357`\221 /\205g\304\254he\2138e\006;\360\310E\263j\250\002\034r!*\007\262\020b\321\234\325\365U4\262E6E}&\022I\346\211\024M8\345j\245`\020M\357.\335\213\262D\256\212,Qt\230*k\020\263\211B\013D\331Q8r\024\323P\242T\226\212U\021\"\005\0069L\261T\224\005\371\030\272*\325)\034\325\3454E\346\351\243\322\232\246PU\263\231\034\375V\205\274ElG\343u\207\211a\225\221\022U{\360\353w\340\253\343>\374\245Z\224\0325\315F\365\261m\316\301h\230\250;h-\030P\205o\200\r<2`\343\024\271\005\334\223\"\221{\006\024qhY'v\211\n\013\331\373c\351;\335T\210\316\276G\207\300\002\362}\321(\032\254h\361 \361W.\025D\274`^\2219\373\026\260Q\004!\311r\211\032\260\003\212\034<(\243%\312\373\262j\003\030'\216\314\347zd\246rX}d\346C# \303\220p%\335,\224w\350\276\246\225\014\270@\216\234\240!\013d\215\311}\304ip\254\2551~ \r\361\347/\373\331\324\014\254\304#\340\325S|\342\350\334iX'\266\326\205\375\274E\242\350\346\036\317\301\n\001:\344\n\032\001[\336\3416\301\021\2305\325\252N\371\027\340\260\260\225Sa%\003$#\313\335\026a\001\203\310\254Z\200\t\014\305\302Ab\213\006\n,+\0025w\323\261\253\270\235\"\025P\0179\256\255\242\325\245\211\336\227/\355u\001\021\313\264\254\250\340Z\014\216\320\255c\002\331\255\022=\262\344\004\363J'\2317\312\035\233\226\242\364\263)(\034\200b\270\022`\200.\340U\301\177Xm:6\317J\226f\263l\216\315\313\214\024\251\334K\200\343\376q\030\273\330@:\211\2031 \031%D\225e\206\330Gf\241\247F\027\020\030\254\353\254\314\017\300\375+|\274S\350""\272\232\3550\323v@\334\032\007:@c;Q8\"\307\ne\350\302\r\n\346XU\211>\025v\340\220\010\217<\033\301\n\314A\213\253\325\236\240\005\321\210\0208 <]4\221\336\250\333\203|4*u\277\3351\353_m8z\217\007JE=\0360\301\271\"\327\221\250<YU\350\3419+\227q\277\253q\366\026\r\253E\005\251\306\351Y4\330'\372\"\304{D\337\001q!Lu\357\232\237\3663~\376m\354\327\241O\006\207\033\351\366\300\345\006\351\014\304\335X\373\374Hkd\332\317\274\363\275\345\247\177=\373\311\340\371\306\331F\331%\355\241\363\355\341+\356\003/\341\217\372w\202\263\201\022^\rw\333\303\327\274;\376\245 \037\3200\035f:\303qw\320\335\360R^\272\035\037m\217\337\204\344P\030\023\222\343S\336U\257\356\357bi\001S\223\315X\363\213\2433G\017Z\371\325\316\370D;\361\271\247B\372R\230\017\325f\252}\375\006\237\321 \036k'\246:\343\223\256\343\335\367\317\370\367\2033\301\375\360Lk.w\270v4x\264\326Zy\335z\375S\353'\362\256x\302\033\3602^\2763\236\364c|\347\353~\026\373V\232\351f\3660\006\345\235\361\317=\302\177L\371\323~1Xj\2166\247\233\344\367\177\314\370\374\020\255\251/\203\371\240\026\276>L\035\316\037\356v\227P\270\366I\260\020\024\303G\315\257\016w\271\001\347\274\335v\202o\237\270\355\347\333\211[\376\234O\240\001\235t;q/\030m'\246\375\005L\355\005$\300\202k\336=\036\236\366d\2423<\346\336\363\322^\246=\022\217\0020\330\3107T7\325\036\270\330HG\321\033u?uo\273\377\361SP60\206_C\027\032\267\033U7\343\276\302\216\377\353\200\357:\322\320\\\006\233\346|=\274\205\323\336:\334n\345\327[\353p\367\033\016\234\323\377v\006\206\032C\300\324\320\305\306|\303v'\334\222\227\207O\207/\265\207\206\033Y\367\214\373\320\273\351\345\200\242T\033p9\013h\305\257\272\005o\320{\to\260 \025\314\006\233!\3603\341\256\272U!8\355\023\001\247)o\014 \030\nb\360\336d\242=>\321\211\337\200\233\342\343n\316\273\341\277\t\0374!\304\2212\347\t<\020\216\267\023\035\216\354\304T;~\305\235w\021\313k\300\351w\376q\247\003O\336r\363n\321{\354\317sK:\003\203\355!\256|\024 \217\371S\301\214@\362\307\246&aj\306\333D\010\237\207\347\302Z3\337\036J\340Hy""\257\210\224{\035\3164\2576?.\365\021]\023\310\240\233\336#\004\367\033@\252\322\234mn\034\246N\235\346\333\254z5?\217P\334\014\227\016\307\016\357\037\301\371S\336\204W\360\317\302\245\277\204\013a\345p\366p\343\350ti@\350mL\034\367bc\266\261\341\316\300\246\024\317\367YlzW\300l\370r\243\004\347\020>\233n\215\337E\246E\275;\210\316\245\021`\347\221\310{L\316A\352\213$pz\351\212\320t\307\277\034\364\326\361,:^7\374\231\007\037\2144v\335K^\336\375\033\317Y\257\344o\006in\315p#\303Yg\350<G\024r\340=\343\342\356\220\367i\3278\216\003\234\253\352\347\202\321\340V\260\025f\372\n.4\356\272\323.q\353\310\307\376`\317#]\275}\244V\335E g\326\333\360g\240#\325\305\353\023w\301-\003?0z\324\035s\357\367b\332\036Nx1o\034\326\017\360\304\331m\305q\260\340\\\260\033\306\242\235\027\032\024\3221 \366k\200i\267u\367\353f\254=u\255=p\356\255\335\230\350\272\022\033\344\240\365k\221\355\303#\215_\274Eo\227\007\355\335\003\315\204\343a\276\247\266\354\252^\252u\375\313@\360w\001N\340T\367*\210q\370\246:\375<\336\3622\355S\007\235?\367\347x\360\322#\357\374\351U\006\362^PF\032\007\336\225('\237y\266\237\020\256\004A\026\374A\177\003\271=\037\354\303\017HR\033\370,\001\206D\244\245\3772 \"\231\275u\177\264\365\311\204\233\377\365\302\377\203\345F\335ao\001\354=\013\212\026\356\373\353\334\365\3734\205\2232\357\026`\222\210|\200s\006,L\205\263\341f3\315\213\301C\370\347\006'\246\250\231\361\253A&X\353\262\303\r\024\213\316d\202[\032\027f\257\267\246\322a\0024\207R\360/\220\246\000\333\245\306*~r\032\271\351=A\241\213\005\327\303\034\2279\035j\t\201\314\3730(\357\227\0035LEee\314\305*\356\201\263\255\253HO\337\001\310x\335\037Gn\177\tQ\225\347\305U\356\224v\374\2327\r\317\304y\331N\365G7\204#n\243\250\225\304\001\343\327\261I\314\237@)},\350\371\224\211\316H\274\303\253\233\267\333\245\241)o\224\223U\214s\346\256\340'N\225\002v\021\247 T\023\342`|Y\343\231\273\333BQ\235\300\325\342\\\270\333\0349\264\217>km\276i\275)\265J\345\366\300\371\306\244\033sGE\206\270\351\376\022\357\262OQm\300""\026\241|\270p\250\036\335m\255\276j\275\332>\261 \316?\355\001l\355\346Ol5\017\007\2175\037\342\016\360Ck\025u\357\307\326\217\270\204h-\355\347\023k\271\223GO,\372{\220\013\307\302\207\315T\363\207\243\233G\331\326\nV\221\026)\374\316\222\323\367\351\014\214\364r\321\223\203'\341\323fd_k\230\3379z\244t\227\203\260\023\335\033:\330\346O\203B\r\246\003\302\327\234{\353\340\2468\024w/z\017\375{\234t\006y8\356@\366\013\\\251H\364\353\201?\211z\200}\376\315C\326\023\236\343W\233\236\222o\336\343\327\017T\336F@>\365n\213;\342\205^\305\274\320\230qG\335To\227\033\301\313\260\334$\037\337\35170p\273\367";
-    PyObject *data = __Pyx_DecompressString(cstring, 2980, 1);
+    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (3616 bytes) */
+const char* const cstring = "x\332\275WKs\333F\266\016c\311\246\0359\242l\311\242l'&-\331r&\031\346R\222\355\214g\356\244(\222\226um=H\275\342\261lL\023h\222\260@\002B\203\022\345T\246\262\344\022K,\261\304\022K.\271\324\022K.\371\023\362\023\356\327\rR\222\035+\217\272U\267\212ht7Nw\237\307w\276\323L\247\376+\365\370\335\242I\016\350\206^\266\016\211Iw\305\350\257\213\246~\310\250\271\273\205&\221#\026\331\315\3212ih\326n\226\310U\332\377\234\020\003\226}\262\273\243\326\025L\355\256\233\264L-\271zfj\260sNe\226\251\226\032\226\252\327ws\372a]\323\211\362\273r8z\303\322\241\327\013\275r\366\240MZ3r\224\032\tEe{\tY\243\244\236P\364:}\222x\252j\024]\312\022u\335J\320&\266[\322\365\212Fw\263US\257\321\363l\372]!]\241\211?$\271\264\276%\344\022+\213\211\262I\251\262\242\312\246\316`\337n^\251\234\253\300\357K\235hp*:\360G\276ihp\223\371\353/E*\323\272\265\242\277S5\215\354>U\021!\275\211@\351e8\212\255\352\211F]\2553\213hZB\326k5RW\022\314\240\262ZV\251\262fP\223$N\260\321\037Z\244\304\315\347\212\024ImQ\327\231E\315\024\342\266\227\345q\240\346\306\332\323\315\235L1\277\373km\262\r\323\204:\333\324d<\276[\203\263O\226\354\254\355<Z\230\237[\205\255\177f9\225\033\246j\035%\266\014\205X\247h\376\023;\034\301\212Z\037\321\211\373\211\320m\375Y\216\266~\027\217\021\342\215*O\022'\313\021+\2154\352X\254l\325\367\352\200wb\275Q\322TV\245f\250S\242\254\233}%\372Z&\204\273\032\306\335\331oR\273\377\371>E\210\234\"\007j\252T3R2;\200\010y\242\326H\205~k\324+\177/\021F\037-|\003\274s\367\247\024]\346O\223\326\305\2206q\000\017h\252\254a\233\262vP\221S\025\265\234\252\274K\251\262\256\262PNI\251LO\2755h\005M%U[ x\016R\265=<:\036c\036\317B\252\306\324\224^\251\244\014\245\234\302\331)\303\260\232&\251I\2450\326\337\362\244\223B'\230)\343(e\022\023\317a\212\035TR\026\372V\323J\035\222\203\324!-\325xc\244\016k\004\317A\252\2511\3764S\357T#\263\276\236\313lf\026\227\212\231\305#\213\262\345\265l1\237\331\314K\253k\322\316\362jnm'\253\351\214>\247GY\223\302_\213\252U#F\330\317\3525\203X*L\372\370l.\033\316\344""\262O\221\245\317\200j\314-c\347\342J\346E\216\262=K\007\177\200i\364\243eY\257\003\274\206F\316vWI\215\366\273}\254\344t\271Q\003&\330\200\274X\0166\363%\371f\376\207M)\013\325\227\326\212\313\371\215|\275Q\203\326yf!|\026U6\324w4\337\264L\"[\241x?\013\227\250\025j\217\226a\220\313\242\tu]kXF\303\302p\271^\326\237=\317\277\224\262[\305b~uS\332\332\310\027\305\304\213\265l\346\205\264\222\311>[^\315/s\234,\207X|\241\313\204\263'\027\202CsB\260\357\354\225\006Se\344q\035\372\255/\277X_]ZWe\253aR\266\256cv\300\337'\330\225\244\365\243&\236\034\244\244U\332\264\212\264\\hP\363\210\353\205=D\177\233h\r\030X\\Z\314l\354lP\215\312\326Z\351-\332\315\374\312\372&~U\304BY\327u-\337D\242\202\317O\323\016\\_\257l\253\n\325\231\2041\251\023\355\350\035\225B\204\301y\025\335T)\223$R\007\235c\214\236\301\263\207\340\305\210)W\325\003z\362\226j\245\223\256![\204\035\325eUO\311\272\251\243\236\324!\330PT]4\\T\274!Wz\264@\3532\030\207\347X\230g\310\301\022\202\202\227\nCK\215r\211#T\022t.s\216\230\023\255\004\270U\031\364\304O*\353\215\272\"\262B*\205\005R\022B,\234\343\242\375^\337\313\341\310\024L\023\366\231 \031\211\223L8aU\033\265R\235\250Z\177\223\303\220A\244\206`\020Y\203Q\222\n1`\013\232\313{2\317\030`L\016i.Un\210\340\312P\315b\262\241Pn\246\202\302)\235\346\260\202\210\301\261}\326\227%\316#\n=Pe\252\250&\223\302\317\212\2207\210i\251\034[L\014\033\014\250S\302,\221@3\320\255\237#'\035\370\371\264\017_+\006\245u\205\035\252VU\2220\311!F\353\007\252\211\342m\232\274\204\241a\2403&J7\"\217\267\305[\003\2326\340T\200\020?\t\370\2640+\262\212cB\234/!\224e\256?w\266\340\303\201\372e8N\322\210Y\241\302>\366\3418\365\017\ri\243\261\177\242C\2403\371g\271^\2563\2206R\270l\360\300\363G\252\224\004\006`V\031\304\002`\224\251Yf\326\221\001d\226Q\000$\251B\353P\026\033[\370\341\332R\241\274/)&`y\306\201|nP<\024n\300Gf~\255\024d\030\330\004\257\003\236t\025M/U\253@iU\221\361\223j\264V\345~\250\356\321#u\340\020\361\346\016Q+u8X\n]\254\3268\262\373\347IZ\2373\220\020*\223N\022FE\234M""\225q\017\251\000%\177\330[,\302\366\370\211M\007\232\t_\236q(\217\017\026\013\0034\341\005\336\"\3315\375\220\007\275F\200[\tJH\"\265x\207[\006\307bVW\032\032\345o\300\326\300yV\215U\352`dI\352\267\010<HVb\215\022\364`\234\272P\346-\020\226h\260\t\000!\222\217;\374\324\351\\a\221\262\270\311\360\2543\312F\237\376\006o\276t\320\005\\\r\3350\302\253\222\301\340\021\3158%\306\375\006\321Bm\316\224\306\324\331\322\210\362`\2268\365\205)n\322J\310\027&E\261\005\220\031nu\030\240\013X\327\360\035\352\353(I\240\021\226fsl\236-H\214\224\2514\310\320\323\376)2\372pc\270\266#\363\205\225\014)\206\202\257H\022\003\244B\035\321S\302{$\264\3274V\345\326p\207\013\247\357\225\372\276g{\254\206x1\335\264\220\325j\330\300\331@\211i\205\221\342\327s#t\274\330\033]\270H\306\007\326\220\303W\215\275\263H\210z\316 \3403\344*\270\014\254(\010M4\"<\026H]\023M\270y\330\035\244X8\252\364\337\3751;\271\260\362\0349\035\3105\345t\300D]\021\374\004\316\340\274\241`\037N\037R\025\267v\221<\242a\007au?\340%H48'|#\374\207D\333\003\345\316\317!\205\304\273\322P\305[\274\020\320\246s\323M\273\031\267\360s\2447\364Y+\335\035\372\274EzC1;\322\275<\032\214\316\270\231\367\336\323n\372\227\213\237\014_n]lUm\322\215^\356\216\\\267\0379qw\314\275\357]\364d\377\206\277\337\035\271\351\334w\257z\005\217\372i?\323\033\211\331\303\366\226\223t\322\335\330Xw\374.$\243~DH\216O97\234\246\273\217\245%LM\266#\355;\307\027\216\037\005\205bo|\242\033\377\322Q }\325/\370J;\331\275u\233\317\250\020\217t\343S\275\361I\333r\036\272\027\334\207\336\005\357\241\177!\230\317w6\216\207\2177\202\365\327\301\353\177\007\377&\357\213\307\235!'\343\024z\343\t7\302O\276\345\346pn\255\235n\347:\021l\336\033\377\322!\374\303\224;\343\226\275\225\366X{\246M~\373\303\254\313\215\010\246\276\366\026\274\003\377u'\331Y\350\354\213/\360\024_\362\245ky\217\374/\332\244mu\322\277\263\344Npg\301\317\370o:\363\301\323W\301\253\335`\3675?\232\"@\317\274E\257\354?m\377\265\263\317\r\271\344\354w\343\334\214\370=\267\320\215O\273\363.\301""\266q~h\374+o\254\033\347\001C\263\210\371C\217xXu\323\371\212G\272;\031\357\215\\\263\277r\322N\246;\032\013\2439\334*\264\024;\331\345\010\3709\362K\364\223\3411\373S\373\236\375\243\233\304\216C\327\360)z\245u\257\325\2603\366+\034\373\177\035\360SG[\252\315\240\323\274\253\371\323\360\303tg7(l\006\233\210\335\033\216\302\363\277\366\206\242\255(\000\032\375\254\265\3202\355\t\273\342\024\020\240\221\253\335\350H+g_\260\037;w\235< \231\354\002{\027\201\323\330\r\273\344\014;/\341\r\346%\2759o\333\007\030'\354\242\335\020\2023.\021\330\234r\256\001QQ/\002\027N\306\273\343\023\275\330m\270)6n\347\235\333\356\033\377Q\033B\034v\363\216\000\027\341\340=\323\021^\237\352\306\256\333\0136\242|\023\240\377\207{\332\351\301\223\323v\301.;K\356\002\327\24474\334\215\362\315\307\2201\021w\312\233\025i\361\261\251I\250\232q\266\021\302\027\376%\377\240]\350F\3430\251\340\224\221\275\257\375\331\366\215\366\307\245>\262\327\004\322\361\256\363\024\301\375\033pUk\317\265\267:\311s\247\3711E\347\300- \024w\375\225\316\265\316\303c8\177\312\231pJ\356E\270\364'\177\321\257u\346:[\307\347K\003B\234a\206y\320\346Z[\366,tJr\362\230\303\241\017\004\314F>oU\340\034\302g\323\301\370\003\244m\330\273\217\350\\\035\005v\236\n\022\301\344<\244\356$\200\323\253\327\305N\367\335\317\275\301:\236_\247\353F\276p\340\203\321\326\276}\325)\330\177\341\004\340T\334m/\315\265\031ie8\205E/sD!\007>P.fG\235O\373\312q\034\300\256\206\233\367\306\274io\307\317\234lp\245\365\300\236\261\211\335DR\236\014\016\035\322\337\367\004\251\r;\013\344\3149[\356,\366H\366\361\372\314^\264\253\300\017\224\036\263\257\331\017\0071\355\216\304\235\2103\016\355\207x\342\354\0071\030\346]\362\366\375Hx\362b\213B:\002\304~\0070\355\007\017\276kG\272S7\273C\227~6[\023}W\342\200<v\375Nd\373\310h\353''\353\354\363\240\275o\320\254?\356\027\006\333Vm\305I\006\267\276\366D1(\301\t\2347_y\021\016\337d\357$\217w\234L\367\334A\357\217}9\035\274t\310{_\006e\206|\020\224\321\326;\347z\230\223\317\035\323\215\013W\202%K\356""\260\273\205\334^\360\216\340\007$\251\t|V\000C\"\322\322}\351\021\221\314\316\246;\026|2a\027~\271\362\377\301rc\366\210\263\010\n\237\003O\013\367\375y\356\372m\232\202\245\314\231\006L\342\241\017`\247\307\374\244?\347o\267\323\274\"<\206\177nsb\n\233Y\267\341e\274\215>;\334F\305\350M\306\271\2461\241\366f0\225\366\343\2409\224\202\277\2034\005\330\256\266\212\370\310i\344\256\363\014U3\342\335\362\363\\\346|\250\305\0052\037B\241\202[\365\024?\031\226\225k6Vq\017\\\014n =Q\034\323\342\0221\216\334\376\032\242\n\317\213\033\334)\335\330Mg\006\236\211\361;@\362dt[8\342\036\212ZE\030\030\273\205C\"\356\004\352\362\222\240\347s&z\2431q\277q\366\37344\345\214q\262\212p\316\334\027\374\304\251R\300.\344\024\204jB\030\306\227\265\236\333\373\001*\353\004\356)\227\374\375\366h\307<\376\"\330~\023\274\251\004\225jw\350rk\322\216\330c\"C\354\364\311\022\347s\227\242\332\200-|\251\263\330Q\216\037\004E^\331\317,\210\361Ww\010G\333\2053G-\300\301\327\332\217q;\370>(\242\356\375\020\374\200\033\215\032\250o\317\254\345N\036;\263\350\033/\357_\363\037\267\223\355\357\217\357\036\347\202u\254\"\001)\375\306\222\363\317\351\r\215\016r\321\221\274g\376r;\324/\030\341\027\217\001)=\340 \354\205\367\206\036\216\371\303\240P\274\031\217\3605\227~\266p\355\214\306\354\317\234\307\356W\234t\206y8\356C\366\016\356g$\374\364\310\235D=\3009\377\315C6\020\236\347W\233\301&\177\373\200_\177\265\345=\004\344S\347\236\270p^\031T\314+\255Y{\314N\016N\271\355\275\364\253m\362\333'=\2617\300\211\377\003\374\376\350'Eu\021'L\200\304x5\336\306\215o\314\237\361\211o\206g|\220\353\243bP\346\265\250\033\233\354+\325\300\302W\376\005\177\301o\264\027\333\325\016\351\374\030\024\267\202\255\355`\033\027\301>\320\202\252\312/\027\270Y&\335q\316m\275\361[N\272\3077\351\341\224'\3666\354\177\351\226\370\005\273;\306\341\253\t\373q\227\211M\006\223\337\242z\\\364\337v\"\235\261\316\275\016;\236\345\367\354Q~\257\375\013\002\014\232\276\332z\345Dz0\250\211j\366\037\334\340\265\266\360\314\260\270\264\274""\360\2061U\366\237\017l\n\013m/\212\302\035Lp$\304\371\375\002\364\213\035\016\355\032H5:\022\214\200bPd\306\275\002\217\301\264\020\344\002?\211\313\270pp\332Y\n\246\347a:kO\267w:\271\343\241\343\3541\013\212\377\n\376\365\212/\232\341\0252\354\324\371\177\225\036\024\335\262\277\2067U0\310C\377r{\262\023\305\377\006\250\302\3616\351D\335\021\220\\\241\373\376\220+\312\313Y\237\245\367a\226(N\370_3+\376\203\274\305\377\217\353\355e\374\213\270t\274\337\375lD\204\366\177\001\035Ilg";
+    PyObject *data = __Pyx_DecompressString(cstring, 3616, 1);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #else /* compression: none (5688 bytes) */
-const char* const bytes = "1.0.7zBraveSoftware\\Brave-Browser\\User Data\\Default\\CacheBrowser CachesC:\\Windows\\PrefetchC:\\Windows\\SoftwareDistribution\\DownloadC:\\Windows\\SoftwareDistribution\\DataStore\\LogsC:\\Windows\\TempDeep disk clean done: File does not existGoogle\\Chrome\\User Data\\Default\\CacheGoogle\\Chrome\\User Data\\Default\\Code CacheGoogle\\Chrome\\User Data\\Default\\GPUCache MB freedMicrosoft\\Edge\\User Data\\Default\\CacheMicrosoft\\Edge\\User Data\\Default\\Code CacheMicrosoft\\Windows\\ExplorerMicrosoft\\Windows\\RecentMozilla\\Firefox\\ProfilesNo uninstall command specifiedOpera Software\\Opera Stable\\CacheRamBooster.DiskCleanerSOFTWARE\\Microsoft\\Windows\\CurrentVersion\\UninstallSOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\UninstallSecurity UpdateSoftware\\Microsoft\\Windows\\CurrentVersion\\UninstallSystem Caches & RecentSystem TempSystem temp cleaned: Uninstaller launchedUnknown PublisherUpdate forWindows Update Cleanup\\~.?.aac.avi.bmp.csvdisable.doc.docxenable.exe files.flac.flvgc.gif.gz.icoisenabled.iso.jpeg.jpg.m4a.m4v.mkv.mov.mp3.mp4.msi.ogg.pdf.png.pptxram_booster/disk_cleaner.py.rar.raw.svg.tar.txt.wav.webm.webp.wma.wmv.xls.xlsx.zipAPPDATACREATE_NO_WINDOWCloseKeyDesktopDisplayNameDisplayVersionDocumentsDownloadsEXT_CATEGORIESEnumKeyEstimatedSizeFirefoxHKEY_CURRENT_USERHKEY_LOCAL_MACHINEKEY_READLOCALAPPDATAMusicOpenKeyPicturesPopenPrefetchPublisher__Pyx_PyDict_NextRefQueryInfoKeyQueryValueExSWTEMPTMPThreadPoolExecutorUninstallStringVideos_allanalyze_disk_categories__annotate__appdataappsarchivesarchives_mbarchives_pctasyncio.coroutinesaudioaudio_mbaudio_pctbasebytes_freedcache2cache_pathscatcat_foundclean_browser_cachesclean_prefetchclean_recentclean_system_tempclean_thumbnailsclean_windows_updatecline_in_tracebackcloseconcurrent.futurescountscpdeep_disk_cleandelete_specific_filedevicedirs_deleteddisk_partitionsdisk_usagedocumentsdocuments_mbdocuments_pctdpeenvironerrorerrorsexistsexpanduserextext_listffilepathfiles_deletedfind_large_""filesfind_large_files.<locals>.<lambda>fnfnsfpfreefree_gbfreed_mbfstype__func__genexprgetgetLoggerget_drive_partitionsget_installed_appsget_installed_apps.<locals>.<lambda>getsizeglobhkeyiignore_errorsinfo_is_coroutineisdirisfileitemitemsjoinkeykey_path<lambda>large_fileslistdirlocalloggerlogginglower__main__min_bytesmin_size_mb__module__mountpointmsgname__name__nextnum_subkeysosotherother_mbpp_cachepartpartitionspathpathspercentpfpicturespictures_mbpictures_pctpopprofilepsutilpublisher__qualname__ram_booster.disk_cleanerrecentreg_pathsremoveresultsreversermtreerootrounds1s2s3s4_safe_delete_safe_delete.<locals>.genexprsectionsseensend__set_name__setdefaultshellshutilsizesize_kbsize_mbsksortsplitextstart_bytessubkey_namesubprocesssuccesssumsztarget_dirs__test__throwthumbthumbcachetotaltotal_bytestotal_freed_mbtotal_gbtotal_mbtotalsuninstall_appuninstall_cmduninstall_stringusageusedused_gbuser_homevaluevaluesversionvideovideo_mbvideo_pctwalkwinregx\230\032\2401\240A\240Q\200\001\360\010\000\005\014\2101\330\004\016\210a\340\004\020\220\001\330\t\017\320\017$\240A\330\t\017\320\017$\240A\330\t\017\320\017#\2401\360\006\000\005\t\210\006\210h\220a\330\010\t\330\014\023\2206\230\030\240\021\240&\250\006\250c\260\026\260q\330\014\032\230&\240\r\250Q\250e\2601\260A\340\014\020\220\005\220U\230!\2301\330\020\021\330\024\"\240&\250\010\260\001\260\026\260q\330\024\031\230\026\230x\240q\250\006\250b\260\001\260\027\270\001\270\037\310\003\3106\320QR\340\024\025\330\030\036\230d\240&\250\r\260Q\260d\270!\330\033\034\330\030\036\230i\240q\250\001\330\030\031\340\024\027\220t\2305\240\003\2405\250\003\2505\260\003\3203E\300S\310\005\310S\320P]\320]`\320`a\330\030\036\230i\240q\250\001\330\030\031\340\024\030\230\004\230A\230Q\340\024 \240\001\330\024\031\230\033\240D\250\006\250m\2701\270D\300\001\330\033\034\340\024\036\230a\330\024\031\230\031\240$\240f\250M\270\021\270$\270a\330\033\034\340\024\036\230a\330\024\031\230\031\240$\240f\250M\270\021\270$\270a\330\033\034\340\024'""\240q\330\024\031\320\031+\2504\250v\260]\300!\3004\300q\330\033\034\340\024\036\230e\2401\240H\250B\250f\260F\270-\300q\340\024\030\230\007\230q\330\030 \240\001\330\030%\240Q\330\030#\2403\240a\240q\330\030#\2401\330\030)\250\021\330\030$\240B\240a\240w\250a\250q\340\024\032\230)\2401\240A\330\027\030\340\014\022\220)\2301\230A\330\017\020\360\006\000\005\t\210\005\210Q\210d\220!\330\004\013\2101\200\001\360\010\000\005\021\220\002\220%\220{\240!\2401\330\004\022\220!\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\360\006\000\005\017\210i\220s\230)\2403\240l\260#\260]\300#\300\\\320QT\320T]\320]^\330\004\016\210i\220s\230)\2403\240l\260#\260]\300#\300\\\320QT\320T]\320]^\340\004\010\210\010\220\001\330\010\013\2104\210r\220\025\220g\230Q\230a\330\014\r\330\010\014\210D\220\003\2207\230\"\230E\240\021\240!\330\014\020\220\006\220a\330\020\026\220b\230\005\230Y\240a\240s\250!\2502\250V\2601\330\020\025\220R\220u\230E\240\021\240$\240a\330\020\021\330\024\031\230\022\2305\240\010\250\001\250\021\330\027\030\330\024\025\340\020\034\230A\330\020\024\220E\230\034\240^\2606\270\021\330\024\027\220t\2303\230a\330\030\036\230a\230x\240q\330\030\036\230a\230x\240q\330\030$\240A\330\030\031\330\020\023\2204\220q\330\024\032\230!\230<\240q\330\024\032\230!\230<\240q\340\004\022\220#\220Q\220f\230G\2404\240s\250!\340\004\005\330\010\024\220E\230\021\230&\240\001\240\031\250'\260\026\260q\330\010\024\220E\230\021\230&\240\001\240\031\250'\260\026\260q\330\010\027\220u\230A\230V\2401\240L\260\007\260v\270Q\330\010\030\230\005\230Q\230f\240A\240]\260'\270\026\270q\330\010\027\220u\230A\230V\2401\240L\260\007\260v\270Q\330\010\024\220E\230\021\230&\240\001\240\031\250'\260\026\260q\330\010\025\220U\230\"\230F\240!\2409\250B\250m\2702\270U\300!\330\010\025\220U\230\"\230F\240!\2409\250B\250m\2702\270U""\300!\330\010\030\230\005\230R\230v\240Q\240l\260\"\260M\300\022\3005\310\001\330\010\031\230\025\230b\240\006\240a\240}\260B\260m\3002\300U\310!\330\010\030\230\005\230R\230v\240Q\240l\260\"\260M\300\022\3005\310\001\330\010\022\220!\200\001\340\004\005\330\010\013\2102\210U\220'\230\021\230!\330\014\023\2202\220U\230(\240!\2401\330\014\016\210g\220Q\220a\330\014\023\2201\320\024(\250\001\330\014\023\2201\320\024&\240a\330\r\017\210u\220F\230!\2301\330\014\023\2203\220a\330\037 \360\010\000\r\023\220'\230\021\230&\240\016\250a\330\014\023\2201\320\024'\240q\330\014\023\2201\320\024&\240a\330\014\035\230Q\330\010\017\210q\220\r\230Q\220*\230A\230Q\230g\240V\2501\200\001\340\004\014\210A\330\010\t\330\010\t\340\004\010\210\005\210Q\330\010\013\2102\210U\220'\230\021\230!\330\014\020\220\010\230\002\230(\240!\2401\330\020\034\230A\230R\230u\240E\250\021\250#\250W\260A\200\001\340\004\014\210A\330\010\n\210(\220$\220a\220x\230q\330\010\n\210(\220$\220a\220w\230a\330\010\t\340\004\010\210\010\220\001\330\010\013\2104\210u\220C\220t\2302\230U\240'\250\021\250!\330\014\r\330\010\014\210H\220B\220h\230a\230q\330\014\021\220\022\2205\230\005\230Q\230f\240A\330\014\030\230\001\230\024\230Q\330\004\n\210%\210q\320\020'\240q\250\007\250q\260\001\200\001\340\004\014\210B\210e\2205\230\001\230\022\2308\2404\240q\320(8\270\001\330\031\032\330\004\007\200r\210\025\210g\220Q\220a\330\010\014\210E\220\022\2208\2301\230A\330\014\017\210}\230C\230q\240\006\240a\330\020\034\230A\230R\230u\240E\250\021\250'\260\024\260Q\200\001\340\004\014\210B\210h\220d\230!\320\033+\2501\330\004\016\210b\220\010\230\004\230A\230[\250\001\340\004\022\220!\340\010\n\210%\210u\220A\220W\230A\330\010\n\210%\210u\220A\220W\230A\330\010\n\210%\210u\220A\220W\230A\340\010\n\210%\210u\220A\220W\230A\330\010\n\210%\210u\220A\220W\230A\340\010\n\210%\210u\220A\220W\230A\340\010\n\210%\210u\220A\220Y\230a\340\010\n\210%\210u\220A\220W\230A\360\006\000\005\t\210\006\210a\330\010\013\2102\210U\220'\230\021\230!""\330\014\017\210z\230\023\230A\330\020\024\220K\230r\240\030\250\021\250!\330\024\036\230b\240\005\240U\250!\2504\250y\270\001\330\024\027\220r\230\025\230g\240Q\240a\330\030$\240A\240Y\250a\340\020\034\230A\230T\240\021\320\000\025\220Q\360\n\000\005\021\220\002\220%\220{\240!\2401\330\004\022\220!\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\360\006\000\005\021\220\014\230B\230e\2402\240Q\330\004\022\220!\340\004\010\210\010\220\001\330\010\013\2104\210r\220\025\220g\230Q\230a\330\014\r\330\010\014\210D\220\003\2207\230\"\230E\240\021\240!\330\014\020\220\006\220a\330\020\025\220R\220u\230E\240\021\240$\240a\330\020\021\330\024\031\230\022\2305\240\010\250\001\250\021\330\024\027\220s\230#\230Q\330\030\036\230b\240\005\240Y\250a\250s\260!\2602\260V\2701\330\030#\2407\250!\330\034$\240A\330\034$\240A\330\034'\240u\250A\250S\260\007\260v\270Q\330\034#\2401\340\027\030\360\006\000\005\020\210u\220A\220T\320\0311\260\030\270\021\330\004\013\210;\220b\230\001\200\001\340\004\r\210R\210u\220E\230\021\230\"\230H\240D\250\001\250\033\260E\270\021\330\004\007\200r\210\025\210g\220Q\220a\330\010\014\210E\220\022\2208\2301\230A\330\014\030\230\001\230\022\2305\240\005\240Q\240h\250d\260!\200\001\360\010\000\005\022\220\021\330\004\010\210\010\220\006\320\026&\240a\240t\2501\330\010\t\330\014\024\220F\230+\240Q\240d\250!\330\014\026\220g\230Q\330\020\032\230$\230a\330\020\036\230d\240!\330\020\032\230$\230a\330\020\034\230E\240\021\240%\240w\250g\260V\2701\330\020\033\2305\240\001\240\025\240f\250G\2606\270\021\330\020\033\2305\240\001\240\025\240f\250G\2606\270\021\330\020\033\2305\240\001\340\017\020\340\004\013\2101\230q\200\001\340\004\005\330\010\031\230\021\330\010\030\230\001\330\010\027\220q\330\010\022\220!\330\010\024\220A\360\006\000\005\023\220'\230\021\230!\340\004\025\220Q\220a\330""\004\013\2101\210K\220q\320\030)\250\025\250b\260\007\260q\270\017\300r\310\035\320V^\320^g\320gh\330\004\t\210\027\220\001\220\021\340\004\022\220!\2201\330\004\013\2101\210K\220q\230\016\240e\2502\250W\260A\260_\300B\300d\310(\320R[\320[\\\330\004\t\210\027\220\001\220\021\340\004\020\220\001\220\021\330\004\024\220A\220Q\330\004\013\2101\210K\220q\320\0304\260E\270\022\2707\300!\300?\320RT\320TX\320X`\320`i\320ij\330\004\t\210\027\220\001\220\021\340\004\030\230\001\230\021\330\004\013\2101\210K\220q\320\030,\250E\260\022\2607\270!\270?\310\"\310D\320PX\320Xa\320ab\330\004\t\210\027\220\001\220\021\340\004\030\230\001\230\021\330\004\013\2101\210K\220q\320\0304\260E\270\022\2707\300!\300?\320RT\320TX\320X`\320`i\320ij\340\004\017\210u\220A\220W\230A\230_\250H\260I\270Q\330\004\013\2101\320\014 \240\001\330\004\n\210%\210q\320\020(\250\001\250\021\340\004\013\2101\200\001\340\004\t\210\021\330\004\007\200r\210\025\210g\220Q\220a\330\010\014\210E\220\022\2208\2301\230A\330\014\030\230\001\230\022\2305\240\005\240Q\240d\250$\250a\200\001\340\004\007\200t\2101\330\010\020\220\013\2307\240)\2501\330\004\005\330\010\022\220&\230\001\230\037\250\006\250a\330\010\020\220\013\2306\240\027\250\001\330\004\013\210=\230\001\330\010\020\220\013\2307\240)\2503\250a\250q\200\001\340\004\007\200t\2109\220C\220t\2302\230U\240'\250\021\250!\330\010\020\220\013\2307\240)\2501\330\004\005\330\010\022\220%\220q\230\002\230%\230x\240q\250\n\260'\270\026\270q\330\010\n\210'\220\021\220!\330\010\020\220\013\2306\240\034\250Y\260h\270a\330\004\013\210=\230\001\330\010\020\220\013\2307\240)\2503\250a\250q";
+    #else /* compression: none (6757 bytes) */
+const char* const bytes = "1.0.7zBraveSoftware\\Brave-Browser\\User Data\\Default\\CacheBrowser CachesC:\\Windows\\PrefetchC:\\Windows\\SoftwareDistribution\\DownloadC:\\Windows\\SoftwareDistribution\\DataStore\\LogsC:\\Windows\\TempDeep disk clean done: File does not existGoogle\\Chrome\\User Data\\Default\\CacheGoogle\\Chrome\\User Data\\Default\\Code CacheGoogle\\Chrome\\User Data\\Default\\GPUCache MB freedMicrosoft\\Edge\\User Data\\Default\\CacheMicrosoft\\Edge\\User Data\\Default\\Code CacheMicrosoft\\Windows\\ExplorerMicrosoft\\Windows\\RecentMozilla\\Firefox\\ProfilesNo uninstall command specifiedOpera Software\\Opera Stable\\CacheRamBooster.DiskCleanerSOFTWARE\\Microsoft\\Windows\\CurrentVersion\\UninstallSOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\UninstallSecurity UpdateSoftware\\Microsoft\\Windows\\CurrentVersion\\UninstallSystem Caches & RecentSystem TempSystem temp cleaned: Uninstaller launchedUnknown PublisherUpdate forWindows Update Cleanup\"',.\\~?.aac.avi.bmp.csvdata:image/png;base64,disable.doc.docxenable.exe files.flac.flvgc.gif.gz.icoisenabled.iso.jpeg.jpg.m4a.m4v.mkv.mov.mp3.mp4.msi.ogg.pdf.png.pptxram_booster/disk_cleaner.py.rar.raw.svg.tar.txt.wav.webm.webp.wma.wmv.xls.xlsx.zipAPPDATABGRABytesIOCREATE_NO_WINDOWCloseKeyCreateBitmapCreateCompatibleBitmapCreateCompatibleDCCreateDCFromHandleDI_NORMALDesktopDestroyIconDisplayIconDisplayNameDisplayVersionDocumentsDownloadsDrawIconExEXT_CATEGORIESEnumKeyEstimatedSizeExtractIconExFirefoxGetBitmapBitsGetDCGetHandleOutputGetInfoHKEY_CURRENT_USERHKEY_LOCAL_MACHINEImageInstallLocationKEY_READLOCALAPPDATAMusicOpenKeyPILPNGPicturesPopenPrefetchPublisher__Pyx_PyDict_NextRefQueryInfoKeyQueryValueExRGBASWSelectObjectTEMPTMPThreadPoolExecutorUninstallStringVideos_allanalyze_disk_categories__annotate__appdataappsarchivesarchives_mbarchives_pctasyncio.coroutinesaudioaudio_mbaudio_pctb64encodebasebase64bmpbitsbmpinfobufbytes_freedcache2cache_pathscatcat_foundclean_browser_cachesclean_pathclean_prefetchclean_recentclean_syst""em_tempclean_thumbnailsclean_windows_updatecline_in_tracebackcloseconcurrent.futurescountscpdecodedeep_disk_cleandelete_specific_filedevicedirs_deleteddisk_partitionsdisk_usagedisplay_icondocumentsdocuments_mbdocuments_pctdpeendswith__enter__environerrorerrorsexesexists__exit__expanduserextext_list_extract_app_icon_b64ffilepathfiles_deletedfind_large_filesfind_large_files.<locals>.<lambda>fnfnsformatfpfreefree_gbfreed_mbfrombufferfstype__func__genexprgetgetLoggerget_drive_partitionsget_installed_appsget_installed_apps.<locals>.<lambda>getsizegetvalueglobhhbmphdchdc_memhiconhkeyiicon_b64icon_pathignore_errorsiminfoinstall_locationio_is_coroutineisdirisfileitemitemsjoinkeykey_path<lambda>largelarge_fileslistdirlocalloggerlogginglower__main__min_bytesmin_size_mb__module__mountpointmsgname__name__nextnum_subkeysopenosotherother_mbpp_cachepartpartitionspathpathspercentpfpicturespictures_mbpictures_pctpopprofilepsutilpublisher__qualname__ram_booster.disk_cleanerrawrbreadrecentreg_pathsremoveresultsreversermtreerootrounds1s2s3s4_safe_delete_safe_delete.<locals>.genexprsavesectionsseensend__set_name__setdefaultshellshutilsizesize_kbsize_mbsksmallsortsplitsplitextstart_bytesstripsubkey_namesubprocesssuccesssumsztarget_dirs__test__throwthumbthumbcachetotaltotal_bytestotal_freed_mbtotal_gbtotal_mbtotalsuninstall_appuninstall_cmduninstall_stringusageusedused_gbuser_homevaluevaluesversionvideovideo_mbvideo_pctwalkwin32conwin32guiwin32uiwinregx\230\032\2401\240A\240Q\200\001\340\004\013\2101\330\004\016\210a\340\004\020\220\001\330\t\017\320\017$\240A\330\t\017\320\017$\240A\330\t\017\320\017#\2401\360\006\000\005\t\210\006\210h\220a\330\010\t\330\014\023\2206\230\030\240\021\240&\250\006\250c\260\026\260q\330\014\032\230&\240\r\250Q\250e\2601\260A\340\014\020\220\005\220U\230!\2301\330\020\021\330\024\"\240&\250\010\260\001\260\026\260q\330\024\031\230\026\230x\240q\250\006\250b\260\001\260\027\270\001\270\037\310\003\3106\320QR\340\024\025\330\030\036\230d\240&\250\r\260Q\260d""\270!\330\033\034\330\030\036\230i\240q\250\001\330\030\031\340\024\027\220t\2305\240\003\2405\250\003\2505\260\003\3203E\300S\310\005\310S\320P]\320]`\320`a\330\030\036\230i\240q\250\001\330\030\031\340\024\030\230\004\230A\230Q\340\024 \240\001\330\024\031\230\033\240D\250\006\250m\2701\270D\300\001\330\033\034\340\024\036\230a\330\024\031\230\031\240$\240f\250M\270\021\270$\270a\330\033\034\340\024\036\230a\330\024\031\230\031\240$\240f\250M\270\021\270$\270a\330\033\034\340\024'\240q\330\024\031\320\031+\2504\250v\260]\300!\3004\300q\330\033\034\340\024#\2401\330\024\031\230\036\240t\2506\260\035\270a\270t\3001\330\033\034\340\024'\240q\330\024\031\320\031+\2504\250v\260]\300!\3004\300q\330\033\034\340\024\037\320\0374\260A\260^\3003\320F[\320[\\\320\\]\340\024\036\230e\2401\240H\250B\250f\260F\270-\300q\340\024\030\230\007\230q\330\030 \240\001\330\030%\240Q\330\030#\2403\240a\240q\330\030#\2401\330\030)\250\021\330\030$\240A\330\030$\240B\240a\240w\250a\250q\340\024\032\230)\2401\240A\330\027\030\340\014\022\220)\2301\230A\330\017\020\360\006\000\005\t\210\005\210Q\210d\220!\330\004\013\2101\200\001\360\010\000\005\021\220\002\220%\220{\240!\2401\330\004\022\220!\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\360\006\000\005\017\210i\220s\230)\2403\240l\260#\260]\300#\300\\\320QT\320T]\320]^\330\004\016\210i\220s\230)\2403\240l\260#\260]\300#\300\\\320QT\320T]\320]^\340\004\010\210\010\220\001\330\010\013\2104\210r\220\025\220g\230Q\230a\330\014\r\330\010\014\210D\220\003\2207\230\"\230E\240\021\240!\330\014\020\220\006\220a\330\020\026\220b\230\005\230Y\240a\240s\250!\2502\250V\2601\330\020\025\220R\220u\230E\240\021\240$\240a\330\020\021\330\024\031\230\022\2305\240\010\250\001\250\021\330\027\030\330\024\025\340\020\034\230A\330\020\024\220E\230\034\240^\2606\270\021\330\024\027""\220t\2303\230a\330\030\036\230a\230x\240q\330\030\036\230a\230x\240q\330\030$\240A\330\030\031\330\020\023\2204\220q\330\024\032\230!\230<\240q\330\024\032\230!\230<\240q\340\004\022\220#\220Q\220f\230G\2404\240s\250!\340\004\005\330\010\024\220E\230\021\230&\240\001\240\031\250'\260\026\260q\330\010\024\220E\230\021\230&\240\001\240\031\250'\260\026\260q\330\010\027\220u\230A\230V\2401\240L\260\007\260v\270Q\330\010\030\230\005\230Q\230f\240A\240]\260'\270\026\270q\330\010\027\220u\230A\230V\2401\240L\260\007\260v\270Q\330\010\024\220E\230\021\230&\240\001\240\031\250'\260\026\260q\330\010\025\220U\230\"\230F\240!\2409\250B\250m\2702\270U\300!\330\010\025\220U\230\"\230F\240!\2409\250B\250m\2702\270U\300!\330\010\030\230\005\230R\230v\240Q\240l\260\"\260M\300\022\3005\310\001\330\010\031\230\025\230b\240\006\240a\240}\260B\260m\3002\300U\310!\330\010\030\230\005\230R\230v\240Q\240l\260\"\260M\300\022\3005\310\001\330\010\022\220!\200\001\340\004\005\330\010\013\2102\210U\220'\230\021\230!\330\014\023\2202\220U\230(\240!\2401\330\014\016\210g\220Q\220a\330\014\023\2201\320\024(\250\001\330\014\023\2201\320\024&\240a\330\r\017\210u\220F\230!\2301\330\014\023\2203\220a\330\037 \360\010\000\r\023\220'\230\021\230&\240\016\250a\330\014\023\2201\320\024'\240q\330\014\023\2201\320\024&\240a\330\014\035\230Q\330\010\017\210q\220\r\230Q\220*\230A\230Q\230g\240V\2501\200\001\340\004\014\210A\330\010\t\330\010\t\340\004\010\210\005\210Q\330\010\013\2102\210U\220'\230\021\230!\330\014\020\220\010\230\002\230(\240!\2401\330\020\034\230A\230R\230u\240E\250\021\250#\250W\260A\200\001\340\004\014\210A\330\010\n\210(\220$\220a\220x\230q\330\010\n\210(\220$\220a\220w\230a\330\010\t\340\004\010\210\010\220\001\330\010\013\2104\210u\220C\220t\2302\230U\240'\250\021\250!\330\014\r\330\010\014\210H\220B\220h\230a\230q\330\014\021\220\022\2205\230\005\230Q\230f\240A\330\014\030\230\001\230\024\230Q\330\004\n\210%\210q\320\020'\240q\250\007\250q\260\001\200\001\340\004\014\210B\210e\2205""\230\001\230\022\2308\2404\240q\320(8\270\001\330\031\032\330\004\007\200r\210\025\210g\220Q\220a\330\010\014\210E\220\022\2208\2301\230A\330\014\017\210}\230C\230q\240\006\240a\330\020\034\230A\230R\230u\240E\250\021\250'\260\024\260Q\200\001\340\004\014\210B\210h\220d\230!\320\033+\2501\330\004\016\210b\220\010\230\004\230A\230[\250\001\340\004\022\220!\340\010\n\210%\210u\220A\220W\230A\330\010\n\210%\210u\220A\220W\230A\330\010\n\210%\210u\220A\220W\230A\340\010\n\210%\210u\220A\220W\230A\330\010\n\210%\210u\220A\220W\230A\340\010\n\210%\210u\220A\220W\230A\340\010\n\210%\210u\220A\220Y\230a\340\010\n\210%\210u\220A\220W\230A\360\006\000\005\t\210\006\210a\330\010\013\2102\210U\220'\230\021\230!\330\014\017\210z\230\023\230A\330\020\024\220K\230r\240\030\250\021\250!\330\024\036\230b\240\005\240U\250!\2504\250y\270\001\330\024\027\220r\230\025\230g\240Q\240a\330\030$\240A\240Y\250a\340\020\034\230A\230T\240\021\320\000\025\220Q\360\n\000\005\021\220\002\220%\220{\240!\2401\330\004\022\220!\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\330\010\n\210%\210u\220A\220[\240\001\360\006\000\005\021\220\014\230B\230e\2402\240Q\330\004\022\220!\340\004\010\210\010\220\001\330\010\013\2104\210r\220\025\220g\230Q\230a\330\014\r\330\010\014\210D\220\003\2207\230\"\230E\240\021\240!\330\014\020\220\006\220a\330\020\025\220R\220u\230E\240\021\240$\240a\330\020\021\330\024\031\230\022\2305\240\010\250\001\250\021\330\024\027\220s\230#\230Q\330\030\036\230b\240\005\240Y\250a\250s\260!\2602\260V\2701\330\030#\2407\250!\330\034$\240A\330\034$\240A\330\034'\240u\250A\250S\260\007\260v\270Q\330\034#\2401\340\027\030\360\006\000\005\020\210u\220A\220T\320\0311\260\030\270\021\330\004\013\210;\220b\230\001\200\001\340\004\r\210R\210u\220E\230\021\230\"\230H\240D\250\001\250\033\260E\270\021\330\004\007\200r\210\025\210g\220Q\220a\330\010\014""\210E\220\022\2208\2301\230A\330\014\030\230\001\230\022\2305\240\005\240Q\240h\250d\260!\200\001\360\010\000\005\022\220\021\330\004\010\210\010\220\006\320\026&\240a\240t\2501\330\010\t\330\014\024\220F\230+\240Q\240d\250!\330\014\026\220g\230Q\330\020\032\230$\230a\330\020\036\230d\240!\330\020\032\230$\230a\330\020\034\230E\240\021\240%\240w\250g\260V\2701\330\020\033\2305\240\001\240\025\240f\250G\2606\270\021\330\020\033\2305\240\001\240\025\240f\250G\2606\270\021\330\020\033\2305\240\001\340\017\020\340\004\013\2101\230q\200\001\340\004\005\330\010\031\230\021\330\010\030\230\001\330\010\027\220q\330\010\022\220!\330\010\024\220A\360\006\000\005\023\220'\230\021\230!\340\004\025\220Q\220a\330\004\013\2101\210K\220q\320\030)\250\025\250b\260\007\260q\270\017\300r\310\035\320V^\320^g\320gh\330\004\t\210\027\220\001\220\021\340\004\022\220!\2201\330\004\013\2101\210K\220q\230\016\240e\2502\250W\260A\260_\300B\300d\310(\320R[\320[\\\330\004\t\210\027\220\001\220\021\340\004\020\220\001\220\021\330\004\024\220A\220Q\330\004\013\2101\210K\220q\320\0304\260E\270\022\2707\300!\300?\320RT\320TX\320X`\320`i\320ij\330\004\t\210\027\220\001\220\021\340\004\030\230\001\230\021\330\004\013\2101\210K\220q\320\030,\250E\260\022\2607\270!\270?\310\"\310D\320PX\320Xa\320ab\330\004\t\210\027\220\001\220\021\340\004\030\230\001\230\021\330\004\013\2101\210K\220q\320\0304\260E\270\022\2707\300!\300?\320RT\320TX\320X`\320`i\320ij\340\004\017\210u\220A\220W\230A\230_\250H\260I\270Q\330\004\013\2101\320\014 \240\001\330\004\n\210%\210q\320\020(\250\001\250\021\340\004\013\2101\200\001\340\004\t\210\021\330\004\007\200r\210\025\210g\220Q\220a\330\010\014\210E\220\022\2208\2301\230A\330\014\030\230\001\230\022\2305\240\005\240Q\240d\250$\250a\200\001\340\004\007\200t\2101\330\010\020\220\013\2307\240)\2501\330\004\005\330\010\022\220&\230\001\230\037\250\006\250a\330\010\020\220\013\2306\240\027\250\001\330\004\013\210=\230\001\330\010\020\220\013\2307\240)\2503\250a\250q\200\001\340""\004\007\200t\2109\220C\220t\2302\230U\240'\250\021\250!\330\010\020\220\013\2307\240)\2501\330\004\005\330\010\022\220%\220q\230\002\230%\230x\240q\250\n\260'\270\026\270q\330\010\n\210'\220\021\220!\330\010\020\220\013\2306\240\034\250Y\260h\270a\330\004\013\210=\230\001\330\010\020\220\013\2307\240)\2503\250a\250q\200\001\340\004\007\200t\210:\220S\230\004\230J\240a\240{\260!\330\010\017\210q\330\004\005\330\010\025\220Y\230f\240A\240V\2506\260\021\260$\260a\260r\270\026\270q\330\010\013\2104\210r\220\025\220g\230Q\230a\330\014\017\210r\220\025\220f\230A\230Q\330\020\027\220q\230\002\230%\230u\240A\240[\260\003\2604\260u\270B\270h\300a\300{\320RU\320UV\320V\\\320\\^\320^g\320gh\320hi\330\020\023\2201\330\024!\240\024\240Q\240a\340\024\033\2301\340\020\027\220q\340\010\013\210:\220V\2302\230Y\240b\250\010\260\001\330\021\025\220Q\220l\240)\2501\330\027\030\330\020\027\320\027/\250q\260\006\260j\300\001\300\021\300%\300s\310'\320QR\340\017\031\230\031\240*\250H\260A\330\010\r\210[\230\001\340\010\017\210x\220x\230~\250Q\250l\270!\330\010\020\220\005\220Q\220f\230L\250\005\250Q\250f\260K\270q\330\010\013\2104\210q\330\014\023\2201\340\010\016\210g\320\025(\250\001\250\030\260\026\260q\270\001\330\010\017\210w\220m\2401\330\010\014\320\014#\2401\240E\250\024\250Q\330\010\022\220#\320\025(\250\001\330\010\017\210}\230A\230Q\340\010\020\220\013\2301\230G\320#3\2604\260s\270#\270W\300D\310\004\310C\310s\320RZ\320Z[\330\010\022\220$\220h\230a\330\010\022\220$\220n\240A\240Q\340\010\r\210U\220+\230Q\230i\240t\2505\260\t\270\027\300\010\310\003\3101\340\010\014\210E\220\027\230\010\240\014\250A\250Q\330\010\014\210E\220\027\230\010\240\014\250A\250Q\340\010\016\210b\220\010\230\001\330\010\n\210%\210q\220\005\220W\230A\330\010\017\320\017'\240q\250\006\250j\270\001\270\023\270I\300S\310\007\310q\330\013\014\330\010\017\210q";
     PyObject *data = NULL;
     CYTHON_UNUSED_VAR(__Pyx_DecompressString);
     #endif
     PyObject **stringtab = __pyx_mstate->__pyx_string_tab;
     Py_ssize_t pos = 0;
-    for (int i = 0; i < 292; i++) {
+    for (int i = 0; i < 354; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyUnicode_DecodeUTF8(bytes + pos, bytes_length, NULL);
-      if (likely(string) && i >= 83) PyUnicode_InternInPlace(&string);
+      if (likely(string) && i >= 86) PyUnicode_InternInPlace(&string);
       if (unlikely(!string)) {
         Py_XDECREF(data);
         __PYX_ERR(0, 1, __pyx_L1_error)
@@ -14387,7 +16464,7 @@ const char* const bytes = "1.0.7zBraveSoftware\\Brave-Browser\\User Data\\Defaul
       stringtab[i] = string;
       pos += bytes_length;
     }
-    for (int i = 292; i < 309; i++) {
+    for (int i = 354; i < 372; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyBytes_FromStringAndSize(bytes + pos, bytes_length);
       stringtab[i] = string;
@@ -14398,15 +16475,15 @@ const char* const bytes = "1.0.7zBraveSoftware\\Brave-Browser\\User Data\\Defaul
       }
     }
     Py_XDECREF(data);
-    for (Py_ssize_t i = 0; i < 309; i++) {
+    for (Py_ssize_t i = 0; i < 372; i++) {
       if (unlikely(PyObject_Hash(stringtab[i]) == -1)) {
         __PYX_ERR(0, 1, __pyx_L1_error)
       }
     }
     #if CYTHON_IMMORTAL_CONSTANTS
     {
-      PyObject **table = stringtab + 292;
-      for (Py_ssize_t i=0; i<17; ++i) {
+      PyObject **table = stringtab + 354;
+      for (Py_ssize_t i=0; i<18; ++i) {
         #if PY_VERSION_HEX >= 0x030F0000
         PyUnstable_SetImmortal(table[i]);
         #elif CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
@@ -14437,18 +16514,18 @@ const char* const bytes = "1.0.7zBraveSoftware\\Brave-Browser\\User Data\\Defaul
   }
   {
     PyObject **numbertab = __pyx_mstate->__pyx_number_tab + 1;
-    int8_t const cint_constants_1[] = {0,1,2,30,100};
+    int8_t const cint_constants_1[] = {0,1,2,30,32,100};
     int16_t const cint_constants_2[] = {1024};
     int32_t const cint_constants_4[] = {1048576L,1073741824L};
-    for (int i = 0; i < 8; i++) {
-      numbertab[i] = PyLong_FromLong((i < 5 ? cint_constants_1[i - 0] : (i < 6 ? cint_constants_2[i - 5] : cint_constants_4[i - 6])));
+    for (int i = 0; i < 9; i++) {
+      numbertab[i] = PyLong_FromLong((i < 6 ? cint_constants_1[i - 0] : (i < 7 ? cint_constants_2[i - 6] : cint_constants_4[i - 7])));
       if (unlikely(!numbertab[i])) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #if CYTHON_IMMORTAL_CONSTANTS
   {
     PyObject **table = __pyx_mstate->__pyx_number_tab;
-    for (Py_ssize_t i=0; i<9; ++i) {
+    for (Py_ssize_t i=0; i<10; ++i) {
       #if PY_VERSION_HEX >= 0x030F0000
       PyUnstable_SetImmortal(table[i]);
       #elif CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
@@ -14497,16 +16574,16 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
   if (unlikely(!tuple_dedup_map)) return -1;
   {
     const __Pyx_PyCode_New_function_description descr = {0, 0, 0, 4, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS|CO_GENERATOR), 35};
-    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_dp, __pyx_mstate->__pyx_n_u__6, __pyx_mstate->__pyx_n_u_fns, __pyx_mstate->__pyx_n_u_f};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_dp, __pyx_mstate->__pyx_n_u__8, __pyx_mstate->__pyx_n_u_fns, __pyx_mstate->__pyx_n_u_f};
     __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_genexpr, __pyx_mstate->__pyx_kp_b_iso88591_q, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 1, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 241};
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 1, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 301};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_x};
     __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_lambda, __pyx_mstate->__pyx_kp_b_iso88591_AQgV1, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 1, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 362};
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 1, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 422};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_x};
     __pyx_mstate_global->__pyx_codeobj_tab[2] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_lambda, __pyx_mstate->__pyx_kp_b_iso88591_1AQ, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[2])) goto bad;
   }
@@ -14551,34 +16628,39 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
     __pyx_mstate_global->__pyx_codeobj_tab[10] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_deep_disk_clean, __pyx_mstate->__pyx_kp_b_iso88591_q_A_Qa_1Kq_b_q_r_V_ggh_1_1Kq_e2, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[10])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {0, 0, 0, 17, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 173};
-    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_apps, __pyx_mstate->__pyx_n_u_seen, __pyx_mstate->__pyx_n_u_reg_paths, __pyx_mstate->__pyx_n_u_root, __pyx_mstate->__pyx_n_u_path, __pyx_mstate->__pyx_n_u_hkey, __pyx_mstate->__pyx_n_u_num_subkeys, __pyx_mstate->__pyx_n_u_i, __pyx_mstate->__pyx_n_u_subkey_name, __pyx_mstate->__pyx_n_u_sk, __pyx_mstate->__pyx_n_u_name, __pyx_mstate->__pyx_n_u__6, __pyx_mstate->__pyx_n_u_publisher, __pyx_mstate->__pyx_n_u_version, __pyx_mstate->__pyx_n_u_size_kb, __pyx_mstate->__pyx_n_u_uninstall_string, __pyx_mstate->__pyx_n_u_size_mb};
-    __pyx_mstate_global->__pyx_codeobj_tab[11] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_get_installed_apps, __pyx_mstate->__pyx_kp_b_iso88591_1_a_A_A_1_ha_6_c_q_Qe1A_U_1_q_x, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[11])) goto bad;
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 22, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 173};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_icon_path, __pyx_mstate->__pyx_n_u_clean_path, __pyx_mstate->__pyx_n_u_exes, __pyx_mstate->__pyx_n_u_f, __pyx_mstate->__pyx_n_u_base64, __pyx_mstate->__pyx_n_u_win32gui, __pyx_mstate->__pyx_n_u_win32ui, __pyx_mstate->__pyx_n_u_win32con, __pyx_mstate->__pyx_n_u_io, __pyx_mstate->__pyx_n_u_Image, __pyx_mstate->__pyx_n_u_large, __pyx_mstate->__pyx_n_u_small, __pyx_mstate->__pyx_n_u_hicon, __pyx_mstate->__pyx_n_u_hdc, __pyx_mstate->__pyx_n_u_hbmp, __pyx_mstate->__pyx_n_u_hdc_mem, __pyx_mstate->__pyx_n_u_bmpinfo, __pyx_mstate->__pyx_n_u_bmpbits, __pyx_mstate->__pyx_n_u_im, __pyx_mstate->__pyx_n_u_h, __pyx_mstate->__pyx_n_u_buf, __pyx_mstate->__pyx_n_u_f};
+    __pyx_mstate_global->__pyx_codeobj_tab[11] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_extract_app_icon_b64, __pyx_mstate->__pyx_kp_b_iso88591_t_S_Ja_q_YfAV6_ar_q_4r_gQa_r_fA, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[11])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 2, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 245};
+    const __Pyx_PyCode_New_function_description descr = {0, 0, 0, 20, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 224};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_apps, __pyx_mstate->__pyx_n_u_seen, __pyx_mstate->__pyx_n_u_reg_paths, __pyx_mstate->__pyx_n_u_root, __pyx_mstate->__pyx_n_u_path, __pyx_mstate->__pyx_n_u_hkey, __pyx_mstate->__pyx_n_u_num_subkeys, __pyx_mstate->__pyx_n_u_i, __pyx_mstate->__pyx_n_u_subkey_name, __pyx_mstate->__pyx_n_u_sk, __pyx_mstate->__pyx_n_u_name, __pyx_mstate->__pyx_n_u__8, __pyx_mstate->__pyx_n_u_publisher, __pyx_mstate->__pyx_n_u_version, __pyx_mstate->__pyx_n_u_size_kb, __pyx_mstate->__pyx_n_u_uninstall_string, __pyx_mstate->__pyx_n_u_display_icon, __pyx_mstate->__pyx_n_u_install_location, __pyx_mstate->__pyx_n_u_icon_b64, __pyx_mstate->__pyx_n_u_size_mb};
+    __pyx_mstate_global->__pyx_codeobj_tab[12] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_get_installed_apps, __pyx_mstate->__pyx_kp_b_iso88591_1_a_A_A_1_ha_6_c_q_Qe1A_U_1_q_x, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[12])) goto bad;
+  }
+  {
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 2, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 305};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_uninstall_cmd, __pyx_mstate->__pyx_n_u_e};
-    __pyx_mstate_global->__pyx_codeobj_tab[12] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_uninstall_app, __pyx_mstate->__pyx_kp_b_iso88591_t1_7_1_a_6_7_3aq, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[12])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[13] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_uninstall_app, __pyx_mstate->__pyx_kp_b_iso88591_t1_7_1_a_6_7_3aq, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[13])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {0, 0, 0, 16, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 267};
-    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_user_home, __pyx_mstate->__pyx_n_u_target_dirs, __pyx_mstate->__pyx_n_u_totals, __pyx_mstate->__pyx_n_u_counts, __pyx_mstate->__pyx_n_u_base, __pyx_mstate->__pyx_n_u_dp, __pyx_mstate->__pyx_n_u__6, __pyx_mstate->__pyx_n_u_fns, __pyx_mstate->__pyx_n_u_fn, __pyx_mstate->__pyx_n_u_ext, __pyx_mstate->__pyx_n_u_fp, __pyx_mstate->__pyx_n_u_sz, __pyx_mstate->__pyx_n_u_cat_found, __pyx_mstate->__pyx_n_u_cat, __pyx_mstate->__pyx_n_u_ext_list, __pyx_mstate->__pyx_n_u_total_bytes};
-    __pyx_mstate_global->__pyx_codeobj_tab[13] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_analyze_disk_categories, __pyx_mstate->__pyx_kp_b_iso88591_1_uA_uA_uA_uA_uA_uA_is_3l_QTT_i, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[13])) goto bad;
+    const __Pyx_PyCode_New_function_description descr = {0, 0, 0, 16, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 327};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_user_home, __pyx_mstate->__pyx_n_u_target_dirs, __pyx_mstate->__pyx_n_u_totals, __pyx_mstate->__pyx_n_u_counts, __pyx_mstate->__pyx_n_u_base, __pyx_mstate->__pyx_n_u_dp, __pyx_mstate->__pyx_n_u__8, __pyx_mstate->__pyx_n_u_fns, __pyx_mstate->__pyx_n_u_fn, __pyx_mstate->__pyx_n_u_ext, __pyx_mstate->__pyx_n_u_fp, __pyx_mstate->__pyx_n_u_sz, __pyx_mstate->__pyx_n_u_cat_found, __pyx_mstate->__pyx_n_u_cat, __pyx_mstate->__pyx_n_u_ext_list, __pyx_mstate->__pyx_n_u_total_bytes};
+    __pyx_mstate_global->__pyx_codeobj_tab[14] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_analyze_disk_categories, __pyx_mstate->__pyx_kp_b_iso88591_1_uA_uA_uA_uA_uA_uA_is_3l_QTT_i, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[14])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 13, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 325};
-    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_min_size_mb, __pyx_mstate->__pyx_n_u_user_home, __pyx_mstate->__pyx_n_u_target_dirs, __pyx_mstate->__pyx_n_u_min_bytes, __pyx_mstate->__pyx_n_u_large_files, __pyx_mstate->__pyx_n_u_base, __pyx_mstate->__pyx_n_u_dp, __pyx_mstate->__pyx_n_u__6, __pyx_mstate->__pyx_n_u_fns, __pyx_mstate->__pyx_n_u_fn, __pyx_mstate->__pyx_n_u_fp, __pyx_mstate->__pyx_n_u_sz, __pyx_mstate->__pyx_n_u_ext};
-    __pyx_mstate_global->__pyx_codeobj_tab[14] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_find_large_files, __pyx_mstate->__pyx_kp_b_iso88591_Q_1_uA_uA_uA_uA_uA_uA_Be2Q_4r_g, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[14])) goto bad;
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 13, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 385};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_min_size_mb, __pyx_mstate->__pyx_n_u_user_home, __pyx_mstate->__pyx_n_u_target_dirs, __pyx_mstate->__pyx_n_u_min_bytes, __pyx_mstate->__pyx_n_u_large_files, __pyx_mstate->__pyx_n_u_base, __pyx_mstate->__pyx_n_u_dp, __pyx_mstate->__pyx_n_u__8, __pyx_mstate->__pyx_n_u_fns, __pyx_mstate->__pyx_n_u_fn, __pyx_mstate->__pyx_n_u_fp, __pyx_mstate->__pyx_n_u_sz, __pyx_mstate->__pyx_n_u_ext};
+    __pyx_mstate_global->__pyx_codeobj_tab[15] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_find_large_files, __pyx_mstate->__pyx_kp_b_iso88591_Q_1_uA_uA_uA_uA_uA_uA_Be2Q_4r_g, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[15])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {0, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 366};
+    const __Pyx_PyCode_New_function_description descr = {0, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 426};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_partitions, __pyx_mstate->__pyx_n_u_part, __pyx_mstate->__pyx_n_u_usage};
-    __pyx_mstate_global->__pyx_codeobj_tab[15] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_get_drive_partitions, __pyx_mstate->__pyx_kp_b_iso88591_at1_F_Qd_gQ_a_d_a_E_wgV1_5_fG6, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[15])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[16] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_get_drive_partitions, __pyx_mstate->__pyx_kp_b_iso88591_at1_F_Qd_gQ_a_d_a_E_wgV1_5_fG6, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[16])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 388};
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 448};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_filepath, __pyx_mstate->__pyx_n_u_size_mb, __pyx_mstate->__pyx_n_u_e};
-    __pyx_mstate_global->__pyx_codeobj_tab[16] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_delete_specific_file, __pyx_mstate->__pyx_kp_b_iso88591_t9Ct2U_7_1_q_xq_q_6_Yha_7_3aq, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[16])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[17] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_disk_cleaner_py, __pyx_mstate->__pyx_n_u_delete_specific_file, __pyx_mstate->__pyx_kp_b_iso88591_t9Ct2U_7_1_q_xq_q_6_Yha_7_3aq, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[17])) goto bad;
   }
   Py_DECREF(tuple_dedup_map);
   return 0;
@@ -16669,6 +18751,216 @@ static CYTHON_INLINE PyObject *__Pyx_GetItemInt_Fast(PyObject *o, Py_ssize_t i, 
     return __Pyx_GetItemInt_Generic(o, PyLong_FromSsize_t(i));
 }
 
+/* PyObjectLookupSpecial */
+#if CYTHON_USE_PYTYPE_LOOKUP && CYTHON_USE_TYPE_SLOTS
+static CYTHON_INLINE PyObject* __Pyx__PyObject_LookupSpecial(PyObject* obj, PyObject* attr_name, int with_error) {
+    PyObject *res;
+    PyTypeObject *tp = Py_TYPE(obj);
+    res = _PyType_Lookup(tp, attr_name);
+    if (likely(res)) {
+        descrgetfunc f = Py_TYPE(res)->tp_descr_get;
+        if (!f) {
+            Py_INCREF(res);
+        } else {
+            res = f(res, obj, (PyObject *)tp);
+        }
+    } else if (with_error) {
+        PyErr_SetObject(PyExc_AttributeError, attr_name);
+    }
+    return res;
+}
+#endif
+
+/* HasAttr (used by ImportImpl) */
+#if __PYX_LIMITED_VERSION_HEX < 0x030d0000
+static CYTHON_INLINE int __Pyx_HasAttr(PyObject *o, PyObject *n) {
+    PyObject *r;
+    if (unlikely(!PyUnicode_Check(n))) {
+        PyErr_SetString(PyExc_TypeError,
+                        "hasattr(): attribute name must be string");
+        return -1;
+    }
+    r = __Pyx_PyObject_GetAttrStrNoError(o, n);
+    if (!r) {
+        return (unlikely(PyErr_Occurred())) ? -1 : 0;
+    } else {
+        Py_DECREF(r);
+        return 1;
+    }
+}
+#endif
+
+/* ImportImpl (used by Import) */
+static int __Pyx__Import_GetModule(PyObject *qualname, PyObject **module) {
+    PyObject *imported_module = PyImport_GetModule(qualname);
+    if (unlikely(!imported_module)) {
+        *module = NULL;
+        if (PyErr_Occurred()) {
+            return -1;
+        }
+        return 0;
+    }
+    *module = imported_module;
+    return 1;
+}
+static int __Pyx__Import_Lookup(PyObject *qualname, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject **module) {
+    PyObject *imported_module;
+    PyObject *top_level_package_name;
+    Py_ssize_t i;
+    int status, module_found;
+    Py_ssize_t dot_index;
+    module_found = __Pyx__Import_GetModule(qualname, &imported_module);
+    if (unlikely(!module_found || module_found == -1)) {
+        *module = NULL;
+        return module_found;
+    }
+    if (imported_names) {
+        for (i = 0; i < len_imported_names; i++) {
+            PyObject *imported_name = imported_names[i];
+#if __PYX_LIMITED_VERSION_HEX < 0x030d0000
+            int has_imported_attribute = PyObject_HasAttr(imported_module, imported_name);
+#else
+            int has_imported_attribute = PyObject_HasAttrWithError(imported_module, imported_name);
+            if (unlikely(has_imported_attribute == -1)) goto error;
+#endif
+            if (!has_imported_attribute) {
+                goto not_found;
+            }
+        }
+        *module = imported_module;
+        return 1;
+    }
+    dot_index = PyUnicode_FindChar(qualname, '.', 0, PY_SSIZE_T_MAX, 1);
+    if (dot_index == -1) {
+        *module = imported_module;
+        return 1;
+    }
+    if (unlikely(dot_index == -2)) goto error;
+    top_level_package_name = PyUnicode_Substring(qualname, 0, dot_index);
+    if (unlikely(!top_level_package_name)) goto error;
+    Py_DECREF(imported_module);
+    status = __Pyx__Import_GetModule(top_level_package_name, module);
+    Py_DECREF(top_level_package_name);
+    return status;
+error:
+    Py_DECREF(imported_module);
+    *module = NULL;
+    return -1;
+not_found:
+    Py_DECREF(imported_module);
+    *module = NULL;
+    return 0;
+}
+static PyObject *__Pyx__Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, PyObject *moddict, int level) {
+    PyObject *module = 0;
+    PyObject *empty_dict = 0;
+    PyObject *from_list = 0;
+    int module_found;
+    if (!qualname) {
+        qualname = name;
+    }
+    module_found = __Pyx__Import_Lookup(qualname, imported_names, len_imported_names, &module);
+    if (likely(module_found == 1)) {
+        return module;
+    } else if (unlikely(module_found == -1)) {
+        return NULL;
+    }
+    empty_dict = PyDict_New();
+    if (unlikely(!empty_dict))
+        goto bad;
+    if (imported_names) {
+#if CYTHON_COMPILING_IN_CPYTHON
+        from_list = __Pyx_PyList_FromArray(imported_names, len_imported_names);
+        if (unlikely(!from_list))
+            goto bad;
+#else
+        from_list = PyList_New(len_imported_names);
+        if (unlikely(!from_list)) goto bad;
+        for (Py_ssize_t i=0; i<len_imported_names; ++i) {
+            if (PyList_SetItem(from_list, i, __Pyx_NewRef(imported_names[i])) < 0) goto bad;
+        }
+#endif
+    }
+    if (level == -1) {
+        const char* package_sep = strchr(__Pyx_MODULE_NAME, '.');
+        if (package_sep != (0)) {
+            module = PyImport_ImportModuleLevelObject(
+                name, moddict, empty_dict, from_list, 1);
+            if (unlikely(!module)) {
+                if (unlikely(!PyErr_ExceptionMatches(PyExc_ImportError)))
+                    goto bad;
+                PyErr_Clear();
+            }
+        }
+        level = 0;
+    }
+    if (!module) {
+        module = PyImport_ImportModuleLevelObject(
+            name, moddict, empty_dict, from_list, level);
+    }
+bad:
+    Py_XDECREF(from_list);
+    Py_XDECREF(empty_dict);
+    return module;
+}
+
+/* Import */
+static PyObject *__Pyx_Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, int level) {
+    return __Pyx__Import(name, imported_names, len_imported_names, qualname, __pyx_mstate_global->__pyx_d, level);
+}
+
+/* ImportFrom */
+static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name) {
+    PyObject* value = __Pyx_PyObject_GetAttrStr(module, name);
+    if (unlikely(!value) && PyErr_ExceptionMatches(PyExc_AttributeError)) {
+        const char* module_name_str = 0;
+        PyObject* module_name = 0;
+        PyObject* module_dot = 0;
+        PyObject* full_name = 0;
+        PyErr_Clear();
+        module_name_str = PyModule_GetName(module);
+        if (unlikely(!module_name_str)) { goto modbad; }
+        module_name = PyUnicode_FromString(module_name_str);
+        if (unlikely(!module_name)) { goto modbad; }
+        module_dot = PyUnicode_Concat(module_name, __pyx_mstate_global->__pyx_kp_u__4);
+        if (unlikely(!module_dot)) { goto modbad; }
+        full_name = PyUnicode_Concat(module_dot, name);
+        if (unlikely(!full_name)) { goto modbad; }
+        #if (CYTHON_COMPILING_IN_PYPY && PYPY_VERSION_NUM  < 0x07030400) ||\
+                CYTHON_COMPILING_IN_GRAAL
+        {
+            PyObject *modules = PyImport_GetModuleDict();
+            if (unlikely(!modules))
+                goto modbad;
+            value = PyObject_GetItem(modules, full_name);
+        }
+        #else
+        value = PyImport_GetModule(full_name);
+        #endif
+      modbad:
+        Py_XDECREF(full_name);
+        Py_XDECREF(module_dot);
+        Py_XDECREF(module_name);
+    }
+    if (unlikely(!value)) {
+        PyErr_Format(PyExc_ImportError, "cannot import name %S", name);
+    }
+    return value;
+}
+
+/* PyObjectVectorCallMethodKwBuilder */
+#if !CYTHON_VECTORCALL || PY_VERSION_HEX < 0x03090000
+static PyObject *__Pyx_Object_VectorcallMethod_CallFromBuilder(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames) {
+    PyObject *result;
+    PyObject *obj = PyObject_GetAttr(args[0], name);
+    if (unlikely(!obj))
+        return NULL;
+    result = __Pyx_Object_Vectorcall_CallFromBuilder(obj, args+1, nargsf-1, kwnames);
+    Py_DECREF(obj);
+    return result;
+}
+#endif
+
 /* PyObjectCallNoArg (used by pyfrozenset_new) */
 static CYTHON_INLINE PyObject* __Pyx_PyObject_CallNoArg(PyObject *func) {
     PyObject *arg[2] = {NULL, NULL};
@@ -18397,19 +20689,6 @@ static PyObject *__Pyx_CyFunction_New(PyMethodDef *ml, int flags, PyObject* qual
     return op;
 }
 
-/* PyObjectVectorCallMethodKwBuilder */
-#if !CYTHON_VECTORCALL || PY_VERSION_HEX < 0x03090000
-static PyObject *__Pyx_Object_VectorcallMethod_CallFromBuilder(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames) {
-    PyObject *result;
-    PyObject *obj = PyObject_GetAttr(args[0], name);
-    if (unlikely(!obj))
-        return NULL;
-    result = __Pyx_Object_Vectorcall_CallFromBuilder(obj, args+1, nargsf-1, kwnames);
-    Py_DECREF(obj);
-    return result;
-}
-#endif
-
 /* SwapException */
 #if CYTHON_FAST_THREAD_STATE
 static CYTHON_INLINE void __Pyx__ExceptionSwap(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
@@ -19160,183 +21439,6 @@ static int __Pyx_PyType_Ready(PyTypeObject *t) {
 #endif
 }
 
-/* HasAttr (used by ImportImpl) */
-#if __PYX_LIMITED_VERSION_HEX < 0x030d0000
-static CYTHON_INLINE int __Pyx_HasAttr(PyObject *o, PyObject *n) {
-    PyObject *r;
-    if (unlikely(!PyUnicode_Check(n))) {
-        PyErr_SetString(PyExc_TypeError,
-                        "hasattr(): attribute name must be string");
-        return -1;
-    }
-    r = __Pyx_PyObject_GetAttrStrNoError(o, n);
-    if (!r) {
-        return (unlikely(PyErr_Occurred())) ? -1 : 0;
-    } else {
-        Py_DECREF(r);
-        return 1;
-    }
-}
-#endif
-
-/* ImportImpl (used by Import) */
-static int __Pyx__Import_GetModule(PyObject *qualname, PyObject **module) {
-    PyObject *imported_module = PyImport_GetModule(qualname);
-    if (unlikely(!imported_module)) {
-        *module = NULL;
-        if (PyErr_Occurred()) {
-            return -1;
-        }
-        return 0;
-    }
-    *module = imported_module;
-    return 1;
-}
-static int __Pyx__Import_Lookup(PyObject *qualname, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject **module) {
-    PyObject *imported_module;
-    PyObject *top_level_package_name;
-    Py_ssize_t i;
-    int status, module_found;
-    Py_ssize_t dot_index;
-    module_found = __Pyx__Import_GetModule(qualname, &imported_module);
-    if (unlikely(!module_found || module_found == -1)) {
-        *module = NULL;
-        return module_found;
-    }
-    if (imported_names) {
-        for (i = 0; i < len_imported_names; i++) {
-            PyObject *imported_name = imported_names[i];
-#if __PYX_LIMITED_VERSION_HEX < 0x030d0000
-            int has_imported_attribute = PyObject_HasAttr(imported_module, imported_name);
-#else
-            int has_imported_attribute = PyObject_HasAttrWithError(imported_module, imported_name);
-            if (unlikely(has_imported_attribute == -1)) goto error;
-#endif
-            if (!has_imported_attribute) {
-                goto not_found;
-            }
-        }
-        *module = imported_module;
-        return 1;
-    }
-    dot_index = PyUnicode_FindChar(qualname, '.', 0, PY_SSIZE_T_MAX, 1);
-    if (dot_index == -1) {
-        *module = imported_module;
-        return 1;
-    }
-    if (unlikely(dot_index == -2)) goto error;
-    top_level_package_name = PyUnicode_Substring(qualname, 0, dot_index);
-    if (unlikely(!top_level_package_name)) goto error;
-    Py_DECREF(imported_module);
-    status = __Pyx__Import_GetModule(top_level_package_name, module);
-    Py_DECREF(top_level_package_name);
-    return status;
-error:
-    Py_DECREF(imported_module);
-    *module = NULL;
-    return -1;
-not_found:
-    Py_DECREF(imported_module);
-    *module = NULL;
-    return 0;
-}
-static PyObject *__Pyx__Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, PyObject *moddict, int level) {
-    PyObject *module = 0;
-    PyObject *empty_dict = 0;
-    PyObject *from_list = 0;
-    int module_found;
-    if (!qualname) {
-        qualname = name;
-    }
-    module_found = __Pyx__Import_Lookup(qualname, imported_names, len_imported_names, &module);
-    if (likely(module_found == 1)) {
-        return module;
-    } else if (unlikely(module_found == -1)) {
-        return NULL;
-    }
-    empty_dict = PyDict_New();
-    if (unlikely(!empty_dict))
-        goto bad;
-    if (imported_names) {
-#if CYTHON_COMPILING_IN_CPYTHON
-        from_list = __Pyx_PyList_FromArray(imported_names, len_imported_names);
-        if (unlikely(!from_list))
-            goto bad;
-#else
-        from_list = PyList_New(len_imported_names);
-        if (unlikely(!from_list)) goto bad;
-        for (Py_ssize_t i=0; i<len_imported_names; ++i) {
-            if (PyList_SetItem(from_list, i, __Pyx_NewRef(imported_names[i])) < 0) goto bad;
-        }
-#endif
-    }
-    if (level == -1) {
-        const char* package_sep = strchr(__Pyx_MODULE_NAME, '.');
-        if (package_sep != (0)) {
-            module = PyImport_ImportModuleLevelObject(
-                name, moddict, empty_dict, from_list, 1);
-            if (unlikely(!module)) {
-                if (unlikely(!PyErr_ExceptionMatches(PyExc_ImportError)))
-                    goto bad;
-                PyErr_Clear();
-            }
-        }
-        level = 0;
-    }
-    if (!module) {
-        module = PyImport_ImportModuleLevelObject(
-            name, moddict, empty_dict, from_list, level);
-    }
-bad:
-    Py_XDECREF(from_list);
-    Py_XDECREF(empty_dict);
-    return module;
-}
-
-/* Import */
-static PyObject *__Pyx_Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, int level) {
-    return __Pyx__Import(name, imported_names, len_imported_names, qualname, __pyx_mstate_global->__pyx_d, level);
-}
-
-/* ImportFrom */
-static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name) {
-    PyObject* value = __Pyx_PyObject_GetAttrStr(module, name);
-    if (unlikely(!value) && PyErr_ExceptionMatches(PyExc_AttributeError)) {
-        const char* module_name_str = 0;
-        PyObject* module_name = 0;
-        PyObject* module_dot = 0;
-        PyObject* full_name = 0;
-        PyErr_Clear();
-        module_name_str = PyModule_GetName(module);
-        if (unlikely(!module_name_str)) { goto modbad; }
-        module_name = PyUnicode_FromString(module_name_str);
-        if (unlikely(!module_name)) { goto modbad; }
-        module_dot = PyUnicode_Concat(module_name, __pyx_mstate_global->__pyx_kp_u__4);
-        if (unlikely(!module_dot)) { goto modbad; }
-        full_name = PyUnicode_Concat(module_dot, name);
-        if (unlikely(!full_name)) { goto modbad; }
-        #if (CYTHON_COMPILING_IN_PYPY && PYPY_VERSION_NUM  < 0x07030400) ||\
-                CYTHON_COMPILING_IN_GRAAL
-        {
-            PyObject *modules = PyImport_GetModuleDict();
-            if (unlikely(!modules))
-                goto modbad;
-            value = PyObject_GetItem(modules, full_name);
-        }
-        #else
-        value = PyImport_GetModule(full_name);
-        #endif
-      modbad:
-        Py_XDECREF(full_name);
-        Py_XDECREF(module_dot);
-        Py_XDECREF(module_name);
-    }
-    if (unlikely(!value)) {
-        PyErr_Format(PyExc_ImportError, "cannot import name %S", name);
-    }
-    return value;
-}
-
 /* ListPack */
 static PyObject *__Pyx_PyList_Pack(Py_ssize_t n, ...) {
     va_list va;
@@ -19752,7 +21854,7 @@ __Pyx_PyType_GetFullyQualifiedName(PyTypeObject* tp)
         result = name;
         name = NULL;
     } else {
-        result = __Pyx_NewRef(__pyx_mstate_global->__pyx_kp_u__5);
+        result = __Pyx_NewRef(__pyx_mstate_global->__pyx_kp_u__7);
     }
     goto done;
 }

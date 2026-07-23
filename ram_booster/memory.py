@@ -15,32 +15,12 @@ import psutil
 
 logger = logging.getLogger("RamBooster.memory")
 
-# ─────────────────────────────────────────────
-# Windows API Constants
-# ─────────────────────────────────────────────
-SE_PRIVILEGE_ENABLED = 0x00000002
-TOKEN_ADJUST_PRIVILEGES = 0x0020
-TOKEN_QUERY = 0x0008
-PROCESS_ALL_ACCESS = 0x1F0FFF
-SystemMemoryListInformation = 80  # SYSTEM_INFORMATION_CLASS
+IS_WIN = os.name == 'nt'
 
-# Memory purge commands for NtSetSystemInformation
-MemoryPurgeStandbyList = 4
-MemoryPurgeLowPriorityStandbyList = 5
-MemoryPurgeModifiedList = 3
-
-
-@dataclass
-class MemoryInfo:
-    """Snapshot of current system memory state."""
-    total: int          # Total physical RAM in bytes
-    available: int      # Available RAM in bytes
-    used: int           # Used RAM in bytes
-    percent: float      # Usage percentage (0-100)
-    total_gb: float     # Total in GB
-    available_gb: float # Available in GB
-    used_gb: float      # Used in GB
-    cached: float       # Cached memory in GB
+if IS_WIN:
+    import ctypes.wintypes as wintypes
+else:
+    wintypes = None
 
 
 def get_memory_info() -> MemoryInfo:
@@ -54,17 +34,18 @@ def get_memory_info() -> MemoryInfo:
         total_gb=round(mem.total / (1024 ** 3), 2),
         available_gb=round(mem.available / (1024 ** 3), 2),
         used_gb=round(mem.used / (1024 ** 3), 2),
-        cached=round(getattr(mem, 'cached', 0) / (1024 ** 3), 2),
+        cached=round(getattr(mem, 'cached', getattr(mem, 'buffers', 0)) / (1024 ** 3), 2),
     )
 
 
 def _enable_privilege(privilege_name: str) -> bool:
     """Enable a Windows privilege for the current process token."""
+    if not IS_WIN:
+        return True
     try:
         advapi32 = ctypes.windll.advapi32
         kernel32 = ctypes.windll.kernel32
 
-        # Token privilege structure
         class LUID(ctypes.Structure):
             _fields_ = [("LowPart", wintypes.DWORD), ("HighPart", wintypes.LONG)]
 
@@ -77,7 +58,6 @@ def _enable_privilege(privilege_name: str) -> bool:
                 ("Privileges", LUID_AND_ATTRIBUTES * 1),
             ]
 
-        # Declare function signatures for proper ctypes interop
         kernel32.GetCurrentProcess.restype = wintypes.HANDLE
         kernel32.GetCurrentProcess.argtypes = []
 
@@ -100,23 +80,18 @@ def _enable_privilege(privilege_name: str) -> bool:
         kernel32.CloseHandle.restype = wintypes.BOOL
         kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
 
-        # Open process token
         h_token = wintypes.HANDLE()
         h_process = kernel32.GetCurrentProcess()
         if not advapi32.OpenProcessToken(
             h_process, TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, ctypes.byref(h_token)
         ):
-            logger.warning(f"Failed to open process token for privilege: {privilege_name}")
             return False
 
-        # Lookup privilege value
         luid = LUID()
         if not advapi32.LookupPrivilegeValueW(None, privilege_name, ctypes.byref(luid)):
             kernel32.CloseHandle(h_token)
-            logger.warning(f"Failed to lookup privilege: {privilege_name}")
             return False
 
-        # Adjust token privileges
         tp = TOKEN_PRIVILEGES()
         tp.PrivilegeCount = 1
         tp.Privileges[0].Luid = luid
@@ -125,68 +100,53 @@ def _enable_privilege(privilege_name: str) -> bool:
         result = advapi32.AdjustTokenPrivileges(
             h_token, False, ctypes.byref(tp), 0, None, None
         )
-
-        # Capture GetLastError BEFORE closing handle
         error = ctypes.GetLastError()
         kernel32.CloseHandle(h_token)
 
-        if not result:
-            logger.warning(f"AdjustTokenPrivileges failed for: {privilege_name}")
-            return False
-
-        if error == 0:
-            logger.info(f"Privilege enabled: {privilege_name}")
-            return True
-        elif error == 1300: # ERROR_NOT_ALL_ASSIGNED
-            logger.warning(f"Privilege {privilege_name} not held by token (error=1300)")
-            return False
-        else:
-            logger.warning(f"Privilege {privilege_name} - partial result (error={error})")
-            return True
-
+        return bool(result)
     except Exception as e:
         logger.error(f"Error enabling privilege {privilege_name}: {e}")
         return False
 
 
 def clear_standby_list() -> bool:
-    """
-    Clear the Windows Standby List using NtSetSystemInformation.
-    Requires administrator privileges.
-    """
+    """Clear Standby List on Windows or drop_caches on Linux."""
+    if not IS_WIN:
+        try:
+            subprocess.run(["sync"], check=False)
+            if is_admin():
+                with open("/proc/sys/vm/drop_caches", "w") as f:
+                    f.write("3\n")
+            else:
+                subprocess.run(["sudo", "sysctl", "vm.drop_caches=3"], check=False)
+            return True
+        except Exception as e:
+            logger.error(f"Linux drop_caches error: {e}")
+            return False
+
     try:
-        # Enable required privileges
         _enable_privilege("SeProfileSingleProcessPrivilege")
         _enable_privilege("SeIncreaseQuotaPrivilege")
-
         ntdll = ctypes.windll.ntdll
-
-        # Purge standby list
         command = ctypes.c_int(MemoryPurgeStandbyList)
         status = ntdll.NtSetSystemInformation(
             SystemMemoryListInformation,
             ctypes.byref(command),
             ctypes.sizeof(command),
         )
-
-        if status == 0:
-            logger.info("Standby list cleared successfully (NTSTATUS=0)")
-            return True
-        else:
-            logger.warning(f"NtSetSystemInformation returned NTSTATUS: {hex(status & 0xFFFFFFFF)}")
-            return False
-
+        return status == 0
     except Exception as e:
         logger.error(f"Error clearing standby list: {e}")
         return False
 
 
 def clear_low_priority_standby() -> bool:
-    """Clear only the low-priority standby list (less aggressive)."""
+    """Clear low priority standby list."""
+    if not IS_WIN:
+        return clear_standby_list()
     try:
         _enable_privilege("SeProfileSingleProcessPrivilege")
         _enable_privilege("SeIncreaseQuotaPrivilege")
-
         ntdll = ctypes.windll.ntdll
         command = ctypes.c_int(MemoryPurgeLowPriorityStandbyList)
         status = ntdll.NtSetSystemInformation(
@@ -201,11 +161,16 @@ def clear_low_priority_standby() -> bool:
 
 
 def clear_modified_page_list() -> bool:
-    """Flush modified page list to disk."""
+    """Flush modified page list."""
+    if not IS_WIN:
+        try:
+            subprocess.run(["sync"], check=False)
+            return True
+        except Exception:
+            return False
     try:
         _enable_privilege("SeProfileSingleProcessPrivilege")
         _enable_privilege("SeIncreaseQuotaPrivilege")
-
         ntdll = ctypes.windll.ntdll
         command = ctypes.c_int(MemoryPurgeModifiedList)
         status = ntdll.NtSetSystemInformation(
@@ -220,41 +185,38 @@ def clear_modified_page_list() -> bool:
 
 
 def trim_processes_working_sets() -> int:
-    """
-    Reduce the working set of all accessible processes.
-    Returns the number of processes trimmed.
-    """
+    """Reduce working set of processes."""
+    if not IS_WIN:
+        # On Linux, run sync
+        try:
+            subprocess.run(["sync"], check=False)
+        except Exception:
+            pass
+        return 0
+
     trimmed = 0
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
-
-    # Protected system processes to skip
     protected = {
         "system", "smss.exe", "csrss.exe", "wininit.exe",
         "services.exe", "lsass.exe", "svchost.exe", "dwm.exe",
         "winlogon.exe", "explorer.exe", "registry",
     }
-
     current_pid = os.getpid()
 
     for proc in psutil.process_iter(['pid', 'name']):
         try:
             pid = proc.info['pid']
             name = (proc.info['name'] or "").lower()
-
-            # Skip protected processes and self
             if pid <= 4 or pid == current_pid or name in protected:
                 continue
 
-            # Open process handle with minimal required rights (PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION)
             PROCESS_SET_QUOTA = 0x0100
             PROCESS_QUERY_INFORMATION = 0x0400
             handle = kernel32.OpenProcess(PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION, False, pid)
             if handle:
-                # EmptyWorkingSet is equivalent to SetProcessWorkingSetSize(-1, -1)
                 result = psapi.EmptyWorkingSet(handle)
                 if not result:
-                    # Fallback to SetProcessWorkingSetSize if EmptyWorkingSet fails
                     SIZE_T = ctypes.c_size_t
                     kernel32.SetProcessWorkingSetSize.argtypes = [wintypes.HANDLE, SIZE_T, SIZE_T]
                     kernel32.SetProcessWorkingSetSize.restype = wintypes.BOOL
@@ -262,7 +224,6 @@ def trim_processes_working_sets() -> int:
                 if result:
                     trimmed += 1
                 kernel32.CloseHandle(handle)
-
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             continue
         except Exception:
@@ -273,44 +234,32 @@ def trim_processes_working_sets() -> int:
 
 
 def flush_system_file_cache() -> bool:
-    """
-    Attempt to flush system file cache.
-    Uses SetSystemFileCacheSize with minimum values.
-    """
+    """Flush system file cache."""
+    if not IS_WIN:
+        try:
+            subprocess.run(["sync"], check=False)
+            return True
+        except Exception:
+            return False
+
     try:
         _enable_privilege("SeIncreaseQuotaPrivilege")
-
         kernel32 = ctypes.windll.kernel32
-
-        # SetSystemFileCacheSize(MinSize, MaxSize, Flags)
         SIZE_T = ctypes.c_size_t
         kernel32.SetSystemFileCacheSize.argtypes = [SIZE_T, SIZE_T, wintypes.DWORD]
         kernel32.SetSystemFileCacheSize.restype = wintypes.BOOL
 
-        result = kernel32.SetSystemFileCacheSize(
-            SIZE_T(-1),
-            SIZE_T(-1),
-            0,
-        )
-
+        result = kernel32.SetSystemFileCacheSize(SIZE_T(-1), SIZE_T(-1), 0)
         if result:
-            logger.info("System file cache flushed successfully")
-            # Restore defaults
-            kernel32.SetSystemFileCacheSize(
-                SIZE_T(0), SIZE_T(0), 0
-            )
+            kernel32.SetSystemFileCacheSize(SIZE_T(0), SIZE_T(0), 0)
         return bool(result)
-
     except Exception as e:
         logger.error(f"Error flushing file cache: {e}")
         return False
 
 
 def smart_clean() -> dict:
-    """
-    Perform a comprehensive memory cleaning operation.
-    Returns a report of what was cleaned.
-    """
+    """Perform a comprehensive memory cleaning operation."""
     before = get_memory_info()
     report = {
         "before_used_gb": before.used_gb,
@@ -322,33 +271,61 @@ def smart_clean() -> dict:
         "freed_mb": 0,
     }
 
-    # Step 1: Trim process working sets
     report["processes_trimmed"] = trim_processes_working_sets()
-
-    # Step 2: Clear standby list
     report["standby_cleared"] = clear_standby_list()
-
-    # Step 3: Flush modified pages
     report["modified_flushed"] = clear_modified_page_list()
-
-    # Step 4: Flush file cache
     report["cache_flushed"] = flush_system_file_cache()
 
-    # Calculate freed memory
     after = get_memory_info()
     freed_bytes = after.available - before.available
     report["freed_mb"] = max(0, round(freed_bytes / (1024 ** 2), 1))
     report["after_used_gb"] = after.used_gb
     report["after_percent"] = after.percent
-
     logger.info(f"Smart clean completed. Freed: {report['freed_mb']} MB")
     return report
 
 
+def _extract_proc_icon_b64(exe_path):
+    """Extract 32x32 PNG Base64 icon from running process executable path."""
+    if not exe_path or not isinstance(exe_path, str) or not os.path.exists(exe_path):
+        return ""
+    if not IS_WIN:
+        return ""
+    try:
+        import win32gui, win32ui, win32con, base64, io
+        from PIL import Image
+
+        large, small = win32gui.ExtractIconEx(exe_path, 0)
+        hicon = large[0] if large else (small[0] if small else None)
+        if not hicon:
+            return ""
+
+        hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
+        hbmp = win32ui.CreateBitmap()
+        hbmp.CreateCompatibleBitmap(hdc, 32, 32)
+        hdc_mem = hdc.CreateCompatibleDC()
+        hdc_mem.SelectObject(hbmp)
+
+        win32gui.DrawIconEx(hdc_mem.GetHandleOutput(), 0, 0, hicon, 32, 32, 0, 0, win32con.DI_NORMAL)
+        bmpinfo = hbmp.GetInfo()
+        bmpbits = hbmp.GetBitmapBits(True)
+
+        im = Image.frombuffer('RGBA', (32, 32), bmpbits, 'raw', 'BGRA', 0, 1)
+
+        for h in large: win32gui.DestroyIcon(h)
+        for h in small: win32gui.DestroyIcon(h)
+
+        buf = io.BytesIO()
+        im.save(buf, format="PNG")
+        return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
+    except Exception:
+        return ""
+
+
 def get_top_memory_processes(count: int = 15) -> list[dict]:
-    """Get the top N processes by memory usage."""
+    """Get the top N processes by memory usage with real icons."""
     processes = []
-    for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status']):
+    for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status', 'exe']):
         try:
             info = proc.info
             if info['memory_info'] is None:
@@ -356,17 +333,20 @@ def get_top_memory_processes(count: int = 15) -> list[dict]:
             mem_mb = info['memory_info'].rss / (1024 ** 2)
             if mem_mb < 1:  # Skip processes using less than 1 MB
                 continue
+
+            icon_b64 = _extract_proc_icon_b64(info.get('exe'))
+
             processes.append({
                 'pid': info['pid'],
                 'name': info['name'] or 'Unknown',
                 'memory_mb': round(mem_mb, 1),
                 'memory_percent': round(info['memory_percent'] or 0, 1),
                 'status': info['status'],
+                'icon_b64': icon_b64,
             })
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             continue
 
-    # Sort by memory usage descending
     processes.sort(key=lambda x: x['memory_mb'], reverse=True)
     return processes[:count]
 
@@ -385,17 +365,24 @@ def kill_process(pid: int) -> bool:
 
 
 def is_admin() -> bool:
-    """Check if the current process has administrator privileges."""
+    """Check if the current process has administrator / root privileges."""
     try:
-        return ctypes.windll.shell32.IsUserAnAdmin() != 0
+        if IS_WIN:
+            return ctypes.windll.shell32.IsUserAnAdmin() != 0
+        else:
+            return os.geteuid() == 0
     except Exception:
         return False
 
 
 def request_admin_restart() -> None:
-    """Restart the application with administrator privileges."""
+    """Restart the application with administrator / root privileges."""
     import sys
-    ctypes.windll.shell32.ShellExecuteW(
-        None, "runas", sys.executable, " ".join(sys.argv), None, 1
-    )
+    if IS_WIN:
+        ctypes.windll.shell32.ShellExecuteW(
+            None, "runas", sys.executable, " ".join(sys.argv), None, 1
+        )
+    else:
+        os.execvp("pkexec", ["pkexec", sys.executable] + sys.argv)
     sys.exit(0)
+

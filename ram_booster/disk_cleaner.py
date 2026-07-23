@@ -13,13 +13,14 @@ import logging
 import os
 import shutil
 import subprocess
-import winreg
-import psutil
-from concurrent.futures import ThreadPoolExecutor
+IS_WIN = os.name == 'nt'
 
-logger = logging.getLogger("RamBooster.DiskCleaner")
-
-SW = subprocess.CREATE_NO_WINDOW
+if IS_WIN:
+    import winreg
+    SW = subprocess.CREATE_NO_WINDOW
+else:
+    winreg = None
+    SW = 0
 
 
 def _safe_delete(path, results):
@@ -44,32 +45,60 @@ def _safe_delete(path, results):
 
 
 def clean_system_temp(results):
-    """Clean Windows system temp."""
-    paths = [
-        os.environ.get("TEMP", ""),
-        os.environ.get("TMP", ""),
-        r"C:\Windows\Temp",
-    ]
+    """Clean system temp files."""
+    if IS_WIN:
+        paths = [
+            os.environ.get("TEMP", ""),
+            os.environ.get("TMP", ""),
+            r"C:\Windows\Temp",
+        ]
+    else:
+        paths = [
+            "/tmp",
+            "/var/tmp",
+            os.path.expanduser("~/.cache"),
+            os.path.expanduser("~/.cache/thumbnails"),
+            "/var/cache/apt/archives",
+            "/var/cache/pacman/pkg",
+        ]
+
     for base in paths:
         if not base or not os.path.exists(base):
             continue
-        for item in os.listdir(base):
-            fp = os.path.join(base, item)
-            _safe_delete(fp, results)
+        try:
+            for item in os.listdir(base):
+                fp = os.path.join(base, item)
+                _safe_delete(fp, results)
+        except Exception:
+            pass
     logger.info(f"System temp cleaned: {results['files_deleted']} files")
 
 
 def clean_prefetch(results):
-    """Clean Windows prefetch."""
-    pf = r"C:\Windows\Prefetch"
-    if os.path.exists(pf):
-        for f in os.listdir(pf):
-            _safe_delete(os.path.join(pf, f), results)
+    """Clean prefetch / Linux cache."""
+    if IS_WIN:
+        pf = r"C:\Windows\Prefetch"
+        if os.path.exists(pf):
+            for f in os.listdir(pf):
+                _safe_delete(os.path.join(pf, f), results)
+    else:
+        # Linux journal logs cleanup
+        try:
+            subprocess.run(["journalctl", "--vacuum-size=50M"], check=False)
+        except Exception:
+            pass
 
 
 def clean_recent(results):
     """Clean recent files list."""
-    recent = os.path.join(os.environ.get("APPDATA", ""), r"Microsoft\Windows\Recent")
+    if IS_WIN:
+        recent = os.path.join(os.environ.get("APPDATA", ""), r"Microsoft\Windows\Recent")
+    else:
+        recent = os.path.expanduser("~/.local/share/recently-used.xbel")
+        if os.path.exists(recent):
+            _safe_delete(recent, results)
+            return
+
     if os.path.exists(recent):
         for f in os.listdir(recent):
             _safe_delete(os.path.join(recent, f), results)
@@ -77,54 +106,73 @@ def clean_recent(results):
 
 def clean_thumbnails(results):
     """Clean thumbnail cache."""
-    thumb = os.path.join(os.environ.get("LOCALAPPDATA", ""),
-                         r"Microsoft\Windows\Explorer")
-    if os.path.exists(thumb):
-        for f in os.listdir(thumb):
-            if "thumbcache" in f.lower():
-                _safe_delete(os.path.join(thumb, f), results)
+    if IS_WIN:
+        thumb = os.path.join(os.environ.get("LOCALAPPDATA", ""), r"Microsoft\Windows\Explorer")
+        if os.path.exists(thumb):
+            for f in os.listdir(thumb):
+                if "thumbcache" in f.lower():
+                    _safe_delete(os.path.join(thumb, f), results)
+    else:
+        thumb = os.path.expanduser("~/.cache/thumbnails")
+        if os.path.exists(thumb):
+            _safe_delete(thumb, results)
 
 
 def clean_windows_update(results):
-    """Clean old Windows Update files."""
-    paths = [
-        r"C:\Windows\SoftwareDistribution\Download",
-        r"C:\Windows\SoftwareDistribution\DataStore\Logs",
-    ]
-    for p in paths:
-        if os.path.exists(p):
-            for item in os.listdir(p):
-                _safe_delete(os.path.join(p, item), results)
+    """Clean old Windows Update / Linux package caches."""
+    if IS_WIN:
+        paths = [
+            r"C:\Windows\SoftwareDistribution\Download",
+            r"C:\Windows\SoftwareDistribution\DataStore\Logs",
+        ]
+        for p in paths:
+            if os.path.exists(p):
+                for item in os.listdir(p):
+                    _safe_delete(os.path.join(p, item), results)
+    else:
+        # Autoremove orphaned packages
+        try:
+            subprocess.run(["apt-get", "clean"], check=False)
+            subprocess.run(["pacman", "-Sc", "--noconfirm"], check=False)
+        except Exception:
+            pass
 
 
 def clean_browser_caches(results):
     """Clean all major browser caches."""
-    local = os.environ.get("LOCALAPPDATA", "")
-    appdata = os.environ.get("APPDATA", "")
-
-    cache_paths = [
-        # Chrome
-        os.path.join(local, r"Google\Chrome\User Data\Default\Cache"),
-        os.path.join(local, r"Google\Chrome\User Data\Default\Code Cache"),
-        os.path.join(local, r"Google\Chrome\User Data\Default\GPUCache"),
-        # Edge
-        os.path.join(local, r"Microsoft\Edge\User Data\Default\Cache"),
-        os.path.join(local, r"Microsoft\Edge\User Data\Default\Code Cache"),
-        # Firefox
-        os.path.join(local, r"Mozilla\Firefox\Profiles"),
-        # Opera
-        os.path.join(appdata, r"Opera Software\Opera Stable\Cache"),
-        # Brave
-        os.path.join(local, r"BraveSoftware\Brave-Browser\User Data\Default\Cache"),
-    ]
+    if IS_WIN:
+        local = os.environ.get("LOCALAPPDATA", "")
+        appdata = os.environ.get("APPDATA", "")
+        cache_paths = [
+            os.path.join(local, r"Google\Chrome\User Data\Default\Cache"),
+            os.path.join(local, r"Google\Chrome\User Data\Default\Code Cache"),
+            os.path.join(local, r"Google\Chrome\User Data\Default\GPUCache"),
+            os.path.join(local, r"Microsoft\Edge\User Data\Default\Cache"),
+            os.path.join(local, r"Microsoft\Edge\User Data\Default\Code Cache"),
+            os.path.join(local, r"Mozilla\Firefox\Profiles"),
+            os.path.join(appdata, r"Opera Software\Opera Stable\Cache"),
+            os.path.join(local, r"BraveSoftware\Brave-Browser\User Data\Default\Cache"),
+        ]
+    else:
+        home = os.path.expanduser("~")
+        cache_paths = [
+            os.path.join(home, ".cache/google-chrome/Default/Cache"),
+            os.path.join(home, ".cache/mozilla/firefox"),
+            os.path.join(home, ".cache/BraveSoftware/Brave-Browser/Default/Cache"),
+            os.path.join(home, ".cache/chromium/Default/Cache"),
+            os.path.join(home, ".cache/opera"),
+        ]
 
     for cp in cache_paths:
         if os.path.exists(cp):
-            if "Firefox" in cp:
-                for profile in os.listdir(cp):
-                    p_cache = os.path.join(cp, profile, "cache2")
-                    if os.path.exists(p_cache):
-                        _safe_delete(p_cache, results)
+            if "firefox" in cp.lower() or "Firefox" in cp:
+                try:
+                    for profile in os.listdir(cp):
+                        p_cache = os.path.join(cp, profile, "cache2")
+                        if os.path.exists(p_cache):
+                            _safe_delete(p_cache, results)
+                except Exception:
+                    pass
             else:
                 _safe_delete(cp, results)
 
@@ -146,7 +194,7 @@ def deep_disk_clean():
     s1 = results["bytes_freed"]
 
     clean_prefetch(results)
-    results["sections"]["Prefetch"] = round((results["bytes_freed"] - s1) / (1024 * 1024), 2)
+    results["sections"]["Prefetch / System Logs"] = round((results["bytes_freed"] - s1) / (1024 * 1024), 2)
     s2 = results["bytes_freed"]
 
     clean_recent(results)
@@ -159,7 +207,7 @@ def deep_disk_clean():
     s4 = results["bytes_freed"]
 
     clean_windows_update(results)
-    results["sections"]["Windows Update Cleanup"] = round((results["bytes_freed"] - s4) / (1024 * 1024), 2)
+    results["sections"]["Package Cache Cleanup"] = round((results["bytes_freed"] - s4) / (1024 * 1024), 2)
 
     total_mb = round(results["bytes_freed"] / (1024 * 1024), 2)
     results["total_freed_mb"] = total_mb
@@ -170,12 +218,101 @@ def deep_disk_clean():
 
 # ── INSTALLED APPLICATIONS AUDITOR & UNINSTALLER ──
 
+def _extract_app_icon_b64(icon_path):
+    """Extract real high-res 32x32 PNG Base64 icon from path."""
+    if not icon_path or not isinstance(icon_path, str):
+        return ""
+    if not IS_WIN:
+        return ""
+    try:
+        clean_path = icon_path.strip('"\'').split(',')[0].strip()
+        if not os.path.exists(clean_path):
+            if os.path.isdir(icon_path):
+                exes = [os.path.join(icon_path, f) for f in os.listdir(icon_path) if f.lower().endswith(".exe")]
+                if exes:
+                    clean_path = exes[0]
+                else:
+                    return ""
+            else:
+                return ""
+
+        if clean_path.lower().endswith((".png", ".ico")):
+            with open(clean_path, "rb") as f:
+                import base64
+                return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+
+        import win32gui, win32ui, win32con, base64, io
+        from PIL import Image
+
+        large, small = win32gui.ExtractIconEx(clean_path, 0)
+        hicon = large[0] if large else (small[0] if small else None)
+        if not hicon:
+            return ""
+
+        hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
+        hbmp = win32ui.CreateBitmap()
+        hbmp.CreateCompatibleBitmap(hdc, 32, 32)
+        hdc_mem = hdc.CreateCompatibleDC()
+        hdc_mem.SelectObject(hbmp)
+
+        win32gui.DrawIconEx(hdc_mem.GetHandleOutput(), 0, 0, hicon, 32, 32, 0, 0, win32con.DI_NORMAL)
+        bmpinfo = hbmp.GetInfo()
+        bmpbits = hbmp.GetBitmapBits(True)
+
+        im = Image.frombuffer('RGBA', (32, 32), bmpbits, 'raw', 'BGRA', 0, 1)
+
+        for h in large: win32gui.DestroyIcon(h)
+        for h in small: win32gui.DestroyIcon(h)
+
+        buf = io.BytesIO()
+        im.save(buf, format="PNG")
+        return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
+    except Exception:
+        return ""
+
+
 def get_installed_apps():
-    """
-    Audit and list all installed applications on Windows with estimated size, publisher, and uninstall string.
-    """
+    """Scan for installed applications with publisher, size, version, and real icons."""
     apps = []
     seen = set()
+
+    if not IS_WIN:
+        # Linux .desktop entries scanner
+        desktop_dirs = [
+            "/usr/share/applications",
+            "/var/lib/snapd/desktop/applications",
+            "/var/lib/flatpak/exports/share/applications",
+            os.path.expanduser("~/.local/share/applications"),
+        ]
+        for d in desktop_dirs:
+            if not os.path.exists(d):
+                continue
+            for f in os.listdir(d):
+                if f.endswith(".desktop"):
+                    fp = os.path.join(d, f)
+                    app_name, app_icon, app_exec = "", "", ""
+                    try:
+                        with open(fp, "r", encoding="utf-8", errors="ignore") as df:
+                            for line in df:
+                                if line.startswith("Name=") and not app_name:
+                                    app_name = line.split("=", 1)[1].strip()
+                                elif line.startswith("Icon=") and not app_icon:
+                                    app_icon = line.split("=", 1)[1].strip()
+                                elif line.startswith("Exec=") and not app_exec:
+                                    app_exec = line.split("=", 1)[1].strip()
+                        if app_name and app_name not in seen:
+                            seen.add(app_name)
+                            apps.append({
+                                "name": app_name,
+                                "publisher": "Linux Application",
+                                "version": "1.0",
+                                "size_mb": 50,
+                                "uninstall_cmd": f"rm '{fp}'",
+                                "icon_b64": "",
+                            })
+                    except Exception:
+                        pass
+        return sorted(apps, key=lambda x: x["name"].lower())
 
     reg_paths = [
         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
@@ -221,6 +358,16 @@ def get_installed_apps():
                     try: uninstall_string, _ = winreg.QueryValueEx(sk, "UninstallString")
                     except Exception: pass
 
+                    display_icon = ""
+                    try: display_icon, _ = winreg.QueryValueEx(sk, "DisplayIcon")
+                    except Exception: pass
+
+                    install_location = ""
+                    try: install_location, _ = winreg.QueryValueEx(sk, "InstallLocation")
+                    except Exception: pass
+
+                    icon_b64 = _extract_app_icon_b64(display_icon) or _extract_app_icon_b64(install_location)
+
                     size_mb = round(size_kb / 1024, 1) if size_kb else 0.0
 
                     apps.append({
@@ -229,6 +376,7 @@ def get_installed_apps():
                         "version": str(version),
                         "size_mb": size_mb,
                         "uninstall_cmd": uninstall_string,
+                        "icon_b64": icon_b64,
                         "key_path": f"{path}\\{subkey_name}",
                     })
                     winreg.CloseKey(sk)

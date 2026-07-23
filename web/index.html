@@ -73,7 +73,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--white);overflow:hi
 .device-card{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;transition:background .2s}
 .device-card:hover{background:rgba(129,140,248,.14);border-color:var(--accent)}
 </style></head><body>
-<div id="anime-bg"></div><div id="ambient-glow"></div><div id="overlay"></div><canvas id="pCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:15;pointer-events:none"></canvas>
+<div id="anime-bg"></div><div id="ambient-glow"></div><div id="overlay"></div>
 <div id="app">
 <div class="sidebar">
 <img class="logo" id="sLogo" src="" alt="RB">
@@ -261,6 +261,56 @@ body{font-family:var(--font);background:var(--bg);color:var(--white);overflow:hi
 <button class="btn btn-g" onclick="applyQosGaming()" style="font-size:12px;padding:12px">تفعيل أولوية حزم الألعاب القصوى (DSCP 46 Expedited Forwarding)</button>
 </div>
 <div id="nicQosRes" style="font-size:11px;color:var(--dim)">انقر لتفعيل تسريع كارت الشبكة وأولوية الألعاب في الراوتر وويندوز</div>
+</div>
+
+<!-- TCP CONGESTION PROVIDER & BBR2 ENGINE BANNER -->
+<div class="glass" style="background:rgba(255,255,255,.04);border:1px solid var(--border2);margin-bottom:16px">
+<div class="section-title" style="font-size:12px;color:var(--accent)">
+<span>TCP CONGESTION CONTROL & BBR2 ENGINE | خوارزميات سرعة تدفق البيانات والـ TCP</span>
+<span class="badge-tag">THROUGHPUT TUNER</span>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+<button class="btn btn-s" onclick="setTcpCongestion('cubic')">CUBIC (Standard)</button>
+<button class="btn btn-s" onclick="setTcpCongestion('bbr2')">BBR2 (Low Latency)</button>
+<button class="btn btn-s" onclick="setTcpCongestion('ctcp')">CTCP (Aggressive)</button>
+</div>
+<div id="tcpCongestionRes" style="font-size:11px;color:var(--dim)">اختر خوارزمية سرعة نقل وتدفق بيانات الـ TCP</div>
+</div>
+
+<!-- ROUTER GATEWAY MODEL & WEB GUI LAUNCHER BANNER -->
+<div class="glass" style="background:rgba(255,255,255,.04);border:1px solid var(--border2);margin-bottom:16px">
+<div class="section-title" style="font-size:12px;color:var(--green)">
+<span>ROUTER GATEWAY VENDOR & WEB LAUNCHER | كاشف موديل الراوتر ودخول الصفحة</span>
+<span class="badge-tag" style="background:var(--green);color:#000;font-weight:900">ROUTER AUDITOR</span>
+</div>
+<div style="margin-bottom:10px">
+<button class="btn btn-g" onclick="detectRouterGateway()" style="font-size:12px;padding:10px">فحص موديل وماركة الراوتر (TP-Link, Huawei, ZTE) ودخول الصفحة</button>
+</div>
+<div id="routerRes" style="font-size:12px;color:var(--dim)">انقر للتعرف على ماركة الراوتر ودخول صفحة الإعدادات بضغطة زر</div>
+</div>
+
+<!-- DNS FIREWALL & SECURITY SHIELD BANNER -->
+<div class="glass" style="background:rgba(255,255,255,.04);border:1px solid var(--border2);margin-bottom:16px">
+<div class="section-title" style="font-size:12px;color:var(--yellow)">
+<span>DNS FIREWALL & MALWARE SHIELD | جدار حماية الـ DNS من المواقع الخبيثة</span>
+<span class="badge-tag" style="background:var(--yellow);color:#000;font-weight:900">DNS FIREWALL</span>
+</div>
+<div style="margin-bottom:10px">
+<button class="btn btn-s" onclick="inspectDnsFirewall()">فحص درع حجب الإعلانات والمواقع الخبيثة بالـ DNS</button>
+</div>
+<div id="dnsFirewallRes" style="font-size:11px;color:var(--dim)">انقر لفحص درع حماية الـ DNS</div>
+</div>
+
+<!-- MTU BLACK-HOLE & MSS CLAMPING DETECTOR BANNER -->
+<div class="glass" style="background:rgba(255,255,255,.04);border:1px solid var(--border2);margin-bottom:16px">
+<div class="section-title" style="font-size:12px;color:var(--accent2)">
+<span>MTU BLACK-HOLE & MSS CLAMPING DETECTOR | كاشف فقدان الحزم وحاسبة الـ MSS</span>
+<span class="badge-tag" style="background:var(--accent2);color:#000;font-weight:900">PACKET CLAMPING</span>
+</div>
+<div style="margin-bottom:10px">
+<button class="btn btn-s" onclick="detectMtuBlackhole()">فحص الـ Black Hole Routers وتحديد أفضل MSS</button>
+</div>
+<div id="mtuBlackholeRes" style="font-size:11px;color:var(--dim)">انقر لفحص تقطيع البيانات والـ MSS</div>
 </div>
 
 <!-- LAN DEVICE SCANNER & DEEP FINGERPRINTER BANNER -->
@@ -655,7 +705,10 @@ async function loadInstalledApps(){
 function renderApps(){
   const query=(document.getElementById('appSearch').value||'').toLowerCase();
   const filtered=rawApps.filter(a=>(a.name||'').toLowerCase().includes(query)||(a.publisher||'').toLowerCase().includes(query));
-  document.getElementById('appRes').innerHTML=filtered.map(a=>'<div class="device-card"><div><div style="font-weight:800;font-size:12px;color:var(--white)">'+a.name+' <span class="badge-tag">v'+a.version+'</span></div><div style="font-size:11px;color:var(--dim);margin-top:2px">Publisher: '+a.publisher+' '+(a.size_mb?('| Size: '+a.size_mb+' MB'):'')+'</div></div><button class="proc-kill" onclick="uninstallApp(\''+a.uninstall_cmd.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">Uninstall</button></div>').join('');
+  document.getElementById('appRes').innerHTML=filtered.map(a=>{
+    const iconHtml = a.icon_b64 ? '<img src="'+a.icon_b64+'" style="width:28px;height:28px;object-fit:contain;margin-right:10px;border-radius:6px;vertical-align:middle">' : '<div style="width:28px;height:28px;background:rgba(255,255,255,.08);border-radius:6px;margin-right:10px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:var(--accent)">'+(a.name[0]||'A').toUpperCase()+'</div>';
+    return '<div class="device-card"><div style="display:flex;align-items:center">'+iconHtml+'<div><div style="font-weight:800;font-size:12px;color:var(--white)">'+a.name+' <span class="badge-tag">v'+a.version+'</span></div><div style="font-size:11px;color:var(--dim);margin-top:2px">Publisher: '+a.publisher+' '+(a.size_mb?('| Size: '+a.size_mb+' MB'):'')+'</div></div></div><button class="proc-kill" onclick="uninstallApp(\''+a.uninstall_cmd.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">Uninstall</button></div>'
+  }).join('');
 }
 
 async function uninstallApp(cmd){
@@ -812,6 +865,49 @@ async function runJitterTest(){
     b.disabled=false; b.textContent='إجراء اختبار الـ Jitter والـ Bufferbloat وتقييم الراوتر (Grade A+ to F)';
     showT('Jitter test error','var(--red)');
   }
+}
+
+async function setTcpCongestion(p){
+  showT('Setting TCP Congestion Provider to '+p.toUpperCase()+'...','var(--accent)',0);
+  try{
+    const r=await pywebview.api.set_tcp_congestion_provider(p);
+    if(r.success){
+      document.getElementById('tcpCongestionRes').innerHTML='<div style="color:var(--green);font-weight:800">'+r.status+'</div>';
+      showT('TCP Congestion Provider set to '+p.toUpperCase(),'var(--green)',4000);
+      addLog('TCP CONGESTION -> '+p.toUpperCase());
+    }else{ showT('Failed setting TCP congestion (Admin required)','var(--red)'); }
+  }catch(e){ showT('Error setting TCP congestion','var(--red)'); }
+}
+
+async function detectRouterGateway(){
+  showT('Detecting Router Gateway Vendor...','var(--green)',0);
+  try{
+    const r=await pywebview.api.detect_router_gateway_vendor();
+    if(r.gateway_ip){
+      document.getElementById('routerRes').innerHTML='<div class="detail-item"><span class="k">Router Vendor</span><span class="v" style="color:var(--accent);font-weight:900">'+r.vendor+'</span></div><div class="detail-item"><span class="k">Gateway IP</span><span class="v" style="color:var(--green)">'+r.gateway_ip+'</span></div><div class="detail-item"><span class="k">MAC Address</span><span class="v" style="font-family:var(--mono)">'+r.mac_address+'</span></div><button class="btn btn-g" onclick="openDevUrl(\''+r.gui_url+'\')" style="margin-top:8px">OPEN ROUTER WEB GUI ('+r.gateway_ip+')</button>';
+      showT('Router Detected: '+r.vendor+' ('+r.gateway_ip+')','var(--green)',5000);
+      addLog('ROUTER DETECT -> '+r.vendor);
+    }
+  }catch(e){ showT('Error detecting router','var(--red)'); }
+}
+
+async function inspectDnsFirewall(){
+  showT('Inspecting DNS Firewall Shield...','var(--yellow)',0);
+  try{
+    const r=await pywebview.api.inspect_dns_firewall_shield();
+    const h=(r.details||[]).map(d=>'<div style="margin-top:2px">'+d+'</div>').join('');
+    document.getElementById('dnsFirewallRes').innerHTML='<div style="font-weight:800;color:var(--accent);margin-bottom:4px">STATUS: '+r.status+'</div>'+h;
+    showT('DNS Shield Inspection Complete! Filtered: '+r.blocked_count,'var(--green)',4000);
+  }catch(e){ showT('Error inspecting DNS firewall','var(--red)'); }
+}
+
+async function detectMtuBlackhole(){
+  showT('Detecting MTU Black Holes & MSS Clamping...','var(--accent2)',0);
+  try{
+    const r=await pywebview.api.detect_mtu_blackhole_and_mss();
+    document.getElementById('mtuBlackholeRes').innerHTML='<div style="font-weight:800;color:var(--green);margin-bottom:4px">'+r.status+'</div><div class="detail-item"><span class="k">Black-Hole Router Drop</span><span class="v" style="color:'+(r.blackhole_detected?'var(--red)':'var(--green)')+'">'+(r.blackhole_detected?'DETECTED (Packet Drop)':'Clean Path (No Drop)')+'</span></div>';
+    showT('MTU & MSS Analysis Complete! Optimal MTU: '+r.optimal_mtu,'var(--green)',4000);
+  }catch(e){ showT('Error analyzing MTU/MSS','var(--red)'); }
 }
 
 async function tuneNicHardware(){
@@ -1236,86 +1332,5 @@ function boot(){
   setInterval(updateP,4000);
 }
 
-(function initParticles(){
-  const cvs = document.getElementById('pCanvas');
-  if(!cvs) return;
-  const ctx = cvs.getContext('2d');
-  function resize(){
-    cvs.width = window.innerWidth || document.documentElement.clientWidth || 1280;
-    cvs.height = window.innerHeight || document.documentElement.clientHeight || 720;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  const mouse = { x: null, y: null, radius: 180 };
-  document.addEventListener('mousemove', (e)=>{ mouse.x = e.clientX; mouse.y = e.clientY; });
-  document.addEventListener('mouseleave', ()=>{ mouse.x = null; mouse.y = null; });
-
-  const particles = [];
-  const count = 100;
-  const palette = ['rgba(129,140,248,', 'rgba(192,132,252,', 'rgba(244,114,182,', 'rgba(74,222,128,'];
-  for(let i=0; i<count; i++){
-    particles.push({
-      x: Math.random() * (cvs.width || 1280),
-      y: Math.random() * (cvs.height || 720),
-      vx: (Math.random() - 0.5) * 1.1,
-      vy: (Math.random() - 0.5) * 1.1,
-      size: Math.random() * 2.8 + 1.5,
-      color: palette[Math.floor(Math.random() * palette.length)]
-    });
-  }
-
-  function loop(){
-    ctx.clearRect(0, 0, cvs.width, cvs.height);
-    const w = cvs.width, h = cvs.height;
-    for(let i=0; i<particles.length; i++){
-      const p = particles[i];
-      p.x += p.vx; p.y += p.vy;
-      if(p.x < 0 || p.x > w) p.vx *= -1;
-      if(p.y < 0 || p.y > h) p.vy *= -1;
-
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fillStyle = p.color + '0.95)';
-      ctx.shadowBlur = 12;
-      ctx.shadowColor = p.color + '1.0)';
-      ctx.fill();
-
-      // Inter-particle links
-      for(let j=i+1; j<particles.length; j++){
-        const p2 = particles[j];
-        const dx = p.x - p2.x;
-        const dy = p.y - p2.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if(dist < 130){
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p2.x, p2.y);
-          ctx.strokeStyle = p.color + (0.45 * (1 - dist/130)) + ')';
-          ctx.lineWidth = 1.0;
-          ctx.stroke();
-        }
-      }
-
-      // Mouse interactivity links
-      if(mouse.x !== null && mouse.y !== null){
-        const mdx = p.x - mouse.x;
-        const mdy = p.y - mouse.y;
-        const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-        if(mdist < mouse.radius){
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(mouse.x, mouse.y);
-          ctx.strokeStyle = 'rgba(129,140,248,' + (0.85 * (1 - mdist/mouse.radius)) + ')';
-          ctx.lineWidth = 1.6;
-          ctx.stroke();
-        }
-      }
-    }
-    requestAnimationFrame(loop);
-  }
-  loop();
-})();
-
-setTimeout(boot,500);
+setTimeout(boot,300);
 </script></body></html>

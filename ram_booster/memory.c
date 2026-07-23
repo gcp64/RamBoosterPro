@@ -2148,6 +2148,41 @@ static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches2(PyObject *err, PyObj
 /* pyint_simplify.proto */
 static CYTHON_INLINE int __Pyx_PyInt_FromNumber(PyObject **number_var, const char *argname, int accept_none);
 
+/* HasAttr.proto (used by ImportImpl) */
+#if __PYX_LIMITED_VERSION_HEX >= 0x030d0000
+#define __Pyx_HasAttr(o, n)  PyObject_HasAttrWithError(o, n)
+#else
+static CYTHON_INLINE int __Pyx_HasAttr(PyObject *, PyObject *);
+#endif
+
+/* ImportImpl.export */
+static PyObject *__Pyx__Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, PyObject *moddict, int level);
+
+/* Import.proto */
+static CYTHON_INLINE PyObject *__Pyx_Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, int level);
+
+/* ImportFrom.proto */
+static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name);
+
+/* RaiseTooManyValuesToUnpack.proto */
+static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected);
+
+/* RaiseNeedMoreValuesToUnpack.proto */
+static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index);
+
+/* IterFinish.proto */
+static CYTHON_INLINE int __Pyx_IterFinish(void);
+
+/* UnpackItemEndCheck.proto */
+static int __Pyx_IternextUnpackEndCheck(PyObject *retval, Py_ssize_t expected);
+
+/* PyObjectVectorCallMethodKwBuilder.proto */
+#if CYTHON_VECTORCALL && PY_VERSION_HEX >= 0x03090000
+#define __Pyx_Object_VectorcallMethod_CallFromBuilder PyObject_VectorcallMethod
+#else
+static PyObject *__Pyx_Object_VectorcallMethod_CallFromBuilder(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames);
+#endif
+
 /* ListAppend.proto */
 #if CYTHON_USE_PYLIST_INTERNALS && CYTHON_ASSUME_SAFE_MACROS
 static CYTHON_INLINE int __Pyx_PyList_Append(PyObject* list, PyObject* x) {
@@ -2314,13 +2349,6 @@ static PyObject *__Pyx_CyFunction_New(PyMethodDef *ml,
                                       PyObject *module, PyObject *globals,
                                       PyObject* code);
 
-/* PyObjectVectorCallMethodKwBuilder.proto */
-#if CYTHON_VECTORCALL && PY_VERSION_HEX >= 0x03090000
-#define __Pyx_Object_VectorcallMethod_CallFromBuilder PyObject_VectorcallMethod
-#else
-static PyObject *__Pyx_Object_VectorcallMethod_CallFromBuilder(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames);
-#endif
-
 /* SliceTupleAndList.proto */
 #if CYTHON_COMPILING_IN_CPYTHON
 static CYTHON_INLINE PyObject* __Pyx_PyList_GetSlice(PyObject* src, Py_ssize_t start, Py_ssize_t stop);
@@ -2332,22 +2360,6 @@ static CYTHON_INLINE PyObject* __Pyx_PyTuple_GetSlice(PyObject* src, Py_ssize_t 
 
 /* PyLongCompare.proto */
 static CYTHON_INLINE PyObject* __Pyx_PyLong_NeObjC(PyObject *op1, PyObject *op2, long intval, long inplace);
-
-/* HasAttr.proto (used by ImportImpl) */
-#if __PYX_LIMITED_VERSION_HEX >= 0x030d0000
-#define __Pyx_HasAttr(o, n)  PyObject_HasAttrWithError(o, n)
-#else
-static CYTHON_INLINE int __Pyx_HasAttr(PyObject *, PyObject *);
-#endif
-
-/* ImportImpl.export */
-static PyObject *__Pyx__Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, PyObject *moddict, int level);
-
-/* Import.proto */
-static CYTHON_INLINE PyObject *__Pyx_Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, int level);
-
-/* ImportFrom.proto */
-static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name);
 
 /* CLineInTraceback.proto (used by AddTraceback) */
 #if CYTHON_CLINE_IN_TRACEBACK && CYTHON_CLINE_IN_TRACEBACK_RUNTIME
@@ -2497,11 +2509,12 @@ static PyObject *__pyx_pf_11ram_booster_6memory_8clear_modified_page_list(CYTHON
 static PyObject *__pyx_pf_11ram_booster_6memory_10trim_processes_working_sets(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
 static PyObject *__pyx_pf_11ram_booster_6memory_12flush_system_file_cache(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
 static PyObject *__pyx_pf_11ram_booster_6memory_14smart_clean(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_11ram_booster_6memory_16_extract_proc_icon_b64(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_exe_path); /* proto */
 static PyObject *__pyx_lambda_funcdef_lambda(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_x); /* proto */
-static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_count); /* proto */
-static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_pid); /* proto */
-static PyObject *__pyx_pf_11ram_booster_6memory_20is_admin(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_11ram_booster_6memory_22request_admin_restart(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_11ram_booster_6memory_18get_top_memory_processes(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_count); /* proto */
+static PyObject *__pyx_pf_11ram_booster_6memory_20kill_process(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_pid); /* proto */
+static PyObject *__pyx_pf_11ram_booster_6memory_22is_admin(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_11ram_booster_6memory_24request_admin_restart(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
 /* #### Code section: late_includes ### */
 /* #### Code section: module_state ### */
 /* SmallCodeConfig */
@@ -2525,9 +2538,9 @@ typedef struct {
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_items;
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_pop;
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_values;
-  PyObject *__pyx_tuple[1];
-  PyObject *__pyx_codeobj_tab[13];
-  PyObject *__pyx_string_tab[246];
+  PyObject *__pyx_tuple[2];
+  PyObject *__pyx_codeobj_tab[14];
+  PyObject *__pyx_string_tab[297];
   PyObject *__pyx_number_tab[16];
 /* #### Code section: module_state_contents ### */
 /* CommonTypesMetaclass.module_state_decls */
@@ -2600,221 +2613,272 @@ static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_stati
 #define __pyx_kp_u__7 __pyx_string_tab[28]
 #define __pyx_kp_u_add_note __pyx_string_tab[29]
 #define __pyx_kp_u_csrss_exe __pyx_string_tab[30]
-#define __pyx_kp_u_dwm_exe __pyx_string_tab[31]
-#define __pyx_kp_u_explorer_exe __pyx_string_tab[32]
-#define __pyx_kp_u_list_dict __pyx_string_tab[33]
-#define __pyx_kp_u_lsass_exe __pyx_string_tab[34]
-#define __pyx_kp_u_not_held_by_token_error_1300 __pyx_string_tab[35]
-#define __pyx_kp_u_partial_result_error __pyx_string_tab[36]
-#define __pyx_kp_u_processes __pyx_string_tab[37]
-#define __pyx_kp_u_ram_booster_memory_py __pyx_string_tab[38]
-#define __pyx_kp_u_services_exe __pyx_string_tab[39]
-#define __pyx_kp_u_smss_exe __pyx_string_tab[40]
-#define __pyx_kp_u_svchost_exe __pyx_string_tab[41]
-#define __pyx_kp_u_terminated __pyx_string_tab[42]
-#define __pyx_kp_u_wininit_exe __pyx_string_tab[43]
-#define __pyx_kp_u_winlogon_exe __pyx_string_tab[44]
-#define __pyx_n_u_AccessDenied __pyx_string_tab[45]
-#define __pyx_n_u_AdjustTokenPrivileges __pyx_string_tab[46]
-#define __pyx_n_u_Attributes __pyx_string_tab[47]
-#define __pyx_n_u_BOOL __pyx_string_tab[48]
-#define __pyx_n_u_CloseHandle __pyx_string_tab[49]
-#define __pyx_n_u_DWORD __pyx_string_tab[50]
-#define __pyx_n_u_EmptyWorkingSet __pyx_string_tab[51]
-#define __pyx_n_u_GetCurrentProcess __pyx_string_tab[52]
-#define __pyx_n_u_GetLastError __pyx_string_tab[53]
-#define __pyx_n_u_HANDLE __pyx_string_tab[54]
-#define __pyx_n_u_HighPart __pyx_string_tab[55]
-#define __pyx_n_u_IsUserAnAdmin __pyx_string_tab[56]
-#define __pyx_n_u_LONG __pyx_string_tab[57]
-#define __pyx_n_u_LPCWSTR __pyx_string_tab[58]
-#define __pyx_n_u_LUID __pyx_string_tab[59]
-#define __pyx_n_u_LUID_AND_ATTRIBUTES __pyx_string_tab[60]
-#define __pyx_n_u_LookupPrivilegeValueW __pyx_string_tab[61]
-#define __pyx_n_u_LowPart __pyx_string_tab[62]
-#define __pyx_n_u_Luid __pyx_string_tab[63]
-#define __pyx_n_u_MemoryInfo __pyx_string_tab[64]
-#define __pyx_n_u_MemoryPurgeLowPriorityStandbyLis __pyx_string_tab[65]
-#define __pyx_n_u_MemoryPurgeModifiedList __pyx_string_tab[66]
-#define __pyx_n_u_MemoryPurgeStandbyList __pyx_string_tab[67]
-#define __pyx_n_u_NoSuchProcess __pyx_string_tab[68]
-#define __pyx_n_u_None __pyx_string_tab[69]
-#define __pyx_n_u_NtSetSystemInformation __pyx_string_tab[70]
-#define __pyx_n_u_OpenProcess __pyx_string_tab[71]
-#define __pyx_n_u_OpenProcessToken __pyx_string_tab[72]
-#define __pyx_n_u_Optional __pyx_string_tab[73]
-#define __pyx_n_u_POINTER __pyx_string_tab[74]
-#define __pyx_n_u_PROCESS_ALL_ACCESS __pyx_string_tab[75]
-#define __pyx_n_u_PROCESS_QUERY_INFORMATION __pyx_string_tab[76]
-#define __pyx_n_u_PROCESS_SET_QUOTA __pyx_string_tab[77]
-#define __pyx_n_u_PrivilegeCount __pyx_string_tab[78]
-#define __pyx_n_u_Privileges __pyx_string_tab[79]
-#define __pyx_n_u_Process __pyx_string_tab[80]
-#define __pyx_n_u_Pyx_PyDict_NextRef __pyx_string_tab[81]
-#define __pyx_n_u_SE_PRIVILEGE_ENABLED __pyx_string_tab[82]
-#define __pyx_n_u_SIZE_T __pyx_string_tab[83]
-#define __pyx_n_u_SeIncreaseQuotaPrivilege __pyx_string_tab[84]
-#define __pyx_n_u_SeProfileSingleProcessPrivilege __pyx_string_tab[85]
-#define __pyx_n_u_SetProcessWorkingSetSize __pyx_string_tab[86]
-#define __pyx_n_u_SetSystemFileCacheSize __pyx_string_tab[87]
-#define __pyx_n_u_ShellExecuteW __pyx_string_tab[88]
-#define __pyx_n_u_Structure __pyx_string_tab[89]
-#define __pyx_n_u_SystemMemoryListInformation __pyx_string_tab[90]
-#define __pyx_n_u_TOKEN_ADJUST_PRIVILEGES __pyx_string_tab[91]
-#define __pyx_n_u_TOKEN_PRIVILEGES __pyx_string_tab[92]
-#define __pyx_n_u_TOKEN_QUERY __pyx_string_tab[93]
-#define __pyx_n_u_Unknown __pyx_string_tab[94]
-#define __pyx_n_u_ZombieProcess __pyx_string_tab[95]
-#define __pyx_n_u_advapi32 __pyx_string_tab[96]
-#define __pyx_n_u_after __pyx_string_tab[97]
-#define __pyx_n_u_after_percent __pyx_string_tab[98]
-#define __pyx_n_u_after_used_gb __pyx_string_tab[99]
-#define __pyx_n_u_annotate __pyx_string_tab[100]
-#define __pyx_n_u_annotations __pyx_string_tab[101]
-#define __pyx_n_u_argtypes __pyx_string_tab[102]
-#define __pyx_n_u_argv __pyx_string_tab[103]
-#define __pyx_n_u_asyncio_coroutines __pyx_string_tab[104]
-#define __pyx_n_u_available __pyx_string_tab[105]
-#define __pyx_n_u_available_gb __pyx_string_tab[106]
-#define __pyx_n_u_before __pyx_string_tab[107]
-#define __pyx_n_u_before_percent __pyx_string_tab[108]
-#define __pyx_n_u_before_used_gb __pyx_string_tab[109]
-#define __pyx_n_u_bool __pyx_string_tab[110]
-#define __pyx_n_u_byref __pyx_string_tab[111]
-#define __pyx_n_u_c_int __pyx_string_tab[112]
-#define __pyx_n_u_c_size_t __pyx_string_tab[113]
-#define __pyx_n_u_c_void_p __pyx_string_tab[114]
-#define __pyx_n_u_cache_flushed __pyx_string_tab[115]
-#define __pyx_n_u_cached __pyx_string_tab[116]
-#define __pyx_n_u_clear_low_priority_standby __pyx_string_tab[117]
-#define __pyx_n_u_clear_modified_page_list __pyx_string_tab[118]
-#define __pyx_n_u_clear_standby_list __pyx_string_tab[119]
-#define __pyx_n_u_cline_in_traceback __pyx_string_tab[120]
-#define __pyx_n_u_command __pyx_string_tab[121]
-#define __pyx_n_u_count __pyx_string_tab[122]
-#define __pyx_n_u_ctypes __pyx_string_tab[123]
-#define __pyx_n_u_ctypes_wintypes __pyx_string_tab[124]
-#define __pyx_n_u_current_pid __pyx_string_tab[125]
-#define __pyx_n_u_dataclass __pyx_string_tab[126]
-#define __pyx_n_u_dataclasses __pyx_string_tab[127]
-#define __pyx_n_u_dict __pyx_string_tab[128]
-#define __pyx_n_u_doc __pyx_string_tab[129]
-#define __pyx_n_u_e __pyx_string_tab[130]
-#define __pyx_n_u_enable_privilege __pyx_string_tab[131]
-#define __pyx_n_u_enable_privilege_locals_LUID __pyx_string_tab[132]
-#define __pyx_n_u_enable_privilege_locals_LUID_AN __pyx_string_tab[133]
-#define __pyx_n_u_enable_privilege_locals_TOKEN_P __pyx_string_tab[134]
-#define __pyx_n_u_error __pyx_string_tab[135]
-#define __pyx_n_u_executable __pyx_string_tab[136]
-#define __pyx_n_u_exit __pyx_string_tab[137]
-#define __pyx_n_u_fields __pyx_string_tab[138]
-#define __pyx_n_u_float __pyx_string_tab[139]
-#define __pyx_n_u_flush_system_file_cache __pyx_string_tab[140]
-#define __pyx_n_u_freed_bytes __pyx_string_tab[141]
-#define __pyx_n_u_freed_mb __pyx_string_tab[142]
-#define __pyx_n_u_func __pyx_string_tab[143]
-#define __pyx_n_u_getLogger __pyx_string_tab[144]
-#define __pyx_n_u_get_memory_info __pyx_string_tab[145]
-#define __pyx_n_u_get_top_memory_processes __pyx_string_tab[146]
-#define __pyx_n_u_get_top_memory_processes_locals __pyx_string_tab[147]
-#define __pyx_n_u_getpid __pyx_string_tab[148]
-#define __pyx_n_u_h_process __pyx_string_tab[149]
-#define __pyx_n_u_h_token __pyx_string_tab[150]
-#define __pyx_n_u_handle __pyx_string_tab[151]
-#define __pyx_n_u_info __pyx_string_tab[152]
-#define __pyx_n_u_int __pyx_string_tab[153]
-#define __pyx_n_u_is_admin __pyx_string_tab[154]
-#define __pyx_n_u_is_coroutine __pyx_string_tab[155]
-#define __pyx_n_u_items __pyx_string_tab[156]
-#define __pyx_n_u_kernel32 __pyx_string_tab[157]
-#define __pyx_n_u_key __pyx_string_tab[158]
-#define __pyx_n_u_kill_process __pyx_string_tab[159]
-#define __pyx_n_u_lambda __pyx_string_tab[160]
-#define __pyx_n_u_logger __pyx_string_tab[161]
-#define __pyx_n_u_logging __pyx_string_tab[162]
-#define __pyx_n_u_lower __pyx_string_tab[163]
-#define __pyx_n_u_luid __pyx_string_tab[164]
-#define __pyx_n_u_main __pyx_string_tab[165]
-#define __pyx_n_u_mem __pyx_string_tab[166]
-#define __pyx_n_u_mem_mb __pyx_string_tab[167]
-#define __pyx_n_u_memory_info __pyx_string_tab[168]
-#define __pyx_n_u_memory_mb __pyx_string_tab[169]
-#define __pyx_n_u_memory_percent __pyx_string_tab[170]
-#define __pyx_n_u_metaclass __pyx_string_tab[171]
-#define __pyx_n_u_modified_flushed __pyx_string_tab[172]
-#define __pyx_n_u_module __pyx_string_tab[173]
-#define __pyx_n_u_mro_entries __pyx_string_tab[174]
-#define __pyx_n_u_name __pyx_string_tab[175]
-#define __pyx_n_u_name_2 __pyx_string_tab[176]
-#define __pyx_n_u_ntdll __pyx_string_tab[177]
-#define __pyx_n_u_os __pyx_string_tab[178]
-#define __pyx_n_u_percent __pyx_string_tab[179]
-#define __pyx_n_u_pid __pyx_string_tab[180]
-#define __pyx_n_u_pop __pyx_string_tab[181]
-#define __pyx_n_u_prepare __pyx_string_tab[182]
-#define __pyx_n_u_privilege_name __pyx_string_tab[183]
-#define __pyx_n_u_proc __pyx_string_tab[184]
-#define __pyx_n_u_process_iter __pyx_string_tab[185]
-#define __pyx_n_u_processes_2 __pyx_string_tab[186]
-#define __pyx_n_u_processes_trimmed __pyx_string_tab[187]
-#define __pyx_n_u_protected __pyx_string_tab[188]
-#define __pyx_n_u_psapi __pyx_string_tab[189]
-#define __pyx_n_u_psutil __pyx_string_tab[190]
-#define __pyx_n_u_qualname __pyx_string_tab[191]
-#define __pyx_n_u_ram_booster_memory __pyx_string_tab[192]
-#define __pyx_n_u_registry __pyx_string_tab[193]
-#define __pyx_n_u_report __pyx_string_tab[194]
-#define __pyx_n_u_request_admin_restart __pyx_string_tab[195]
-#define __pyx_n_u_restype __pyx_string_tab[196]
-#define __pyx_n_u_result __pyx_string_tab[197]
-#define __pyx_n_u_return __pyx_string_tab[198]
-#define __pyx_n_u_reverse __pyx_string_tab[199]
-#define __pyx_n_u_round __pyx_string_tab[200]
-#define __pyx_n_u_rss __pyx_string_tab[201]
-#define __pyx_n_u_runas __pyx_string_tab[202]
-#define __pyx_n_u_set_name __pyx_string_tab[203]
-#define __pyx_n_u_setdefault __pyx_string_tab[204]
-#define __pyx_n_u_shell32 __pyx_string_tab[205]
-#define __pyx_n_u_sizeof __pyx_string_tab[206]
-#define __pyx_n_u_smart_clean __pyx_string_tab[207]
-#define __pyx_n_u_sort __pyx_string_tab[208]
-#define __pyx_n_u_standby_cleared __pyx_string_tab[209]
-#define __pyx_n_u_status __pyx_string_tab[210]
-#define __pyx_n_u_str __pyx_string_tab[211]
-#define __pyx_n_u_subprocess __pyx_string_tab[212]
-#define __pyx_n_u_sys __pyx_string_tab[213]
-#define __pyx_n_u_system __pyx_string_tab[214]
-#define __pyx_n_u_terminate __pyx_string_tab[215]
-#define __pyx_n_u_test __pyx_string_tab[216]
-#define __pyx_n_u_timeout __pyx_string_tab[217]
-#define __pyx_n_u_total __pyx_string_tab[218]
-#define __pyx_n_u_total_gb __pyx_string_tab[219]
-#define __pyx_n_u_tp __pyx_string_tab[220]
-#define __pyx_n_u_trim_processes_working_sets __pyx_string_tab[221]
-#define __pyx_n_u_trimmed __pyx_string_tab[222]
-#define __pyx_n_u_typing __pyx_string_tab[223]
-#define __pyx_n_u_used __pyx_string_tab[224]
-#define __pyx_n_u_used_gb __pyx_string_tab[225]
-#define __pyx_n_u_values __pyx_string_tab[226]
-#define __pyx_n_u_virtual_memory __pyx_string_tab[227]
-#define __pyx_n_u_wait __pyx_string_tab[228]
-#define __pyx_n_u_warning __pyx_string_tab[229]
-#define __pyx_n_u_windll __pyx_string_tab[230]
-#define __pyx_n_u_wintypes __pyx_string_tab[231]
-#define __pyx_n_u_x __pyx_string_tab[232]
-#define __pyx_kp_b_iso88591_6_q_1HHHA_0_A_A_1_q_1_at6_a_t1A __pyx_string_tab[233]
-#define __pyx_kp_b_iso88591_A_gQ_aq_Q_7_Q_q_1_Gq_1GSUUV_1_f __pyx_string_tab[234]
-#define __pyx_kp_b_iso88591_A_gQ_aq_Q_wc_fA_AQ_q __pyx_string_tab[235]
-#define __pyx_kp_b_iso88591_Q__A_1_A_Q_A_Q_2_9_5Q_O1_F_AS_Q __pyx_string_tab[236]
-#define __pyx_kp_b_iso88591_Q_a_vWA_F_m1__A_G1_m1AWA_e1A_D __pyx_string_tab[237]
-#define __pyx_kp_b_iso88591_WM_m1AWHOCUUV_4q_t1O3a_T_XQ_wb __pyx_string_tab[238]
-#define __pyx_kp_b_iso88591_gQ_aq_Q_wc_fA_1_q __pyx_string_tab[239]
-#define __pyx_kp_b_iso88591_ha_6_6_6_r_HJl_r_xq_vQ_q_81_32Q __pyx_string_tab[240]
-#define __pyx_kp_b_iso88591_ha_vXQa_Ja_E_e1JavQd_q_q_fA_avQ __pyx_string_tab[241]
-#define __pyx_kp_b_iso88591_q_Q_c_Q_S_1_as_U_3k_Qc_xwa_uAWA __pyx_string_tab[242]
-#define __pyx_kp_b_iso88591_q_q_is_s_q_86_uAQ __pyx_string_tab[243]
-#define __pyx_kp_b_iso88591_vWHN_S_q __pyx_string_tab[244]
-#define __pyx_kp_b_iso88591_z_1 __pyx_string_tab[245]
+#define __pyx_kp_u_data_image_png_base64 __pyx_string_tab[31]
+#define __pyx_kp_u_dwm_exe __pyx_string_tab[32]
+#define __pyx_kp_u_explorer_exe __pyx_string_tab[33]
+#define __pyx_kp_u_list_dict __pyx_string_tab[34]
+#define __pyx_kp_u_lsass_exe __pyx_string_tab[35]
+#define __pyx_kp_u_not_held_by_token_error_1300 __pyx_string_tab[36]
+#define __pyx_kp_u_partial_result_error __pyx_string_tab[37]
+#define __pyx_kp_u_processes __pyx_string_tab[38]
+#define __pyx_kp_u_ram_booster_memory_py __pyx_string_tab[39]
+#define __pyx_kp_u_services_exe __pyx_string_tab[40]
+#define __pyx_kp_u_smss_exe __pyx_string_tab[41]
+#define __pyx_kp_u_svchost_exe __pyx_string_tab[42]
+#define __pyx_kp_u_terminated __pyx_string_tab[43]
+#define __pyx_kp_u_wininit_exe __pyx_string_tab[44]
+#define __pyx_kp_u_winlogon_exe __pyx_string_tab[45]
+#define __pyx_n_u_AccessDenied __pyx_string_tab[46]
+#define __pyx_n_u_AdjustTokenPrivileges __pyx_string_tab[47]
+#define __pyx_n_u_Attributes __pyx_string_tab[48]
+#define __pyx_n_u_BGRA __pyx_string_tab[49]
+#define __pyx_n_u_BOOL __pyx_string_tab[50]
+#define __pyx_n_u_BytesIO __pyx_string_tab[51]
+#define __pyx_n_u_CloseHandle __pyx_string_tab[52]
+#define __pyx_n_u_CreateBitmap __pyx_string_tab[53]
+#define __pyx_n_u_CreateCompatibleBitmap __pyx_string_tab[54]
+#define __pyx_n_u_CreateCompatibleDC __pyx_string_tab[55]
+#define __pyx_n_u_CreateDCFromHandle __pyx_string_tab[56]
+#define __pyx_n_u_DI_NORMAL __pyx_string_tab[57]
+#define __pyx_n_u_DWORD __pyx_string_tab[58]
+#define __pyx_n_u_DestroyIcon __pyx_string_tab[59]
+#define __pyx_n_u_DrawIconEx __pyx_string_tab[60]
+#define __pyx_n_u_EmptyWorkingSet __pyx_string_tab[61]
+#define __pyx_n_u_ExtractIconEx __pyx_string_tab[62]
+#define __pyx_n_u_GetBitmapBits __pyx_string_tab[63]
+#define __pyx_n_u_GetCurrentProcess __pyx_string_tab[64]
+#define __pyx_n_u_GetDC __pyx_string_tab[65]
+#define __pyx_n_u_GetHandleOutput __pyx_string_tab[66]
+#define __pyx_n_u_GetInfo __pyx_string_tab[67]
+#define __pyx_n_u_GetLastError __pyx_string_tab[68]
+#define __pyx_n_u_HANDLE __pyx_string_tab[69]
+#define __pyx_n_u_HighPart __pyx_string_tab[70]
+#define __pyx_n_u_Image __pyx_string_tab[71]
+#define __pyx_n_u_IsUserAnAdmin __pyx_string_tab[72]
+#define __pyx_n_u_LONG __pyx_string_tab[73]
+#define __pyx_n_u_LPCWSTR __pyx_string_tab[74]
+#define __pyx_n_u_LUID __pyx_string_tab[75]
+#define __pyx_n_u_LUID_AND_ATTRIBUTES __pyx_string_tab[76]
+#define __pyx_n_u_LookupPrivilegeValueW __pyx_string_tab[77]
+#define __pyx_n_u_LowPart __pyx_string_tab[78]
+#define __pyx_n_u_Luid __pyx_string_tab[79]
+#define __pyx_n_u_MemoryInfo __pyx_string_tab[80]
+#define __pyx_n_u_MemoryPurgeLowPriorityStandbyLis __pyx_string_tab[81]
+#define __pyx_n_u_MemoryPurgeModifiedList __pyx_string_tab[82]
+#define __pyx_n_u_MemoryPurgeStandbyList __pyx_string_tab[83]
+#define __pyx_n_u_NoSuchProcess __pyx_string_tab[84]
+#define __pyx_n_u_None __pyx_string_tab[85]
+#define __pyx_n_u_NtSetSystemInformation __pyx_string_tab[86]
+#define __pyx_n_u_OpenProcess __pyx_string_tab[87]
+#define __pyx_n_u_OpenProcessToken __pyx_string_tab[88]
+#define __pyx_n_u_Optional __pyx_string_tab[89]
+#define __pyx_n_u_PIL __pyx_string_tab[90]
+#define __pyx_n_u_PNG __pyx_string_tab[91]
+#define __pyx_n_u_POINTER __pyx_string_tab[92]
+#define __pyx_n_u_PROCESS_ALL_ACCESS __pyx_string_tab[93]
+#define __pyx_n_u_PROCESS_QUERY_INFORMATION __pyx_string_tab[94]
+#define __pyx_n_u_PROCESS_SET_QUOTA __pyx_string_tab[95]
+#define __pyx_n_u_PrivilegeCount __pyx_string_tab[96]
+#define __pyx_n_u_Privileges __pyx_string_tab[97]
+#define __pyx_n_u_Process __pyx_string_tab[98]
+#define __pyx_n_u_Pyx_PyDict_NextRef __pyx_string_tab[99]
+#define __pyx_n_u_RGBA __pyx_string_tab[100]
+#define __pyx_n_u_SE_PRIVILEGE_ENABLED __pyx_string_tab[101]
+#define __pyx_n_u_SIZE_T __pyx_string_tab[102]
+#define __pyx_n_u_SeIncreaseQuotaPrivilege __pyx_string_tab[103]
+#define __pyx_n_u_SeProfileSingleProcessPrivilege __pyx_string_tab[104]
+#define __pyx_n_u_SelectObject __pyx_string_tab[105]
+#define __pyx_n_u_SetProcessWorkingSetSize __pyx_string_tab[106]
+#define __pyx_n_u_SetSystemFileCacheSize __pyx_string_tab[107]
+#define __pyx_n_u_ShellExecuteW __pyx_string_tab[108]
+#define __pyx_n_u_Structure __pyx_string_tab[109]
+#define __pyx_n_u_SystemMemoryListInformation __pyx_string_tab[110]
+#define __pyx_n_u_TOKEN_ADJUST_PRIVILEGES __pyx_string_tab[111]
+#define __pyx_n_u_TOKEN_PRIVILEGES __pyx_string_tab[112]
+#define __pyx_n_u_TOKEN_QUERY __pyx_string_tab[113]
+#define __pyx_n_u_Unknown __pyx_string_tab[114]
+#define __pyx_n_u_ZombieProcess __pyx_string_tab[115]
+#define __pyx_n_u_advapi32 __pyx_string_tab[116]
+#define __pyx_n_u_after __pyx_string_tab[117]
+#define __pyx_n_u_after_percent __pyx_string_tab[118]
+#define __pyx_n_u_after_used_gb __pyx_string_tab[119]
+#define __pyx_n_u_annotate __pyx_string_tab[120]
+#define __pyx_n_u_annotations __pyx_string_tab[121]
+#define __pyx_n_u_argtypes __pyx_string_tab[122]
+#define __pyx_n_u_argv __pyx_string_tab[123]
+#define __pyx_n_u_asyncio_coroutines __pyx_string_tab[124]
+#define __pyx_n_u_available __pyx_string_tab[125]
+#define __pyx_n_u_available_gb __pyx_string_tab[126]
+#define __pyx_n_u_b64encode __pyx_string_tab[127]
+#define __pyx_n_u_base64 __pyx_string_tab[128]
+#define __pyx_n_u_before __pyx_string_tab[129]
+#define __pyx_n_u_before_percent __pyx_string_tab[130]
+#define __pyx_n_u_before_used_gb __pyx_string_tab[131]
+#define __pyx_n_u_bmpbits __pyx_string_tab[132]
+#define __pyx_n_u_bmpinfo __pyx_string_tab[133]
+#define __pyx_n_u_bool __pyx_string_tab[134]
+#define __pyx_n_u_buf __pyx_string_tab[135]
+#define __pyx_n_u_byref __pyx_string_tab[136]
+#define __pyx_n_u_c_int __pyx_string_tab[137]
+#define __pyx_n_u_c_size_t __pyx_string_tab[138]
+#define __pyx_n_u_c_void_p __pyx_string_tab[139]
+#define __pyx_n_u_cache_flushed __pyx_string_tab[140]
+#define __pyx_n_u_cached __pyx_string_tab[141]
+#define __pyx_n_u_clear_low_priority_standby __pyx_string_tab[142]
+#define __pyx_n_u_clear_modified_page_list __pyx_string_tab[143]
+#define __pyx_n_u_clear_standby_list __pyx_string_tab[144]
+#define __pyx_n_u_cline_in_traceback __pyx_string_tab[145]
+#define __pyx_n_u_command __pyx_string_tab[146]
+#define __pyx_n_u_count __pyx_string_tab[147]
+#define __pyx_n_u_ctypes __pyx_string_tab[148]
+#define __pyx_n_u_ctypes_wintypes __pyx_string_tab[149]
+#define __pyx_n_u_current_pid __pyx_string_tab[150]
+#define __pyx_n_u_dataclass __pyx_string_tab[151]
+#define __pyx_n_u_dataclasses __pyx_string_tab[152]
+#define __pyx_n_u_decode __pyx_string_tab[153]
+#define __pyx_n_u_dict __pyx_string_tab[154]
+#define __pyx_n_u_doc __pyx_string_tab[155]
+#define __pyx_n_u_e __pyx_string_tab[156]
+#define __pyx_n_u_enable_privilege __pyx_string_tab[157]
+#define __pyx_n_u_enable_privilege_locals_LUID __pyx_string_tab[158]
+#define __pyx_n_u_enable_privilege_locals_LUID_AN __pyx_string_tab[159]
+#define __pyx_n_u_enable_privilege_locals_TOKEN_P __pyx_string_tab[160]
+#define __pyx_n_u_error __pyx_string_tab[161]
+#define __pyx_n_u_exe __pyx_string_tab[162]
+#define __pyx_n_u_exe_path __pyx_string_tab[163]
+#define __pyx_n_u_executable __pyx_string_tab[164]
+#define __pyx_n_u_exists __pyx_string_tab[165]
+#define __pyx_n_u_exit __pyx_string_tab[166]
+#define __pyx_n_u_extract_proc_icon_b64 __pyx_string_tab[167]
+#define __pyx_n_u_fields __pyx_string_tab[168]
+#define __pyx_n_u_float __pyx_string_tab[169]
+#define __pyx_n_u_flush_system_file_cache __pyx_string_tab[170]
+#define __pyx_n_u_format __pyx_string_tab[171]
+#define __pyx_n_u_freed_bytes __pyx_string_tab[172]
+#define __pyx_n_u_freed_mb __pyx_string_tab[173]
+#define __pyx_n_u_frombuffer __pyx_string_tab[174]
+#define __pyx_n_u_func __pyx_string_tab[175]
+#define __pyx_n_u_get __pyx_string_tab[176]
+#define __pyx_n_u_getLogger __pyx_string_tab[177]
+#define __pyx_n_u_get_memory_info __pyx_string_tab[178]
+#define __pyx_n_u_get_top_memory_processes __pyx_string_tab[179]
+#define __pyx_n_u_get_top_memory_processes_locals __pyx_string_tab[180]
+#define __pyx_n_u_getpid __pyx_string_tab[181]
+#define __pyx_n_u_getvalue __pyx_string_tab[182]
+#define __pyx_n_u_h __pyx_string_tab[183]
+#define __pyx_n_u_h_process __pyx_string_tab[184]
+#define __pyx_n_u_h_token __pyx_string_tab[185]
+#define __pyx_n_u_handle __pyx_string_tab[186]
+#define __pyx_n_u_hbmp __pyx_string_tab[187]
+#define __pyx_n_u_hdc __pyx_string_tab[188]
+#define __pyx_n_u_hdc_mem __pyx_string_tab[189]
+#define __pyx_n_u_hicon __pyx_string_tab[190]
+#define __pyx_n_u_icon_b64 __pyx_string_tab[191]
+#define __pyx_n_u_im __pyx_string_tab[192]
+#define __pyx_n_u_info __pyx_string_tab[193]
+#define __pyx_n_u_int __pyx_string_tab[194]
+#define __pyx_n_u_io __pyx_string_tab[195]
+#define __pyx_n_u_is_admin __pyx_string_tab[196]
+#define __pyx_n_u_is_coroutine __pyx_string_tab[197]
+#define __pyx_n_u_items __pyx_string_tab[198]
+#define __pyx_n_u_kernel32 __pyx_string_tab[199]
+#define __pyx_n_u_key __pyx_string_tab[200]
+#define __pyx_n_u_kill_process __pyx_string_tab[201]
+#define __pyx_n_u_lambda __pyx_string_tab[202]
+#define __pyx_n_u_large __pyx_string_tab[203]
+#define __pyx_n_u_logger __pyx_string_tab[204]
+#define __pyx_n_u_logging __pyx_string_tab[205]
+#define __pyx_n_u_lower __pyx_string_tab[206]
+#define __pyx_n_u_luid __pyx_string_tab[207]
+#define __pyx_n_u_main __pyx_string_tab[208]
+#define __pyx_n_u_mem __pyx_string_tab[209]
+#define __pyx_n_u_mem_mb __pyx_string_tab[210]
+#define __pyx_n_u_memory_info __pyx_string_tab[211]
+#define __pyx_n_u_memory_mb __pyx_string_tab[212]
+#define __pyx_n_u_memory_percent __pyx_string_tab[213]
+#define __pyx_n_u_metaclass __pyx_string_tab[214]
+#define __pyx_n_u_modified_flushed __pyx_string_tab[215]
+#define __pyx_n_u_module __pyx_string_tab[216]
+#define __pyx_n_u_mro_entries __pyx_string_tab[217]
+#define __pyx_n_u_name __pyx_string_tab[218]
+#define __pyx_n_u_name_2 __pyx_string_tab[219]
+#define __pyx_n_u_ntdll __pyx_string_tab[220]
+#define __pyx_n_u_os __pyx_string_tab[221]
+#define __pyx_n_u_path __pyx_string_tab[222]
+#define __pyx_n_u_percent __pyx_string_tab[223]
+#define __pyx_n_u_pid __pyx_string_tab[224]
+#define __pyx_n_u_pop __pyx_string_tab[225]
+#define __pyx_n_u_prepare __pyx_string_tab[226]
+#define __pyx_n_u_privilege_name __pyx_string_tab[227]
+#define __pyx_n_u_proc __pyx_string_tab[228]
+#define __pyx_n_u_process_iter __pyx_string_tab[229]
+#define __pyx_n_u_processes_2 __pyx_string_tab[230]
+#define __pyx_n_u_processes_trimmed __pyx_string_tab[231]
+#define __pyx_n_u_protected __pyx_string_tab[232]
+#define __pyx_n_u_psapi __pyx_string_tab[233]
+#define __pyx_n_u_psutil __pyx_string_tab[234]
+#define __pyx_n_u_qualname __pyx_string_tab[235]
+#define __pyx_n_u_ram_booster_memory __pyx_string_tab[236]
+#define __pyx_n_u_raw __pyx_string_tab[237]
+#define __pyx_n_u_registry __pyx_string_tab[238]
+#define __pyx_n_u_report __pyx_string_tab[239]
+#define __pyx_n_u_request_admin_restart __pyx_string_tab[240]
+#define __pyx_n_u_restype __pyx_string_tab[241]
+#define __pyx_n_u_result __pyx_string_tab[242]
+#define __pyx_n_u_return __pyx_string_tab[243]
+#define __pyx_n_u_reverse __pyx_string_tab[244]
+#define __pyx_n_u_round __pyx_string_tab[245]
+#define __pyx_n_u_rss __pyx_string_tab[246]
+#define __pyx_n_u_runas __pyx_string_tab[247]
+#define __pyx_n_u_save __pyx_string_tab[248]
+#define __pyx_n_u_set_name __pyx_string_tab[249]
+#define __pyx_n_u_setdefault __pyx_string_tab[250]
+#define __pyx_n_u_shell32 __pyx_string_tab[251]
+#define __pyx_n_u_sizeof __pyx_string_tab[252]
+#define __pyx_n_u_small __pyx_string_tab[253]
+#define __pyx_n_u_smart_clean __pyx_string_tab[254]
+#define __pyx_n_u_sort __pyx_string_tab[255]
+#define __pyx_n_u_standby_cleared __pyx_string_tab[256]
+#define __pyx_n_u_status __pyx_string_tab[257]
+#define __pyx_n_u_str __pyx_string_tab[258]
+#define __pyx_n_u_subprocess __pyx_string_tab[259]
+#define __pyx_n_u_sys __pyx_string_tab[260]
+#define __pyx_n_u_system __pyx_string_tab[261]
+#define __pyx_n_u_terminate __pyx_string_tab[262]
+#define __pyx_n_u_test __pyx_string_tab[263]
+#define __pyx_n_u_timeout __pyx_string_tab[264]
+#define __pyx_n_u_total __pyx_string_tab[265]
+#define __pyx_n_u_total_gb __pyx_string_tab[266]
+#define __pyx_n_u_tp __pyx_string_tab[267]
+#define __pyx_n_u_trim_processes_working_sets __pyx_string_tab[268]
+#define __pyx_n_u_trimmed __pyx_string_tab[269]
+#define __pyx_n_u_typing __pyx_string_tab[270]
+#define __pyx_n_u_used __pyx_string_tab[271]
+#define __pyx_n_u_used_gb __pyx_string_tab[272]
+#define __pyx_n_u_values __pyx_string_tab[273]
+#define __pyx_n_u_virtual_memory __pyx_string_tab[274]
+#define __pyx_n_u_wait __pyx_string_tab[275]
+#define __pyx_n_u_warning __pyx_string_tab[276]
+#define __pyx_n_u_win32con __pyx_string_tab[277]
+#define __pyx_n_u_win32gui __pyx_string_tab[278]
+#define __pyx_n_u_win32ui __pyx_string_tab[279]
+#define __pyx_n_u_windll __pyx_string_tab[280]
+#define __pyx_n_u_wintypes __pyx_string_tab[281]
+#define __pyx_n_u_x __pyx_string_tab[282]
+#define __pyx_kp_b_iso88591_6_q_1HHHA_0_A_A_1_q_1_at6_a_t1A __pyx_string_tab[283]
+#define __pyx_kp_b_iso88591_A_gQ_aq_Q_7_Q_q_1_Gq_1GSUUV_1_f __pyx_string_tab[284]
+#define __pyx_kp_b_iso88591_A_gQ_aq_Q_wc_fA_AQ_q __pyx_string_tab[285]
+#define __pyx_kp_b_iso88591_Q__A_1_A_Q_A_Q_2_9_5Q_O1_F_AS_Q __pyx_string_tab[286]
+#define __pyx_kp_b_iso88591_Q_a_vWA_F_m1__A_G1_m1AWA_e1A_D __pyx_string_tab[287]
+#define __pyx_kp_b_iso88591_WM_m1AWHOCUU___4q_t1O3a_T_XQ_wb __pyx_string_tab[288]
+#define __pyx_kp_b_iso88591_gQ_aq_Q_wc_fA_1_q __pyx_string_tab[289]
+#define __pyx_kp_b_iso88591_ha_6_6_6_r_HJl_r_xq_vQ_q_81_32Q __pyx_string_tab[290]
+#define __pyx_kp_b_iso88591_ha_vXQa_Ja_E_e1JavQd_q_q_fA_avQ __pyx_string_tab[291]
+#define __pyx_kp_b_iso88591_q_Q_c_Q_S_1_as_U_3k_Qc_xwa_uAWA __pyx_string_tab[292]
+#define __pyx_kp_b_iso88591_q_q_is_s_q_86_uAQ __pyx_string_tab[293]
+#define __pyx_kp_b_iso88591_t9Ct_Qj_S_Be7_1_q_HA_xx_Qj_QfL __pyx_string_tab[294]
+#define __pyx_kp_b_iso88591_vWHN_S_q __pyx_string_tab[295]
+#define __pyx_kp_b_iso88591_z_1 __pyx_string_tab[296]
 #define __pyx_int_0 __pyx_number_tab[0]
 #define __pyx_int_neg_1 __pyx_number_tab[1]
 #define __pyx_int_1 __pyx_number_tab[2]
@@ -2845,9 +2909,9 @@ static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
   #if CYTHON_PEP489_MULTI_PHASE_INIT
   __Pyx_State_RemoveModule(NULL);
   #endif
-  for (int i=0; i<1; ++i) { Py_CLEAR(clear_module_state->__pyx_tuple[i]); }
-  for (int i=0; i<13; ++i) { Py_CLEAR(clear_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<246; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<2; ++i) { Py_CLEAR(clear_module_state->__pyx_tuple[i]); }
+  for (int i=0; i<14; ++i) { Py_CLEAR(clear_module_state->__pyx_codeobj_tab[i]); }
+  for (int i=0; i<297; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
   for (int i=0; i<16; ++i) { Py_CLEAR(clear_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_clear_contents ### */
 /* CommonTypesMetaclass.module_state_clear */
@@ -2871,9 +2935,9 @@ static CYTHON_SMALL_CODE int __pyx_m_traverse(PyObject *m, visitproc visit, void
   __Pyx_VISIT_CONST(traverse_module_state->__pyx_empty_tuple);
   __Pyx_VISIT_CONST(traverse_module_state->__pyx_empty_bytes);
   __Pyx_VISIT_CONST(traverse_module_state->__pyx_empty_unicode);
-  for (int i=0; i<1; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_tuple[i]); }
-  for (int i=0; i<13; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<246; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<2; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_tuple[i]); }
+  for (int i=0; i<14; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_codeobj_tab[i]); }
+  for (int i=0; i<297; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
   for (int i=0; i<16; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_traverse_contents ### */
 /* CommonTypesMetaclass.module_state_traverse */
@@ -8544,7 +8608,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_14smart_clean(CYTHON_UNUSED PyOb
  *     report["freed_mb"] = max(0, round(freed_bytes / (1024 ** 2), 1))
  *     report["after_used_gb"] = after.used_gb             # <<<<<<<<<<<<<<
  *     report["after_percent"] = after.percent
- * 
+ *     logger.info(f"Smart clean completed. Freed: {report['freed_mb']} MB")
 */
   __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_after, __pyx_mstate_global->__pyx_n_u_used_gb); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 341, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
@@ -8555,37 +8619,37 @@ static PyObject *__pyx_pf_11ram_booster_6memory_14smart_clean(CYTHON_UNUSED PyOb
  *     report["freed_mb"] = max(0, round(freed_bytes / (1024 ** 2), 1))
  *     report["after_used_gb"] = after.used_gb
  *     report["after_percent"] = after.percent             # <<<<<<<<<<<<<<
- * 
  *     logger.info(f"Smart clean completed. Freed: {report['freed_mb']} MB")
+ *     return report
 */
   __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_after, __pyx_mstate_global->__pyx_n_u_percent); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 342, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   if (unlikely((PyDict_SetItem(__pyx_v_report, __pyx_mstate_global->__pyx_n_u_after_percent, __pyx_t_3) < 0))) __PYX_ERR(0, 342, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "ram_booster/memory.py":344
+  /* "ram_booster/memory.py":343
+ *     report["after_used_gb"] = after.used_gb
  *     report["after_percent"] = after.percent
- * 
  *     logger.info(f"Smart clean completed. Freed: {report['freed_mb']} MB")             # <<<<<<<<<<<<<<
  *     return report
  * 
 */
   __pyx_t_1 = NULL;
-  __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_logger); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 344, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_logger); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 343, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_info); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 344, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_info); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 343, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_report, __pyx_mstate_global->__pyx_n_u_freed_mb); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 344, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_report, __pyx_mstate_global->__pyx_n_u_freed_mb); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 343, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_t_6, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 344, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_t_6, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 343, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __pyx_t_9[0] = __pyx_mstate_global->__pyx_kp_u_Smart_clean_completed_Freed;
   __pyx_t_9[1] = __pyx_t_8;
   __pyx_t_9[2] = __pyx_mstate_global->__pyx_kp_u_MB;
   __pyx_t_6 = __Pyx_PyUnicode_Join(__pyx_t_9, 3, 30 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_8) + 3, 127 | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_8));
-  if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 344, __pyx_L1_error)
+  if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 343, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __pyx_t_4 = 1;
@@ -8606,13 +8670,13 @@ static PyObject *__pyx_pf_11ram_booster_6memory_14smart_clean(CYTHON_UNUSED PyOb
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 344, __pyx_L1_error)
+    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 343, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "ram_booster/memory.py":345
- * 
+  /* "ram_booster/memory.py":344
+ *     report["after_percent"] = after.percent
  *     logger.info(f"Smart clean completed. Freed: {report['freed_mb']} MB")
  *     return report             # <<<<<<<<<<<<<<
  * 
@@ -8650,25 +8714,988 @@ static PyObject *__pyx_pf_11ram_booster_6memory_14smart_clean(CYTHON_UNUSED PyOb
   return __pyx_r;
 }
 
-/* "ram_booster/memory.py":348
+/* "ram_booster/memory.py":347
  * 
  * 
- * def get_top_memory_processes(count: int = 15) -> list[dict]:             # <<<<<<<<<<<<<<
- *     """Get the top N processes by memory usage."""
- *     processes = []
+ * def _extract_proc_icon_b64(exe_path):             # <<<<<<<<<<<<<<
+ *     """Extract 32x32 PNG Base64 icon from running process executable path."""
+ *     if not exe_path or not isinstance(exe_path, str) or not os.path.exists(exe_path):
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11ram_booster_6memory_17get_top_memory_processes(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_11ram_booster_6memory_17_extract_proc_icon_b64(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_11ram_booster_6memory_16get_top_memory_processes, "Get the top N processes by memory usage.");
-static PyMethodDef __pyx_mdef_11ram_booster_6memory_17get_top_memory_processes = {"get_top_memory_processes", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_11ram_booster_6memory_17get_top_memory_processes, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_11ram_booster_6memory_16get_top_memory_processes};
-static PyObject *__pyx_pw_11ram_booster_6memory_17get_top_memory_processes(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_11ram_booster_6memory_16_extract_proc_icon_b64, "Extract 32x32 PNG Base64 icon from running process executable path.");
+static PyMethodDef __pyx_mdef_11ram_booster_6memory_17_extract_proc_icon_b64 = {"_extract_proc_icon_b64", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_11ram_booster_6memory_17_extract_proc_icon_b64, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_11ram_booster_6memory_16_extract_proc_icon_b64};
+static PyObject *__pyx_pw_11ram_booster_6memory_17_extract_proc_icon_b64(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+) {
+  PyObject *__pyx_v_exe_path = 0;
+  #if !CYTHON_METH_FASTCALL
+  CYTHON_UNUSED Py_ssize_t __pyx_nargs;
+  #endif
+  CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
+  PyObject* values[1] = {0};
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("_extract_proc_icon_b64 (wrapper)", 0);
+  #if !CYTHON_METH_FASTCALL
+  #if CYTHON_ASSUME_SAFE_SIZE
+  __pyx_nargs = PyTuple_GET_SIZE(__pyx_args);
+  #else
+  __pyx_nargs = PyTuple_Size(__pyx_args); if (unlikely(__pyx_nargs < 0)) return NULL;
+  #endif
+  #endif
+  __pyx_kwvalues = __Pyx_KwValues_FASTCALL(__pyx_args, __pyx_nargs);
+  {
+    PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_exe_path,0};
+    const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 347, __pyx_L3_error)
+    if (__pyx_kwds_len > 0) {
+      switch (__pyx_nargs) {
+        case  1:
+        values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 347, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      const Py_ssize_t kwd_pos_args = __pyx_nargs;
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "_extract_proc_icon_b64", 0) < (0)) __PYX_ERR(0, 347, __pyx_L3_error)
+      for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("_extract_proc_icon_b64", 1, 1, 1, i); __PYX_ERR(0, 347, __pyx_L3_error) }
+      }
+    } else if (unlikely(__pyx_nargs != 1)) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 347, __pyx_L3_error)
+    }
+    __pyx_v_exe_path = values[0];
+  }
+  goto __pyx_L6_skip;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("_extract_proc_icon_b64", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 347, __pyx_L3_error)
+  __pyx_L6_skip:;
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __Pyx_AddTraceback("ram_booster.memory._extract_proc_icon_b64", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_11ram_booster_6memory_16_extract_proc_icon_b64(__pyx_self, __pyx_v_exe_path);
+
+  /* function exit code */
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_11ram_booster_6memory_16_extract_proc_icon_b64(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_exe_path) {
+  PyObject *__pyx_v_win32gui = NULL;
+  PyObject *__pyx_v_win32ui = NULL;
+  PyObject *__pyx_v_win32con = NULL;
+  PyObject *__pyx_v_base64 = NULL;
+  PyObject *__pyx_v_io = NULL;
+  PyObject *__pyx_v_Image = NULL;
+  PyObject *__pyx_v_large = NULL;
+  PyObject *__pyx_v_small = NULL;
+  PyObject *__pyx_v_hicon = NULL;
+  PyObject *__pyx_v_hdc = NULL;
+  PyObject *__pyx_v_hbmp = NULL;
+  PyObject *__pyx_v_hdc_mem = NULL;
+  CYTHON_UNUSED PyObject *__pyx_v_bmpinfo = NULL;
+  PyObject *__pyx_v_bmpbits = NULL;
+  PyObject *__pyx_v_im = NULL;
+  PyObject *__pyx_v_h = NULL;
+  PyObject *__pyx_v_buf = NULL;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  int __pyx_t_1;
+  int __pyx_t_2;
+  int __pyx_t_3;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  PyObject *__pyx_t_7 = NULL;
+  size_t __pyx_t_8;
+  PyObject *__pyx_t_9 = NULL;
+  PyObject *__pyx_t_10 = NULL;
+  PyObject *__pyx_t_11 = NULL;
+  PyObject *__pyx_t_12 = NULL;
+  Py_ssize_t __pyx_t_13;
+  PyObject *(*__pyx_t_14)(PyObject *);
+  PyObject *(*__pyx_t_15)(PyObject *);
+  PyObject *__pyx_t_16 = NULL;
+  PyObject *__pyx_t_17 = NULL;
+  int __pyx_t_18;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("_extract_proc_icon_b64", 0);
+
+  /* "ram_booster/memory.py":349
+ * def _extract_proc_icon_b64(exe_path):
+ *     """Extract 32x32 PNG Base64 icon from running process executable path."""
+ *     if not exe_path or not isinstance(exe_path, str) or not os.path.exists(exe_path):             # <<<<<<<<<<<<<<
+ *         return ""
+ *     try:
+*/
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_exe_path); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 349, __pyx_L1_error)
+  __pyx_t_3 = (!__pyx_t_2);
+  if (!__pyx_t_3) {
+  } else {
+    __pyx_t_1 = __pyx_t_3;
+    goto __pyx_L4_bool_binop_done;
+  }
+  __pyx_t_3 = PyUnicode_Check(__pyx_v_exe_path); 
+  __pyx_t_2 = (!__pyx_t_3);
+  if (!__pyx_t_2) {
+  } else {
+    __pyx_t_1 = __pyx_t_2;
+    goto __pyx_L4_bool_binop_done;
+  }
+  __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_os); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 349, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_path); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 349, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __pyx_t_5 = __pyx_t_7;
+  __Pyx_INCREF(__pyx_t_5);
+  __pyx_t_8 = 0;
+  {
+    PyObject *__pyx_callargs[2] = {__pyx_t_5, __pyx_v_exe_path};
+    __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_exists, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 349, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+  }
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 349, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_3 = (!__pyx_t_2);
+  __pyx_t_1 = __pyx_t_3;
+  __pyx_L4_bool_binop_done:;
+  if (__pyx_t_1) {
+
+    /* "ram_booster/memory.py":350
+ *     """Extract 32x32 PNG Base64 icon from running process executable path."""
+ *     if not exe_path or not isinstance(exe_path, str) or not os.path.exists(exe_path):
+ *         return ""             # <<<<<<<<<<<<<<
+ *     try:
+ *         import win32gui, win32ui, win32con, base64, io
+*/
+    __Pyx_XDECREF(__pyx_r);
+    __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u__3);
+    __pyx_r = __pyx_mstate_global->__pyx_kp_u__3;
+    goto __pyx_L0;
+
+    /* "ram_booster/memory.py":349
+ * def _extract_proc_icon_b64(exe_path):
+ *     """Extract 32x32 PNG Base64 icon from running process executable path."""
+ *     if not exe_path or not isinstance(exe_path, str) or not os.path.exists(exe_path):             # <<<<<<<<<<<<<<
+ *         return ""
+ *     try:
+*/
+  }
+
+  /* "ram_booster/memory.py":351
+ *     if not exe_path or not isinstance(exe_path, str) or not os.path.exists(exe_path):
+ *         return ""
+ *     try:             # <<<<<<<<<<<<<<
+ *         import win32gui, win32ui, win32con, base64, io
+ *         from PIL import Image
+*/
+  {
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_10, &__pyx_t_11);
+    __Pyx_XGOTREF(__pyx_t_9);
+    __Pyx_XGOTREF(__pyx_t_10);
+    __Pyx_XGOTREF(__pyx_t_11);
+    /*try:*/ {
+
+      /* "ram_booster/memory.py":352
+ *         return ""
+ *     try:
+ *         import win32gui, win32ui, win32con, base64, io             # <<<<<<<<<<<<<<
+ *         from PIL import Image
+ * 
+*/
+      __pyx_t_12 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_win32gui, 0, 0, NULL, 0); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 352, __pyx_L7_error)
+      __pyx_t_4 = __pyx_t_12;
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_v_win32gui = __pyx_t_4;
+      __pyx_t_4 = 0;
+      __pyx_t_12 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_win32ui, 0, 0, NULL, 0); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 352, __pyx_L7_error)
+      __pyx_t_4 = __pyx_t_12;
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_v_win32ui = __pyx_t_4;
+      __pyx_t_4 = 0;
+      __pyx_t_12 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_win32con, 0, 0, NULL, 0); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 352, __pyx_L7_error)
+      __pyx_t_4 = __pyx_t_12;
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_v_win32con = __pyx_t_4;
+      __pyx_t_4 = 0;
+      __pyx_t_12 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_base64, 0, 0, NULL, 0); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 352, __pyx_L7_error)
+      __pyx_t_4 = __pyx_t_12;
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_v_base64 = __pyx_t_4;
+      __pyx_t_4 = 0;
+      __pyx_t_12 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_io, 0, 0, NULL, 0); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 352, __pyx_L7_error)
+      __pyx_t_4 = __pyx_t_12;
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_v_io = __pyx_t_4;
+      __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":353
+ *     try:
+ *         import win32gui, win32ui, win32con, base64, io
+ *         from PIL import Image             # <<<<<<<<<<<<<<
+ * 
+ *         large, small = win32gui.ExtractIconEx(exe_path, 0)
+*/
+      {
+        PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_Image};
+        __pyx_t_12 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_PIL, __pyx_imported_names, 1, NULL, 0); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 353, __pyx_L7_error)
+      }
+      __pyx_t_4 = __pyx_t_12;
+      __Pyx_GOTREF(__pyx_t_4);
+      {
+        PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_Image};
+        __pyx_t_13 = 0; {
+          __pyx_t_7 = __Pyx_ImportFrom(__pyx_t_4, __pyx_imported_names[__pyx_t_13]); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 353, __pyx_L7_error)
+          __Pyx_GOTREF(__pyx_t_7);
+          switch (__pyx_t_13) {
+            case 0:
+            __Pyx_INCREF(__pyx_t_7);
+            __pyx_v_Image = __pyx_t_7;
+            break;
+            default:;
+          }
+          __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+        }
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":355
+ *         from PIL import Image
+ * 
+ *         large, small = win32gui.ExtractIconEx(exe_path, 0)             # <<<<<<<<<<<<<<
+ *         hicon = large[0] if large else (small[0] if small else None)
+ *         if not hicon:
+*/
+      __pyx_t_7 = __pyx_v_win32gui;
+      __Pyx_INCREF(__pyx_t_7);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[3] = {__pyx_t_7, __pyx_v_exe_path, __pyx_mstate_global->__pyx_int_0};
+        __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_ExtractIconEx, __pyx_callargs+__pyx_t_8, (3-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 355, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      }
+      if ((likely(PyTuple_CheckExact(__pyx_t_4))) || (PyList_CheckExact(__pyx_t_4))) {
+        PyObject* sequence = __pyx_t_4;
+        Py_ssize_t size = __Pyx_PySequence_SIZE(sequence);
+        if (unlikely(size != 2)) {
+          if (size > 2) __Pyx_RaiseTooManyValuesError(2);
+          else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
+          __PYX_ERR(0, 355, __pyx_L7_error)
+        }
+        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+        if (likely(PyTuple_CheckExact(sequence))) {
+          __pyx_t_7 = PyTuple_GET_ITEM(sequence, 0);
+          __Pyx_INCREF(__pyx_t_7);
+          __pyx_t_5 = PyTuple_GET_ITEM(sequence, 1);
+          __Pyx_INCREF(__pyx_t_5);
+        } else {
+          __pyx_t_7 = __Pyx_PyList_GetItemRefFast(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
+          if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 355, __pyx_L7_error)
+          __Pyx_XGOTREF(__pyx_t_7);
+          __pyx_t_5 = __Pyx_PyList_GetItemRefFast(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
+          if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 355, __pyx_L7_error)
+          __Pyx_XGOTREF(__pyx_t_5);
+        }
+        #else
+        __pyx_t_7 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 355, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __pyx_t_5 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 355, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_5);
+        #endif
+        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      } else {
+        Py_ssize_t index = -1;
+        __pyx_t_6 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 355, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __pyx_t_14 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_6);
+        index = 0; __pyx_t_7 = __pyx_t_14(__pyx_t_6); if (unlikely(!__pyx_t_7)) goto __pyx_L13_unpacking_failed;
+        __Pyx_GOTREF(__pyx_t_7);
+        index = 1; __pyx_t_5 = __pyx_t_14(__pyx_t_6); if (unlikely(!__pyx_t_5)) goto __pyx_L13_unpacking_failed;
+        __Pyx_GOTREF(__pyx_t_5);
+        if (__Pyx_IternextUnpackEndCheck(__pyx_t_14(__pyx_t_6), 2) < (0)) __PYX_ERR(0, 355, __pyx_L7_error)
+        __pyx_t_14 = NULL;
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        goto __pyx_L14_unpacking_done;
+        __pyx_L13_unpacking_failed:;
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __pyx_t_14 = NULL;
+        if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
+        __PYX_ERR(0, 355, __pyx_L7_error)
+        __pyx_L14_unpacking_done:;
+      }
+      __pyx_v_large = __pyx_t_7;
+      __pyx_t_7 = 0;
+      __pyx_v_small = __pyx_t_5;
+      __pyx_t_5 = 0;
+
+      /* "ram_booster/memory.py":356
+ * 
+ *         large, small = win32gui.ExtractIconEx(exe_path, 0)
+ *         hicon = large[0] if large else (small[0] if small else None)             # <<<<<<<<<<<<<<
+ *         if not hicon:
+ *             return ""
+*/
+      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_large); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 356, __pyx_L7_error)
+      if (__pyx_t_1) {
+        __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_large, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 1, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 356, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_5);
+        __pyx_t_4 = __pyx_t_5;
+        __pyx_t_5 = 0;
+      } else {
+        __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_v_small); if (unlikely((__pyx_t_3 < 0))) __PYX_ERR(0, 356, __pyx_L7_error)
+        if (__pyx_t_3) {
+          __pyx_t_7 = __Pyx_GetItemInt(__pyx_v_small, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 1, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 356, __pyx_L7_error)
+          __Pyx_GOTREF(__pyx_t_7);
+          __pyx_t_5 = __pyx_t_7;
+          __pyx_t_7 = 0;
+        } else {
+          __Pyx_INCREF(Py_None);
+          __pyx_t_5 = Py_None;
+        }
+        __pyx_t_4 = __pyx_t_5;
+        __pyx_t_5 = 0;
+      }
+      __pyx_v_hicon = __pyx_t_4;
+      __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":357
+ *         large, small = win32gui.ExtractIconEx(exe_path, 0)
+ *         hicon = large[0] if large else (small[0] if small else None)
+ *         if not hicon:             # <<<<<<<<<<<<<<
+ *             return ""
+ * 
+*/
+      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_hicon); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 357, __pyx_L7_error)
+      __pyx_t_3 = (!__pyx_t_1);
+      if (__pyx_t_3) {
+
+        /* "ram_booster/memory.py":358
+ *         hicon = large[0] if large else (small[0] if small else None)
+ *         if not hicon:
+ *             return ""             # <<<<<<<<<<<<<<
+ * 
+ *         hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
+*/
+        __Pyx_XDECREF(__pyx_r);
+        __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u__3);
+        __pyx_r = __pyx_mstate_global->__pyx_kp_u__3;
+        goto __pyx_L11_try_return;
+
+        /* "ram_booster/memory.py":357
+ *         large, small = win32gui.ExtractIconEx(exe_path, 0)
+ *         hicon = large[0] if large else (small[0] if small else None)
+ *         if not hicon:             # <<<<<<<<<<<<<<
+ *             return ""
+ * 
+*/
+      }
+
+      /* "ram_booster/memory.py":360
+ *             return ""
+ * 
+ *         hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))             # <<<<<<<<<<<<<<
+ *         hbmp = win32ui.CreateBitmap()
+ *         hbmp.CreateCompatibleBitmap(hdc, 32, 32)
+*/
+      __pyx_t_5 = __pyx_v_win32ui;
+      __Pyx_INCREF(__pyx_t_5);
+      __pyx_t_6 = __pyx_v_win32gui;
+      __Pyx_INCREF(__pyx_t_6);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_6, __pyx_mstate_global->__pyx_int_0};
+        __pyx_t_7 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_GetDC, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 360, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_7);
+      }
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_5, __pyx_t_7};
+        __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_CreateDCFromHandle, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 360, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      }
+      __pyx_v_hdc = __pyx_t_4;
+      __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":361
+ * 
+ *         hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
+ *         hbmp = win32ui.CreateBitmap()             # <<<<<<<<<<<<<<
+ *         hbmp.CreateCompatibleBitmap(hdc, 32, 32)
+ *         hdc_mem = hdc.CreateCompatibleDC()
+*/
+      __pyx_t_7 = __pyx_v_win32ui;
+      __Pyx_INCREF(__pyx_t_7);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_7, NULL};
+        __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_CreateBitmap, __pyx_callargs+__pyx_t_8, (1-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 361, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      }
+      __pyx_v_hbmp = __pyx_t_4;
+      __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":362
+ *         hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
+ *         hbmp = win32ui.CreateBitmap()
+ *         hbmp.CreateCompatibleBitmap(hdc, 32, 32)             # <<<<<<<<<<<<<<
+ *         hdc_mem = hdc.CreateCompatibleDC()
+ *         hdc_mem.SelectObject(hbmp)
+*/
+      __pyx_t_7 = __pyx_v_hbmp;
+      __Pyx_INCREF(__pyx_t_7);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[4] = {__pyx_t_7, __pyx_v_hdc, __pyx_mstate_global->__pyx_int_32, __pyx_mstate_global->__pyx_int_32};
+        __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_CreateCompatibleBitmap, __pyx_callargs+__pyx_t_8, (4-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 362, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":363
+ *         hbmp = win32ui.CreateBitmap()
+ *         hbmp.CreateCompatibleBitmap(hdc, 32, 32)
+ *         hdc_mem = hdc.CreateCompatibleDC()             # <<<<<<<<<<<<<<
+ *         hdc_mem.SelectObject(hbmp)
+ * 
+*/
+      __pyx_t_7 = __pyx_v_hdc;
+      __Pyx_INCREF(__pyx_t_7);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_7, NULL};
+        __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_CreateCompatibleDC, __pyx_callargs+__pyx_t_8, (1-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 363, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      }
+      __pyx_v_hdc_mem = __pyx_t_4;
+      __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":364
+ *         hbmp.CreateCompatibleBitmap(hdc, 32, 32)
+ *         hdc_mem = hdc.CreateCompatibleDC()
+ *         hdc_mem.SelectObject(hbmp)             # <<<<<<<<<<<<<<
+ * 
+ *         win32gui.DrawIconEx(hdc_mem.GetHandleOutput(), 0, 0, hicon, 32, 32, 0, 0, win32con.DI_NORMAL)
+*/
+      __pyx_t_7 = __pyx_v_hdc_mem;
+      __Pyx_INCREF(__pyx_t_7);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_7, __pyx_v_hbmp};
+        __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_SelectObject, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 364, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":366
+ *         hdc_mem.SelectObject(hbmp)
+ * 
+ *         win32gui.DrawIconEx(hdc_mem.GetHandleOutput(), 0, 0, hicon, 32, 32, 0, 0, win32con.DI_NORMAL)             # <<<<<<<<<<<<<<
+ *         bmpinfo = hbmp.GetInfo()
+ *         bmpbits = hbmp.GetBitmapBits(True)
+*/
+      __pyx_t_7 = __pyx_v_win32gui;
+      __Pyx_INCREF(__pyx_t_7);
+      __pyx_t_6 = __pyx_v_hdc_mem;
+      __Pyx_INCREF(__pyx_t_6);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_6, NULL};
+        __pyx_t_5 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_GetHandleOutput, __pyx_callargs+__pyx_t_8, (1-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 366, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_5);
+      }
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_win32con, __pyx_mstate_global->__pyx_n_u_DI_NORMAL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 366, __pyx_L7_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[10] = {__pyx_t_7, __pyx_t_5, __pyx_mstate_global->__pyx_int_0, __pyx_mstate_global->__pyx_int_0, __pyx_v_hicon, __pyx_mstate_global->__pyx_int_32, __pyx_mstate_global->__pyx_int_32, __pyx_mstate_global->__pyx_int_0, __pyx_mstate_global->__pyx_int_0, __pyx_t_6};
+        __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_DrawIconEx, __pyx_callargs+__pyx_t_8, (10-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 366, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":367
+ * 
+ *         win32gui.DrawIconEx(hdc_mem.GetHandleOutput(), 0, 0, hicon, 32, 32, 0, 0, win32con.DI_NORMAL)
+ *         bmpinfo = hbmp.GetInfo()             # <<<<<<<<<<<<<<
+ *         bmpbits = hbmp.GetBitmapBits(True)
+ * 
+*/
+      __pyx_t_6 = __pyx_v_hbmp;
+      __Pyx_INCREF(__pyx_t_6);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_6, NULL};
+        __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_GetInfo, __pyx_callargs+__pyx_t_8, (1-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 367, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      }
+      __pyx_v_bmpinfo = __pyx_t_4;
+      __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":368
+ *         win32gui.DrawIconEx(hdc_mem.GetHandleOutput(), 0, 0, hicon, 32, 32, 0, 0, win32con.DI_NORMAL)
+ *         bmpinfo = hbmp.GetInfo()
+ *         bmpbits = hbmp.GetBitmapBits(True)             # <<<<<<<<<<<<<<
+ * 
+ *         im = Image.frombuffer('RGBA', (32, 32), bmpbits, 'raw', 'BGRA', 0, 1)
+*/
+      __pyx_t_6 = __pyx_v_hbmp;
+      __Pyx_INCREF(__pyx_t_6);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_6, Py_True};
+        __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_GetBitmapBits, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 368, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      }
+      __pyx_v_bmpbits = __pyx_t_4;
+      __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":370
+ *         bmpbits = hbmp.GetBitmapBits(True)
+ * 
+ *         im = Image.frombuffer('RGBA', (32, 32), bmpbits, 'raw', 'BGRA', 0, 1)             # <<<<<<<<<<<<<<
+ * 
+ *         for h in large: win32gui.DestroyIcon(h)
+*/
+      __pyx_t_6 = __pyx_v_Image;
+      __Pyx_INCREF(__pyx_t_6);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[8] = {__pyx_t_6, __pyx_mstate_global->__pyx_n_u_RGBA, __pyx_mstate_global->__pyx_tuple[0], __pyx_v_bmpbits, __pyx_mstate_global->__pyx_n_u_raw, __pyx_mstate_global->__pyx_n_u_BGRA, __pyx_mstate_global->__pyx_int_0, __pyx_mstate_global->__pyx_int_1};
+        __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_frombuffer, __pyx_callargs+__pyx_t_8, (8-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 370, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      }
+      __pyx_v_im = __pyx_t_4;
+      __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":372
+ *         im = Image.frombuffer('RGBA', (32, 32), bmpbits, 'raw', 'BGRA', 0, 1)
+ * 
+ *         for h in large: win32gui.DestroyIcon(h)             # <<<<<<<<<<<<<<
+ *         for h in small: win32gui.DestroyIcon(h)
+ * 
+*/
+      if (likely(PyList_CheckExact(__pyx_v_large)) || PyTuple_CheckExact(__pyx_v_large)) {
+        __pyx_t_4 = __pyx_v_large; __Pyx_INCREF(__pyx_t_4);
+        __pyx_t_13 = 0;
+        __pyx_t_15 = NULL;
+      } else {
+        __pyx_t_13 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_v_large); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 372, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+        __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_4); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 372, __pyx_L7_error)
+      }
+      for (;;) {
+        if (likely(!__pyx_t_15)) {
+          if (likely(PyList_CheckExact(__pyx_t_4))) {
+            {
+              Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_4);
+              #if !CYTHON_ASSUME_SAFE_SIZE
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 372, __pyx_L7_error)
+              #endif
+              if (__pyx_t_13 >= __pyx_temp) break;
+            }
+            __pyx_t_6 = __Pyx_PyList_GetItemRefFast(__pyx_t_4, __pyx_t_13, __Pyx_ReferenceSharing_OwnStrongReference);
+            ++__pyx_t_13;
+          } else {
+            {
+              Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_4);
+              #if !CYTHON_ASSUME_SAFE_SIZE
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 372, __pyx_L7_error)
+              #endif
+              if (__pyx_t_13 >= __pyx_temp) break;
+            }
+            #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+            __pyx_t_6 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_13));
+            #else
+            __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_4, __pyx_t_13);
+            #endif
+            ++__pyx_t_13;
+          }
+          if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 372, __pyx_L7_error)
+        } else {
+          __pyx_t_6 = __pyx_t_15(__pyx_t_4);
+          if (unlikely(!__pyx_t_6)) {
+            PyObject* exc_type = PyErr_Occurred();
+            if (exc_type) {
+              if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 372, __pyx_L7_error)
+              PyErr_Clear();
+            }
+            break;
+          }
+        }
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_XDECREF_SET(__pyx_v_h, __pyx_t_6);
+        __pyx_t_6 = 0;
+        __pyx_t_5 = __pyx_v_win32gui;
+        __Pyx_INCREF(__pyx_t_5);
+        __pyx_t_8 = 0;
+        {
+          PyObject *__pyx_callargs[2] = {__pyx_t_5, __pyx_v_h};
+          __pyx_t_6 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_DestroyIcon, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+          if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 372, __pyx_L7_error)
+          __Pyx_GOTREF(__pyx_t_6);
+        }
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":373
+ * 
+ *         for h in large: win32gui.DestroyIcon(h)
+ *         for h in small: win32gui.DestroyIcon(h)             # <<<<<<<<<<<<<<
+ * 
+ *         buf = io.BytesIO()
+*/
+      if (likely(PyList_CheckExact(__pyx_v_small)) || PyTuple_CheckExact(__pyx_v_small)) {
+        __pyx_t_4 = __pyx_v_small; __Pyx_INCREF(__pyx_t_4);
+        __pyx_t_13 = 0;
+        __pyx_t_15 = NULL;
+      } else {
+        __pyx_t_13 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_v_small); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 373, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+        __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_4); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 373, __pyx_L7_error)
+      }
+      for (;;) {
+        if (likely(!__pyx_t_15)) {
+          if (likely(PyList_CheckExact(__pyx_t_4))) {
+            {
+              Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_4);
+              #if !CYTHON_ASSUME_SAFE_SIZE
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 373, __pyx_L7_error)
+              #endif
+              if (__pyx_t_13 >= __pyx_temp) break;
+            }
+            __pyx_t_6 = __Pyx_PyList_GetItemRefFast(__pyx_t_4, __pyx_t_13, __Pyx_ReferenceSharing_OwnStrongReference);
+            ++__pyx_t_13;
+          } else {
+            {
+              Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_4);
+              #if !CYTHON_ASSUME_SAFE_SIZE
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 373, __pyx_L7_error)
+              #endif
+              if (__pyx_t_13 >= __pyx_temp) break;
+            }
+            #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+            __pyx_t_6 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_13));
+            #else
+            __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_4, __pyx_t_13);
+            #endif
+            ++__pyx_t_13;
+          }
+          if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 373, __pyx_L7_error)
+        } else {
+          __pyx_t_6 = __pyx_t_15(__pyx_t_4);
+          if (unlikely(!__pyx_t_6)) {
+            PyObject* exc_type = PyErr_Occurred();
+            if (exc_type) {
+              if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 373, __pyx_L7_error)
+              PyErr_Clear();
+            }
+            break;
+          }
+        }
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_XDECREF_SET(__pyx_v_h, __pyx_t_6);
+        __pyx_t_6 = 0;
+        __pyx_t_5 = __pyx_v_win32gui;
+        __Pyx_INCREF(__pyx_t_5);
+        __pyx_t_8 = 0;
+        {
+          PyObject *__pyx_callargs[2] = {__pyx_t_5, __pyx_v_h};
+          __pyx_t_6 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_DestroyIcon, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+          if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 373, __pyx_L7_error)
+          __Pyx_GOTREF(__pyx_t_6);
+        }
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":375
+ *         for h in small: win32gui.DestroyIcon(h)
+ * 
+ *         buf = io.BytesIO()             # <<<<<<<<<<<<<<
+ *         im.save(buf, format="PNG")
+ *         return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
+*/
+      __pyx_t_6 = __pyx_v_io;
+      __Pyx_INCREF(__pyx_t_6);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_6, NULL};
+        __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_BytesIO, __pyx_callargs+__pyx_t_8, (1-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 375, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      }
+      __pyx_v_buf = __pyx_t_4;
+      __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":376
+ * 
+ *         buf = io.BytesIO()
+ *         im.save(buf, format="PNG")             # <<<<<<<<<<<<<<
+ *         return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
+ *     except Exception:
+*/
+      __pyx_t_6 = __pyx_v_im;
+      __Pyx_INCREF(__pyx_t_6);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 1 : 0)] = {__pyx_t_6, __pyx_v_buf};
+        __pyx_t_5 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 376, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_5);
+        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_format, __pyx_mstate_global->__pyx_n_u_PNG, __pyx_t_5, __pyx_callargs+2, 0) < (0)) __PYX_ERR(0, 376, __pyx_L7_error)
+        __pyx_t_4 = __Pyx_Object_VectorcallMethod_CallFromBuilder((PyObject*)__pyx_mstate_global->__pyx_n_u_save, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_5);
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 376, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
+      /* "ram_booster/memory.py":377
+ *         buf = io.BytesIO()
+ *         im.save(buf, format="PNG")
+ *         return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"             # <<<<<<<<<<<<<<
+ *     except Exception:
+ *         return ""
+*/
+      __Pyx_XDECREF(__pyx_r);
+      __pyx_t_7 = __pyx_v_base64;
+      __Pyx_INCREF(__pyx_t_7);
+      __pyx_t_17 = __pyx_v_buf;
+      __Pyx_INCREF(__pyx_t_17);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_17, NULL};
+        __pyx_t_16 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_getvalue, __pyx_callargs+__pyx_t_8, (1-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+        if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 377, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_16);
+      }
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_7, __pyx_t_16};
+        __pyx_t_6 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_b64encode, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
+        if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 377, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_6);
+      }
+      __pyx_t_5 = __pyx_t_6;
+      __Pyx_INCREF(__pyx_t_5);
+      __pyx_t_8 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_5, NULL};
+        __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_decode, __pyx_callargs+__pyx_t_8, (1-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 377, __pyx_L7_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      }
+      __pyx_t_6 = __Pyx_PyObject_FormatSimple(__pyx_t_4, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 377, __pyx_L7_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_4 = __Pyx_PyUnicode_Concat(__pyx_mstate_global->__pyx_kp_u_data_image_png_base64, __pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 377, __pyx_L7_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      __pyx_r = __pyx_t_4;
+      __pyx_t_4 = 0;
+      goto __pyx_L11_try_return;
+
+      /* "ram_booster/memory.py":351
+ *     if not exe_path or not isinstance(exe_path, str) or not os.path.exists(exe_path):
+ *         return ""
+ *     try:             # <<<<<<<<<<<<<<
+ *         import win32gui, win32ui, win32con, base64, io
+ *         from PIL import Image
+*/
+    }
+    __pyx_L7_error:;
+    __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
+    __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+
+    /* "ram_booster/memory.py":378
+ *         im.save(buf, format="PNG")
+ *         return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
+ *     except Exception:             # <<<<<<<<<<<<<<
+ *         return ""
+ * 
+*/
+    __pyx_t_18 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+    if (__pyx_t_18) {
+      __Pyx_ErrRestore(0,0,0);
+
+      /* "ram_booster/memory.py":379
+ *         return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
+ *     except Exception:
+ *         return ""             # <<<<<<<<<<<<<<
+ * 
+ * 
+*/
+      __Pyx_XDECREF(__pyx_r);
+      __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u__3);
+      __pyx_r = __pyx_mstate_global->__pyx_kp_u__3;
+      goto __pyx_L10_except_return;
+    }
+    goto __pyx_L9_except_error;
+
+    /* "ram_booster/memory.py":351
+ *     if not exe_path or not isinstance(exe_path, str) or not os.path.exists(exe_path):
+ *         return ""
+ *     try:             # <<<<<<<<<<<<<<
+ *         import win32gui, win32ui, win32con, base64, io
+ *         from PIL import Image
+*/
+    __pyx_L9_except_error:;
+    __Pyx_XGIVEREF(__pyx_t_9);
+    __Pyx_XGIVEREF(__pyx_t_10);
+    __Pyx_XGIVEREF(__pyx_t_11);
+    __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_10, __pyx_t_11);
+    goto __pyx_L1_error;
+    __pyx_L11_try_return:;
+    __Pyx_XGIVEREF(__pyx_t_9);
+    __Pyx_XGIVEREF(__pyx_t_10);
+    __Pyx_XGIVEREF(__pyx_t_11);
+    __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_10, __pyx_t_11);
+    goto __pyx_L0;
+    __pyx_L10_except_return:;
+    __Pyx_XGIVEREF(__pyx_t_9);
+    __Pyx_XGIVEREF(__pyx_t_10);
+    __Pyx_XGIVEREF(__pyx_t_11);
+    __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_10, __pyx_t_11);
+    goto __pyx_L0;
+  }
+
+  /* "ram_booster/memory.py":347
+ * 
+ * 
+ * def _extract_proc_icon_b64(exe_path):             # <<<<<<<<<<<<<<
+ *     """Extract 32x32 PNG Base64 icon from running process executable path."""
+ *     if not exe_path or not isinstance(exe_path, str) or not os.path.exists(exe_path):
+*/
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_XDECREF(__pyx_t_7);
+  __Pyx_XDECREF(__pyx_t_16);
+  __Pyx_XDECREF(__pyx_t_17);
+  __Pyx_AddTraceback("ram_booster.memory._extract_proc_icon_b64", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_win32gui);
+  __Pyx_XDECREF(__pyx_v_win32ui);
+  __Pyx_XDECREF(__pyx_v_win32con);
+  __Pyx_XDECREF(__pyx_v_base64);
+  __Pyx_XDECREF(__pyx_v_io);
+  __Pyx_XDECREF(__pyx_v_Image);
+  __Pyx_XDECREF(__pyx_v_large);
+  __Pyx_XDECREF(__pyx_v_small);
+  __Pyx_XDECREF(__pyx_v_hicon);
+  __Pyx_XDECREF(__pyx_v_hdc);
+  __Pyx_XDECREF(__pyx_v_hbmp);
+  __Pyx_XDECREF(__pyx_v_hdc_mem);
+  __Pyx_XDECREF(__pyx_v_bmpinfo);
+  __Pyx_XDECREF(__pyx_v_bmpbits);
+  __Pyx_XDECREF(__pyx_v_im);
+  __Pyx_XDECREF(__pyx_v_h);
+  __Pyx_XDECREF(__pyx_v_buf);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "ram_booster/memory.py":382
+ * 
+ * 
+ * def get_top_memory_processes(count: int = 15) -> list[dict]:             # <<<<<<<<<<<<<<
+ *     """Get the top N processes by memory usage with real icons."""
+ *     processes = []
+*/
+
+/* Python wrapper */
+static PyObject *__pyx_pw_11ram_booster_6memory_19get_top_memory_processes(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+); /*proto*/
+PyDoc_STRVAR(__pyx_doc_11ram_booster_6memory_18get_top_memory_processes, "Get the top N processes by memory usage with real icons.");
+static PyMethodDef __pyx_mdef_11ram_booster_6memory_19get_top_memory_processes = {"get_top_memory_processes", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_11ram_booster_6memory_19get_top_memory_processes, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_11ram_booster_6memory_18get_top_memory_processes};
+static PyObject *__pyx_pw_11ram_booster_6memory_19get_top_memory_processes(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -8698,36 +9725,36 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_count,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 348, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 382, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 348, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 382, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "get_top_memory_processes", 0) < (0)) __PYX_ERR(0, 348, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "get_top_memory_processes", 0) < (0)) __PYX_ERR(0, 382, __pyx_L3_error)
       if (!values[0]) values[0] = __Pyx_NewRef(((PyObject*)((PyObject*)__pyx_mstate_global->__pyx_int_15)));
     } else {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 348, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 382, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       if (!values[0]) values[0] = __Pyx_NewRef(((PyObject*)((PyObject*)__pyx_mstate_global->__pyx_int_15)));
     }
-    if (__Pyx_PyInt_FromNumber(&values[0], "count", 0) < (0)) __PYX_ERR(0, 348, __pyx_L3_error)
+    if (__Pyx_PyInt_FromNumber(&values[0], "count", 0) < (0)) __PYX_ERR(0, 382, __pyx_L3_error)
     __pyx_v_count = ((PyObject*)values[0]);
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("get_top_memory_processes", 0, 0, 1, __pyx_nargs); __PYX_ERR(0, 348, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("get_top_memory_processes", 0, 0, 1, __pyx_nargs); __PYX_ERR(0, 382, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -8738,8 +9765,8 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_count), (&PyLong_Type), 0, "count", 2))) __PYX_ERR(0, 348, __pyx_L1_error)
-  __pyx_r = __pyx_pf_11ram_booster_6memory_16get_top_memory_processes(__pyx_self, __pyx_v_count);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_count), (&PyLong_Type), 0, "count", 2))) __PYX_ERR(0, 382, __pyx_L1_error)
+  __pyx_r = __pyx_pf_11ram_booster_6memory_18get_top_memory_processes(__pyx_self, __pyx_v_count);
 
   /* function exit code */
   goto __pyx_L0;
@@ -8758,7 +9785,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-/* "ram_booster/memory.py":370
+/* "ram_booster/memory.py":408
  * 
  *     # Sort by memory usage descending
  *     processes.sort(key=lambda x: x['memory_mb'], reverse=True)             # <<<<<<<<<<<<<<
@@ -8805,32 +9832,32 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_x,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 370, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 408, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 370, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 408, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "lambda", 0) < (0)) __PYX_ERR(0, 370, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "lambda", 0) < (0)) __PYX_ERR(0, 408, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("lambda", 1, 1, 1, i); __PYX_ERR(0, 370, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("lambda", 1, 1, 1, i); __PYX_ERR(0, 408, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 370, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 408, __pyx_L3_error)
     }
     __pyx_v_x = values[0];
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("lambda", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 370, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("lambda", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 408, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -8860,7 +9887,7 @@ static PyObject *__pyx_lambda_funcdef_lambda(CYTHON_UNUSED PyObject *__pyx_self,
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("lambda", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_x, __pyx_mstate_global->__pyx_n_u_memory_mb); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 370, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_x, __pyx_mstate_global->__pyx_n_u_memory_mb); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 408, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -8877,19 +9904,20 @@ static PyObject *__pyx_lambda_funcdef_lambda(CYTHON_UNUSED PyObject *__pyx_self,
   return __pyx_r;
 }
 
-/* "ram_booster/memory.py":348
+/* "ram_booster/memory.py":382
  * 
  * 
  * def get_top_memory_processes(count: int = 15) -> list[dict]:             # <<<<<<<<<<<<<<
- *     """Get the top N processes by memory usage."""
+ *     """Get the top N processes by memory usage with real icons."""
  *     processes = []
 */
 
-static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_count) {
+static PyObject *__pyx_pf_11ram_booster_6memory_18get_top_memory_processes(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_count) {
   PyObject *__pyx_v_processes = NULL;
   PyObject *__pyx_v_proc = NULL;
   PyObject *__pyx_v_info = NULL;
   PyObject *__pyx_v_mem_mb = NULL;
+  PyObject *__pyx_v_icon_b64 = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8916,48 +9944,51 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_top_memory_processes", 0);
 
-  /* "ram_booster/memory.py":350
+  /* "ram_booster/memory.py":384
  * def get_top_memory_processes(count: int = 15) -> list[dict]:
- *     """Get the top N processes by memory usage."""
+ *     """Get the top N processes by memory usage with real icons."""
  *     processes = []             # <<<<<<<<<<<<<<
- *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status']):
+ *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status', 'exe']):
  *         try:
 */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 350, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 384, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_processes = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "ram_booster/memory.py":351
- *     """Get the top N processes by memory usage."""
+  /* "ram_booster/memory.py":385
+ *     """Get the top N processes by memory usage with real icons."""
  *     processes = []
- *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status']):             # <<<<<<<<<<<<<<
+ *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status', 'exe']):             # <<<<<<<<<<<<<<
  *         try:
  *             info = proc.info
 */
   __pyx_t_2 = NULL;
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 351, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 385, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_process_iter); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 351, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_process_iter); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 385, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyList_New(5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 351, __pyx_L1_error)
+  __pyx_t_3 = PyList_New(6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 385, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_mstate_global->__pyx_n_u_pid);
   __Pyx_GIVEREF(__pyx_mstate_global->__pyx_n_u_pid);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_3, 0, __pyx_mstate_global->__pyx_n_u_pid) != (0)) __PYX_ERR(0, 351, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_3, 0, __pyx_mstate_global->__pyx_n_u_pid) != (0)) __PYX_ERR(0, 385, __pyx_L1_error);
   __Pyx_INCREF(__pyx_mstate_global->__pyx_n_u_name);
   __Pyx_GIVEREF(__pyx_mstate_global->__pyx_n_u_name);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_3, 1, __pyx_mstate_global->__pyx_n_u_name) != (0)) __PYX_ERR(0, 351, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_3, 1, __pyx_mstate_global->__pyx_n_u_name) != (0)) __PYX_ERR(0, 385, __pyx_L1_error);
   __Pyx_INCREF(__pyx_mstate_global->__pyx_n_u_memory_info);
   __Pyx_GIVEREF(__pyx_mstate_global->__pyx_n_u_memory_info);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_3, 2, __pyx_mstate_global->__pyx_n_u_memory_info) != (0)) __PYX_ERR(0, 351, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_3, 2, __pyx_mstate_global->__pyx_n_u_memory_info) != (0)) __PYX_ERR(0, 385, __pyx_L1_error);
   __Pyx_INCREF(__pyx_mstate_global->__pyx_n_u_memory_percent);
   __Pyx_GIVEREF(__pyx_mstate_global->__pyx_n_u_memory_percent);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_3, 3, __pyx_mstate_global->__pyx_n_u_memory_percent) != (0)) __PYX_ERR(0, 351, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_3, 3, __pyx_mstate_global->__pyx_n_u_memory_percent) != (0)) __PYX_ERR(0, 385, __pyx_L1_error);
   __Pyx_INCREF(__pyx_mstate_global->__pyx_n_u_status);
   __Pyx_GIVEREF(__pyx_mstate_global->__pyx_n_u_status);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_3, 4, __pyx_mstate_global->__pyx_n_u_status) != (0)) __PYX_ERR(0, 351, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_3, 4, __pyx_mstate_global->__pyx_n_u_status) != (0)) __PYX_ERR(0, 385, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_mstate_global->__pyx_n_u_exe);
+  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_n_u_exe);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_3, 5, __pyx_mstate_global->__pyx_n_u_exe) != (0)) __PYX_ERR(0, 385, __pyx_L1_error);
   __pyx_t_5 = 1;
   #if CYTHON_UNPACK_METHODS
   if (unlikely(PyMethod_Check(__pyx_t_4))) {
@@ -8976,7 +10007,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 351, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 385, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   }
   if (likely(PyList_CheckExact(__pyx_t_1)) || PyTuple_CheckExact(__pyx_t_1)) {
@@ -8984,9 +10015,9 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
     __pyx_t_6 = 0;
     __pyx_t_7 = NULL;
   } else {
-    __pyx_t_6 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 351, __pyx_L1_error)
+    __pyx_t_6 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 385, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_7 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 351, __pyx_L1_error)
+    __pyx_t_7 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 385, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   for (;;) {
@@ -8995,7 +10026,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
         {
           Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_4);
           #if !CYTHON_ASSUME_SAFE_SIZE
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 351, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 385, __pyx_L1_error)
           #endif
           if (__pyx_t_6 >= __pyx_temp) break;
         }
@@ -9005,7 +10036,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
         {
           Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_4);
           #if !CYTHON_ASSUME_SAFE_SIZE
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 351, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 385, __pyx_L1_error)
           #endif
           if (__pyx_t_6 >= __pyx_temp) break;
         }
@@ -9016,13 +10047,13 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
         #endif
         ++__pyx_t_6;
       }
-      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 351, __pyx_L1_error)
+      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 385, __pyx_L1_error)
     } else {
       __pyx_t_1 = __pyx_t_7(__pyx_t_4);
       if (unlikely(!__pyx_t_1)) {
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
-          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 351, __pyx_L1_error)
+          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 385, __pyx_L1_error)
           PyErr_Clear();
         }
         break;
@@ -9032,9 +10063,9 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
     __Pyx_XDECREF_SET(__pyx_v_proc, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "ram_booster/memory.py":352
+    /* "ram_booster/memory.py":386
  *     processes = []
- *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status']):
+ *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status', 'exe']):
  *         try:             # <<<<<<<<<<<<<<
  *             info = proc.info
  *             if info['memory_info'] is None:
@@ -9048,32 +10079,32 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
       __Pyx_XGOTREF(__pyx_t_10);
       /*try:*/ {
 
-        /* "ram_booster/memory.py":353
- *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status']):
+        /* "ram_booster/memory.py":387
+ *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status', 'exe']):
  *         try:
  *             info = proc.info             # <<<<<<<<<<<<<<
  *             if info['memory_info'] is None:
  *                 continue
 */
-        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_proc, __pyx_mstate_global->__pyx_n_u_info); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 353, __pyx_L5_error)
+        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_proc, __pyx_mstate_global->__pyx_n_u_info); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 387, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_XDECREF_SET(__pyx_v_info, __pyx_t_1);
         __pyx_t_1 = 0;
 
-        /* "ram_booster/memory.py":354
+        /* "ram_booster/memory.py":388
  *         try:
  *             info = proc.info
  *             if info['memory_info'] is None:             # <<<<<<<<<<<<<<
  *                 continue
  *             mem_mb = info['memory_info'].rss / (1024 ** 2)
 */
-        __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_info, __pyx_mstate_global->__pyx_n_u_memory_info); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 354, __pyx_L5_error)
+        __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_info, __pyx_mstate_global->__pyx_n_u_memory_info); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 388, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_1);
         __pyx_t_11 = (__pyx_t_1 == Py_None);
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         if (__pyx_t_11) {
 
-          /* "ram_booster/memory.py":355
+          /* "ram_booster/memory.py":389
  *             info = proc.info
  *             if info['memory_info'] is None:
  *                 continue             # <<<<<<<<<<<<<<
@@ -9082,7 +10113,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
 */
           goto __pyx_L11_try_continue;
 
-          /* "ram_booster/memory.py":354
+          /* "ram_booster/memory.py":388
  *         try:
  *             info = proc.info
  *             if info['memory_info'] is None:             # <<<<<<<<<<<<<<
@@ -9091,172 +10122,225 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
 */
         }
 
-        /* "ram_booster/memory.py":356
+        /* "ram_booster/memory.py":390
  *             if info['memory_info'] is None:
  *                 continue
  *             mem_mb = info['memory_info'].rss / (1024 ** 2)             # <<<<<<<<<<<<<<
  *             if mem_mb < 1:  # Skip processes using less than 1 MB
  *                 continue
 */
-        __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_info, __pyx_mstate_global->__pyx_n_u_memory_info); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 356, __pyx_L5_error)
+        __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_info, __pyx_mstate_global->__pyx_n_u_memory_info); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 390, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_1);
-        __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_rss); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 356, __pyx_L5_error)
+        __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_rss); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 390, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_3);
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-        __pyx_t_1 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_3, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 356, __pyx_L5_error)
+        __pyx_t_1 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_3, __pyx_mstate_global->__pyx_int_1048576, 0x100000, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 390, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_XDECREF_SET(__pyx_v_mem_mb, __pyx_t_1);
         __pyx_t_1 = 0;
 
-        /* "ram_booster/memory.py":357
+        /* "ram_booster/memory.py":391
  *                 continue
  *             mem_mb = info['memory_info'].rss / (1024 ** 2)
  *             if mem_mb < 1:  # Skip processes using less than 1 MB             # <<<<<<<<<<<<<<
  *                 continue
- *             processes.append({
+ * 
 */
-        __pyx_t_1 = PyObject_RichCompare(__pyx_v_mem_mb, __pyx_mstate_global->__pyx_int_1, Py_LT); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 357, __pyx_L5_error)
-        __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 357, __pyx_L5_error)
+        __pyx_t_1 = PyObject_RichCompare(__pyx_v_mem_mb, __pyx_mstate_global->__pyx_int_1, Py_LT); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 391, __pyx_L5_error)
+        __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 391, __pyx_L5_error)
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         if (__pyx_t_11) {
 
-          /* "ram_booster/memory.py":358
+          /* "ram_booster/memory.py":392
  *             mem_mb = info['memory_info'].rss / (1024 ** 2)
  *             if mem_mb < 1:  # Skip processes using less than 1 MB
  *                 continue             # <<<<<<<<<<<<<<
- *             processes.append({
- *                 'pid': info['pid'],
+ * 
+ *             icon_b64 = _extract_proc_icon_b64(info.get('exe'))
 */
           goto __pyx_L11_try_continue;
 
-          /* "ram_booster/memory.py":357
+          /* "ram_booster/memory.py":391
  *                 continue
  *             mem_mb = info['memory_info'].rss / (1024 ** 2)
  *             if mem_mb < 1:  # Skip processes using less than 1 MB             # <<<<<<<<<<<<<<
  *                 continue
- *             processes.append({
+ * 
 */
         }
 
-        /* "ram_booster/memory.py":360
+        /* "ram_booster/memory.py":394
  *                 continue
+ * 
+ *             icon_b64 = _extract_proc_icon_b64(info.get('exe'))             # <<<<<<<<<<<<<<
+ * 
+ *             processes.append({
+*/
+        __pyx_t_3 = NULL;
+        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_extract_proc_icon_b64); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 394, __pyx_L5_error)
+        __Pyx_GOTREF(__pyx_t_2);
+        __pyx_t_13 = __pyx_v_info;
+        __Pyx_INCREF(__pyx_t_13);
+        __pyx_t_5 = 0;
+        {
+          PyObject *__pyx_callargs[2] = {__pyx_t_13, __pyx_mstate_global->__pyx_n_u_exe};
+          __pyx_t_12 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_get, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_13); __pyx_t_13 = 0;
+          if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 394, __pyx_L5_error)
+          __Pyx_GOTREF(__pyx_t_12);
+        }
+        __pyx_t_5 = 1;
+        #if CYTHON_UNPACK_METHODS
+        if (unlikely(PyMethod_Check(__pyx_t_2))) {
+          __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_2);
+          assert(__pyx_t_3);
+          PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_2);
+          __Pyx_INCREF(__pyx_t_3);
+          __Pyx_INCREF(__pyx__function);
+          __Pyx_DECREF_SET(__pyx_t_2, __pyx__function);
+          __pyx_t_5 = 0;
+        }
+        #endif
+        {
+          PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_t_12};
+          __pyx_t_1 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_2, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
+          __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 394, __pyx_L5_error)
+          __Pyx_GOTREF(__pyx_t_1);
+        }
+        __Pyx_XDECREF_SET(__pyx_v_icon_b64, __pyx_t_1);
+        __pyx_t_1 = 0;
+
+        /* "ram_booster/memory.py":397
+ * 
  *             processes.append({
  *                 'pid': info['pid'],             # <<<<<<<<<<<<<<
  *                 'name': info['name'] or 'Unknown',
  *                 'memory_mb': round(mem_mb, 1),
 */
-        __pyx_t_1 = __Pyx_PyDict_NewPresized(5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 360, __pyx_L5_error)
+        __pyx_t_1 = __Pyx_PyDict_NewPresized(6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 397, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_1);
-        __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_info, __pyx_mstate_global->__pyx_n_u_pid); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 360, __pyx_L5_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_pid, __pyx_t_3) < (0)) __PYX_ERR(0, 360, __pyx_L5_error)
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __pyx_t_2 = __Pyx_PyObject_Dict_GetItem(__pyx_v_info, __pyx_mstate_global->__pyx_n_u_pid); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 397, __pyx_L5_error)
+        __Pyx_GOTREF(__pyx_t_2);
+        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_pid, __pyx_t_2) < (0)) __PYX_ERR(0, 397, __pyx_L5_error)
+        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "ram_booster/memory.py":361
+        /* "ram_booster/memory.py":398
  *             processes.append({
  *                 'pid': info['pid'],
  *                 'name': info['name'] or 'Unknown',             # <<<<<<<<<<<<<<
  *                 'memory_mb': round(mem_mb, 1),
  *                 'memory_percent': round(info['memory_percent'] or 0, 1),
 */
-        __pyx_t_2 = __Pyx_PyObject_Dict_GetItem(__pyx_v_info, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 361, __pyx_L5_error)
-        __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 361, __pyx_L5_error)
+        __pyx_t_12 = __Pyx_PyObject_Dict_GetItem(__pyx_v_info, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 398, __pyx_L5_error)
+        __Pyx_GOTREF(__pyx_t_12);
+        __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_12); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 398, __pyx_L5_error)
         if (!__pyx_t_11) {
-          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
         } else {
-          __Pyx_INCREF(__pyx_t_2);
-          __pyx_t_3 = __pyx_t_2;
-          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_INCREF(__pyx_t_12);
+          __pyx_t_2 = __pyx_t_12;
+          __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
           goto __pyx_L15_bool_binop_done;
         }
         __Pyx_INCREF(__pyx_mstate_global->__pyx_n_u_Unknown);
-        __pyx_t_3 = __pyx_mstate_global->__pyx_n_u_Unknown;
+        __pyx_t_2 = __pyx_mstate_global->__pyx_n_u_Unknown;
         __pyx_L15_bool_binop_done:;
-        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_name, __pyx_t_3) < (0)) __PYX_ERR(0, 360, __pyx_L5_error)
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_name, __pyx_t_2) < (0)) __PYX_ERR(0, 397, __pyx_L5_error)
+        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "ram_booster/memory.py":362
+        /* "ram_booster/memory.py":399
  *                 'pid': info['pid'],
  *                 'name': info['name'] or 'Unknown',
  *                 'memory_mb': round(mem_mb, 1),             # <<<<<<<<<<<<<<
  *                 'memory_percent': round(info['memory_percent'] or 0, 1),
  *                 'status': info['status'],
 */
-        __pyx_t_2 = NULL;
+        __pyx_t_12 = NULL;
         __pyx_t_5 = 1;
         {
-          PyObject *__pyx_callargs[3] = {__pyx_t_2, __pyx_v_mem_mb, __pyx_mstate_global->__pyx_int_1};
-          __pyx_t_3 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
-          __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 362, __pyx_L5_error)
-          __Pyx_GOTREF(__pyx_t_3);
+          PyObject *__pyx_callargs[3] = {__pyx_t_12, __pyx_v_mem_mb, __pyx_mstate_global->__pyx_int_1};
+          __pyx_t_2 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
+          if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 399, __pyx_L5_error)
+          __Pyx_GOTREF(__pyx_t_2);
         }
-        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_memory_mb, __pyx_t_3) < (0)) __PYX_ERR(0, 360, __pyx_L5_error)
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_memory_mb, __pyx_t_2) < (0)) __PYX_ERR(0, 397, __pyx_L5_error)
+        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "ram_booster/memory.py":363
+        /* "ram_booster/memory.py":400
  *                 'name': info['name'] or 'Unknown',
  *                 'memory_mb': round(mem_mb, 1),
  *                 'memory_percent': round(info['memory_percent'] or 0, 1),             # <<<<<<<<<<<<<<
  *                 'status': info['status'],
- *             })
+ *                 'icon_b64': icon_b64,
 */
-        __pyx_t_2 = NULL;
-        __pyx_t_13 = __Pyx_PyObject_Dict_GetItem(__pyx_v_info, __pyx_mstate_global->__pyx_n_u_memory_percent); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 363, __pyx_L5_error)
+        __pyx_t_12 = NULL;
+        __pyx_t_13 = __Pyx_PyObject_Dict_GetItem(__pyx_v_info, __pyx_mstate_global->__pyx_n_u_memory_percent); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 400, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_13);
-        __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_13); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 363, __pyx_L5_error)
+        __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_13); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 400, __pyx_L5_error)
         if (!__pyx_t_11) {
           __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
         } else {
           __Pyx_INCREF(__pyx_t_13);
-          __pyx_t_12 = __pyx_t_13;
+          __pyx_t_3 = __pyx_t_13;
           __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
           goto __pyx_L17_bool_binop_done;
         }
-        __pyx_t_13 = __Pyx_PyLong_From_long(0); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 363, __pyx_L5_error)
+        __pyx_t_13 = __Pyx_PyLong_From_long(0); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 400, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_13);
-        __pyx_t_12 = __pyx_t_13;
+        __pyx_t_3 = __pyx_t_13;
         __pyx_t_13 = 0;
         __pyx_L17_bool_binop_done:;
         __pyx_t_5 = 1;
         {
-          PyObject *__pyx_callargs[3] = {__pyx_t_2, __pyx_t_12, __pyx_mstate_global->__pyx_int_1};
-          __pyx_t_3 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
-          __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-          __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 363, __pyx_L5_error)
-          __Pyx_GOTREF(__pyx_t_3);
+          PyObject *__pyx_callargs[3] = {__pyx_t_12, __pyx_t_3, __pyx_mstate_global->__pyx_int_1};
+          __pyx_t_2 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin_round, __pyx_callargs+__pyx_t_5, (3-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
+          __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+          if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 400, __pyx_L5_error)
+          __Pyx_GOTREF(__pyx_t_2);
         }
-        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_memory_percent, __pyx_t_3) < (0)) __PYX_ERR(0, 360, __pyx_L5_error)
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_memory_percent, __pyx_t_2) < (0)) __PYX_ERR(0, 397, __pyx_L5_error)
+        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "ram_booster/memory.py":364
+        /* "ram_booster/memory.py":401
  *                 'memory_mb': round(mem_mb, 1),
  *                 'memory_percent': round(info['memory_percent'] or 0, 1),
  *                 'status': info['status'],             # <<<<<<<<<<<<<<
+ *                 'icon_b64': icon_b64,
+ *             })
+*/
+        __pyx_t_2 = __Pyx_PyObject_Dict_GetItem(__pyx_v_info, __pyx_mstate_global->__pyx_n_u_status); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 401, __pyx_L5_error)
+        __Pyx_GOTREF(__pyx_t_2);
+        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_status, __pyx_t_2) < (0)) __PYX_ERR(0, 397, __pyx_L5_error)
+        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+        /* "ram_booster/memory.py":402
+ *                 'memory_percent': round(info['memory_percent'] or 0, 1),
+ *                 'status': info['status'],
+ *                 'icon_b64': icon_b64,             # <<<<<<<<<<<<<<
  *             })
  *         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
 */
-        __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_info, __pyx_mstate_global->__pyx_n_u_status); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 364, __pyx_L5_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_status, __pyx_t_3) < (0)) __PYX_ERR(0, 360, __pyx_L5_error)
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_icon_b64, __pyx_v_icon_b64) < (0)) __PYX_ERR(0, 397, __pyx_L5_error)
 
-        /* "ram_booster/memory.py":359
- *             if mem_mb < 1:  # Skip processes using less than 1 MB
- *                 continue
+        /* "ram_booster/memory.py":396
+ *             icon_b64 = _extract_proc_icon_b64(info.get('exe'))
+ * 
  *             processes.append({             # <<<<<<<<<<<<<<
  *                 'pid': info['pid'],
  *                 'name': info['name'] or 'Unknown',
 */
-        __pyx_t_14 = __Pyx_PyList_Append(__pyx_v_processes, __pyx_t_1); if (unlikely(__pyx_t_14 == ((int)-1))) __PYX_ERR(0, 359, __pyx_L5_error)
+        __pyx_t_14 = __Pyx_PyList_Append(__pyx_v_processes, __pyx_t_1); if (unlikely(__pyx_t_14 == ((int)-1))) __PYX_ERR(0, 396, __pyx_L5_error)
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-        /* "ram_booster/memory.py":352
+        /* "ram_booster/memory.py":386
  *     processes = []
- *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status']):
+ *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status', 'exe']):
  *         try:             # <<<<<<<<<<<<<<
  *             info = proc.info
  *             if info['memory_info'] is None:
@@ -9273,43 +10357,43 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-      /* "ram_booster/memory.py":366
- *                 'status': info['status'],
+      /* "ram_booster/memory.py":404
+ *                 'icon_b64': icon_b64,
  *             })
  *         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):             # <<<<<<<<<<<<<<
  *             continue
  * 
 */
-      __Pyx_ErrFetch(&__pyx_t_1, &__pyx_t_3, &__pyx_t_12);
-      __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 366, __pyx_L7_except_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_13 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_NoSuchProcess); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 366, __pyx_L7_except_error)
+      __Pyx_ErrFetch(&__pyx_t_1, &__pyx_t_2, &__pyx_t_3);
+      __Pyx_GetModuleGlobalName(__pyx_t_12, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 404, __pyx_L7_except_error)
+      __Pyx_GOTREF(__pyx_t_12);
+      __pyx_t_13 = __Pyx_PyObject_GetAttrStr(__pyx_t_12, __pyx_mstate_global->__pyx_n_u_NoSuchProcess); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 404, __pyx_L7_except_error)
       __Pyx_GOTREF(__pyx_t_13);
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 366, __pyx_L7_except_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_15 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_AccessDenied); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 366, __pyx_L7_except_error)
+      __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
+      __Pyx_GetModuleGlobalName(__pyx_t_12, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 404, __pyx_L7_except_error)
+      __Pyx_GOTREF(__pyx_t_12);
+      __pyx_t_15 = __Pyx_PyObject_GetAttrStr(__pyx_t_12, __pyx_mstate_global->__pyx_n_u_AccessDenied); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 404, __pyx_L7_except_error)
       __Pyx_GOTREF(__pyx_t_15);
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 366, __pyx_L7_except_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_16 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_ZombieProcess); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 366, __pyx_L7_except_error)
+      __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
+      __Pyx_GetModuleGlobalName(__pyx_t_12, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 404, __pyx_L7_except_error)
+      __Pyx_GOTREF(__pyx_t_12);
+      __pyx_t_16 = __Pyx_PyObject_GetAttrStr(__pyx_t_12, __pyx_mstate_global->__pyx_n_u_ZombieProcess); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 404, __pyx_L7_except_error)
       __Pyx_GOTREF(__pyx_t_16);
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
       __pyx_t_17 = __Pyx_PyErr_GivenExceptionMatches(__pyx_t_1, __pyx_t_13) || __Pyx_PyErr_GivenExceptionMatches(__pyx_t_1, __pyx_t_15) || __Pyx_PyErr_GivenExceptionMatches(__pyx_t_1, __pyx_t_16);
       __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
       __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
       __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
-      __Pyx_ErrRestore(__pyx_t_1, __pyx_t_3, __pyx_t_12);
-      __pyx_t_1 = 0; __pyx_t_3 = 0; __pyx_t_12 = 0;
+      __Pyx_ErrRestore(__pyx_t_1, __pyx_t_2, __pyx_t_3);
+      __pyx_t_1 = 0; __pyx_t_2 = 0; __pyx_t_3 = 0;
       if (__pyx_t_17) {
         __Pyx_AddTraceback("ram_booster.memory.get_top_memory_processes", __pyx_clineno, __pyx_lineno, __pyx_filename);
-        if (__Pyx_GetException(&__pyx_t_12, &__pyx_t_3, &__pyx_t_1) < 0) __PYX_ERR(0, 366, __pyx_L7_except_error)
-        __Pyx_XGOTREF(__pyx_t_12);
+        if (__Pyx_GetException(&__pyx_t_3, &__pyx_t_2, &__pyx_t_1) < 0) __PYX_ERR(0, 404, __pyx_L7_except_error)
         __Pyx_XGOTREF(__pyx_t_3);
+        __Pyx_XGOTREF(__pyx_t_2);
         __Pyx_XGOTREF(__pyx_t_1);
 
-        /* "ram_booster/memory.py":367
+        /* "ram_booster/memory.py":405
  *             })
  *         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
  *             continue             # <<<<<<<<<<<<<<
@@ -9318,16 +10402,16 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
 */
         goto __pyx_L19_except_continue;
         __pyx_L19_except_continue:;
-        __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
         goto __pyx_L11_try_continue;
       }
       goto __pyx_L7_except_error;
 
-      /* "ram_booster/memory.py":352
+      /* "ram_booster/memory.py":386
  *     processes = []
- *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status']):
+ *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status', 'exe']):
  *         try:             # <<<<<<<<<<<<<<
  *             info = proc.info
  *             if info['memory_info'] is None:
@@ -9347,10 +10431,10 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
       __pyx_L12_try_end:;
     }
 
-    /* "ram_booster/memory.py":351
- *     """Get the top N processes by memory usage."""
+    /* "ram_booster/memory.py":385
+ *     """Get the top N processes by memory usage with real icons."""
  *     processes = []
- *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status']):             # <<<<<<<<<<<<<<
+ *     for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'memory_percent', 'status', 'exe']):             # <<<<<<<<<<<<<<
  *         try:
  *             info = proc.info
 */
@@ -9358,7 +10442,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "ram_booster/memory.py":370
+  /* "ram_booster/memory.py":408
  * 
  *     # Sort by memory usage descending
  *     processes.sort(key=lambda x: x['memory_mb'], reverse=True)             # <<<<<<<<<<<<<<
@@ -9367,25 +10451,25 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
 */
   __pyx_t_1 = __pyx_v_processes;
   __Pyx_INCREF(__pyx_t_1);
-  __pyx_t_3 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_6memory_24get_top_memory_processes_lambda, 0, __pyx_mstate_global->__pyx_n_u_get_top_memory_processes_locals, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_memory, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[0])); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 370, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_6memory_24get_top_memory_processes_lambda, 0, __pyx_mstate_global->__pyx_n_u_get_top_memory_processes_locals, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_memory, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[0])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 408, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_5 = 0;
   {
     PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 2 : 0)] = {__pyx_t_1, NULL};
-    __pyx_t_12 = __Pyx_MakeVectorcallBuilderKwds(2); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 370, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_12);
-    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_key, __pyx_t_3, __pyx_t_12, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
-    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_reverse, Py_True, __pyx_t_12, __pyx_callargs+1, 1) < (0)) __PYX_ERR(0, 370, __pyx_L1_error)
-    __pyx_t_4 = __Pyx_Object_VectorcallMethod_CallFromBuilder((PyObject*)__pyx_mstate_global->__pyx_n_u_sort, __pyx_callargs+__pyx_t_5, (1-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_12);
+    __pyx_t_3 = __Pyx_MakeVectorcallBuilderKwds(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 408, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_key, __pyx_t_2, __pyx_t_3, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 408, __pyx_L1_error)
+    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_reverse, Py_True, __pyx_t_3, __pyx_callargs+1, 1) < (0)) __PYX_ERR(0, 408, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_Object_VectorcallMethod_CallFromBuilder((PyObject*)__pyx_mstate_global->__pyx_n_u_sort, __pyx_callargs+__pyx_t_5, (1-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_3);
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 370, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 408, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "ram_booster/memory.py":371
+  /* "ram_booster/memory.py":409
  *     # Sort by memory usage descending
  *     processes.sort(key=lambda x: x['memory_mb'], reverse=True)
  *     return processes[:count]             # <<<<<<<<<<<<<<
@@ -9399,21 +10483,21 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
   if (__pyx_t_11) {
     __pyx_t_6 = PY_SSIZE_T_MAX;
   } else {
-    __pyx_t_19 = __Pyx_PyIndex_AsSsize_t(__pyx_t_18); if (unlikely((__pyx_t_19 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 371, __pyx_L1_error)
+    __pyx_t_19 = __Pyx_PyIndex_AsSsize_t(__pyx_t_18); if (unlikely((__pyx_t_19 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 409, __pyx_L1_error)
     __pyx_t_6 = __pyx_t_19;
   }
   __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
-  __pyx_t_4 = __Pyx_PyList_GetSlice(__pyx_v_processes, 0, __pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 371, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyList_GetSlice(__pyx_v_processes, 0, __pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 409, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_r = ((PyObject*)__pyx_t_4);
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "ram_booster/memory.py":348
+  /* "ram_booster/memory.py":382
  * 
  * 
  * def get_top_memory_processes(count: int = 15) -> list[dict]:             # <<<<<<<<<<<<<<
- *     """Get the top N processes by memory usage."""
+ *     """Get the top N processes by memory usage with real icons."""
  *     processes = []
 */
 
@@ -9435,12 +10519,13 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
   __Pyx_XDECREF(__pyx_v_proc);
   __Pyx_XDECREF(__pyx_v_info);
   __Pyx_XDECREF(__pyx_v_mem_mb);
+  __Pyx_XDECREF(__pyx_v_icon_b64);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "ram_booster/memory.py":374
+/* "ram_booster/memory.py":412
  * 
  * 
  * def kill_process(pid: int) -> bool:             # <<<<<<<<<<<<<<
@@ -9449,16 +10534,16 @@ static PyObject *__pyx_pf_11ram_booster_6memory_16get_top_memory_processes(CYTHO
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11ram_booster_6memory_19kill_process(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_11ram_booster_6memory_21kill_process(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_11ram_booster_6memory_18kill_process, "Kill a specific process by PID.");
-static PyMethodDef __pyx_mdef_11ram_booster_6memory_19kill_process = {"kill_process", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_11ram_booster_6memory_19kill_process, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_11ram_booster_6memory_18kill_process};
-static PyObject *__pyx_pw_11ram_booster_6memory_19kill_process(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_11ram_booster_6memory_20kill_process, "Kill a specific process by PID.");
+static PyMethodDef __pyx_mdef_11ram_booster_6memory_21kill_process = {"kill_process", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_11ram_booster_6memory_21kill_process, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_11ram_booster_6memory_20kill_process};
+static PyObject *__pyx_pw_11ram_booster_6memory_21kill_process(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -9488,33 +10573,33 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_pid,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 374, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 412, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 374, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 412, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "kill_process", 0) < (0)) __PYX_ERR(0, 374, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "kill_process", 0) < (0)) __PYX_ERR(0, 412, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("kill_process", 1, 1, 1, i); __PYX_ERR(0, 374, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("kill_process", 1, 1, 1, i); __PYX_ERR(0, 412, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 374, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 412, __pyx_L3_error)
     }
-    if (__Pyx_PyInt_FromNumber(&values[0], "pid", 0) < (0)) __PYX_ERR(0, 374, __pyx_L3_error)
+    if (__Pyx_PyInt_FromNumber(&values[0], "pid", 0) < (0)) __PYX_ERR(0, 412, __pyx_L3_error)
     __pyx_v_pid = ((PyObject*)values[0]);
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("kill_process", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 374, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("kill_process", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 412, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -9525,8 +10610,8 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_pid), (&PyLong_Type), 0, "pid", 2))) __PYX_ERR(0, 374, __pyx_L1_error)
-  __pyx_r = __pyx_pf_11ram_booster_6memory_18kill_process(__pyx_self, __pyx_v_pid);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_pid), (&PyLong_Type), 0, "pid", 2))) __PYX_ERR(0, 412, __pyx_L1_error)
+  __pyx_r = __pyx_pf_11ram_booster_6memory_20kill_process(__pyx_self, __pyx_v_pid);
 
   /* function exit code */
   goto __pyx_L0;
@@ -9545,7 +10630,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_pid) {
+static PyObject *__pyx_pf_11ram_booster_6memory_20kill_process(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_pid) {
   PyObject *__pyx_v_proc = NULL;
   PyObject *__pyx_v_e = NULL;
   PyObject *__pyx_r = NULL;
@@ -9579,7 +10664,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("kill_process", 0);
 
-  /* "ram_booster/memory.py":376
+  /* "ram_booster/memory.py":414
  * def kill_process(pid: int) -> bool:
  *     """Kill a specific process by PID."""
  *     try:             # <<<<<<<<<<<<<<
@@ -9595,7 +10680,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
     __Pyx_XGOTREF(__pyx_t_3);
     /*try:*/ {
 
-      /* "ram_booster/memory.py":377
+      /* "ram_booster/memory.py":415
  *     """Kill a specific process by PID."""
  *     try:
  *         proc = psutil.Process(pid)             # <<<<<<<<<<<<<<
@@ -9603,9 +10688,9 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
  *         proc.wait(timeout=3)
 */
       __pyx_t_5 = NULL;
-      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 377, __pyx_L3_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_psutil); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 415, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_Process); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 377, __pyx_L3_error)
+      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_Process); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 415, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __pyx_t_8 = 1;
@@ -9625,13 +10710,13 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
         __pyx_t_4 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_7, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (__pyx_t_8*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
         __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 377, __pyx_L3_error)
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 415, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_4);
       }
       __pyx_v_proc = __pyx_t_4;
       __pyx_t_4 = 0;
 
-      /* "ram_booster/memory.py":378
+      /* "ram_booster/memory.py":416
  *     try:
  *         proc = psutil.Process(pid)
  *         proc.terminate()             # <<<<<<<<<<<<<<
@@ -9645,12 +10730,12 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
         PyObject *__pyx_callargs[2] = {__pyx_t_7, NULL};
         __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_terminate, __pyx_callargs+__pyx_t_8, (1-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
         __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
-        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 378, __pyx_L3_error)
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 416, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_4);
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "ram_booster/memory.py":379
+      /* "ram_booster/memory.py":417
  *         proc = psutil.Process(pid)
  *         proc.terminate()
  *         proc.wait(timeout=3)             # <<<<<<<<<<<<<<
@@ -9662,18 +10747,18 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
       __pyx_t_8 = 0;
       {
         PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 1 : 0)] = {__pyx_t_7, NULL};
-        __pyx_t_5 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 379, __pyx_L3_error)
+        __pyx_t_5 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 417, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_5);
-        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_timeout, __pyx_mstate_global->__pyx_int_3, __pyx_t_5, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 379, __pyx_L3_error)
+        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_timeout, __pyx_mstate_global->__pyx_int_3, __pyx_t_5, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 417, __pyx_L3_error)
         __pyx_t_4 = __Pyx_Object_VectorcallMethod_CallFromBuilder((PyObject*)__pyx_mstate_global->__pyx_n_u_wait, __pyx_callargs+__pyx_t_8, (1-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_5);
         __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 379, __pyx_L3_error)
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 417, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_4);
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "ram_booster/memory.py":380
+      /* "ram_booster/memory.py":418
  *         proc.terminate()
  *         proc.wait(timeout=3)
  *         logger.info(f"Process {pid} ({proc.name()}) terminated")             # <<<<<<<<<<<<<<
@@ -9681,28 +10766,28 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
  *     except Exception as e:
 */
       __pyx_t_5 = NULL;
-      __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_logger); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 380, __pyx_L3_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_logger); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 418, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_info); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 380, __pyx_L3_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_info); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 418, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_pid, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 380, __pyx_L3_error)
+      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_pid, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 418, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_proc, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 380, __pyx_L3_error)
+      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_proc, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 418, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_9);
-      __pyx_t_10 = __Pyx_PyObject_CallNoArg(__pyx_t_9); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 380, __pyx_L3_error)
+      __pyx_t_10 = __Pyx_PyObject_CallNoArg(__pyx_t_9); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 418, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_10);
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-      __pyx_t_9 = __Pyx_PyObject_FormatSimple(__pyx_t_10, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 380, __pyx_L3_error)
+      __pyx_t_9 = __Pyx_PyObject_FormatSimple(__pyx_t_10, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 418, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_9);
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
       __pyx_t_11[0] = __pyx_mstate_global->__pyx_kp_u_Process_2;
       __pyx_t_11[1] = __pyx_t_7;
-      __pyx_t_11[2] = __pyx_mstate_global->__pyx_kp_u__4;
+      __pyx_t_11[2] = __pyx_mstate_global->__pyx_kp_u__5;
       __pyx_t_11[3] = __pyx_t_9;
       __pyx_t_11[4] = __pyx_mstate_global->__pyx_kp_u_terminated;
       __pyx_t_10 = __Pyx_PyUnicode_Join(__pyx_t_11, 5, 8 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_7) + 2 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_9) + 12, 127 | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_9));
-      if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 380, __pyx_L3_error)
+      if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 418, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_10);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
@@ -9724,12 +10809,12 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
         __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
         __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 380, __pyx_L3_error)
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 418, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_4);
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "ram_booster/memory.py":381
+      /* "ram_booster/memory.py":419
  *         proc.wait(timeout=3)
  *         logger.info(f"Process {pid} ({proc.name()}) terminated")
  *         return True             # <<<<<<<<<<<<<<
@@ -9741,7 +10826,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
       __pyx_r = Py_True;
       goto __pyx_L7_try_return;
 
-      /* "ram_booster/memory.py":376
+      /* "ram_booster/memory.py":414
  * def kill_process(pid: int) -> bool:
  *     """Kill a specific process by PID."""
  *     try:             # <<<<<<<<<<<<<<
@@ -9757,7 +10842,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-    /* "ram_booster/memory.py":382
+    /* "ram_booster/memory.py":420
  *         logger.info(f"Process {pid} ({proc.name()}) terminated")
  *         return True
  *     except Exception as e:             # <<<<<<<<<<<<<<
@@ -9767,7 +10852,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
     __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
     if (__pyx_t_12) {
       __Pyx_AddTraceback("ram_booster.memory.kill_process", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_4, &__pyx_t_6, &__pyx_t_10) < 0) __PYX_ERR(0, 382, __pyx_L5_except_error)
+      if (__Pyx_GetException(&__pyx_t_4, &__pyx_t_6, &__pyx_t_10) < 0) __PYX_ERR(0, 420, __pyx_L5_except_error)
       __Pyx_XGOTREF(__pyx_t_4);
       __Pyx_XGOTREF(__pyx_t_6);
       __Pyx_XGOTREF(__pyx_t_10);
@@ -9775,7 +10860,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
       __pyx_v_e = __pyx_t_6;
       /*try:*/ {
 
-        /* "ram_booster/memory.py":383
+        /* "ram_booster/memory.py":421
  *         return True
  *     except Exception as e:
  *         logger.error(f"Failed to kill process {pid}: {e}")             # <<<<<<<<<<<<<<
@@ -9783,21 +10868,21 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
  * 
 */
         __pyx_t_9 = NULL;
-        __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_logger); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 383, __pyx_L14_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_logger); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 421, __pyx_L14_error)
         __Pyx_GOTREF(__pyx_t_7);
-        __pyx_t_13 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_error); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 383, __pyx_L14_error)
+        __pyx_t_13 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_error); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 421, __pyx_L14_error)
         __Pyx_GOTREF(__pyx_t_13);
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-        __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_pid, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 383, __pyx_L14_error)
+        __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_pid, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 421, __pyx_L14_error)
         __Pyx_GOTREF(__pyx_t_7);
-        __pyx_t_14 = __Pyx_PyObject_FormatSimple(__pyx_v_e, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 383, __pyx_L14_error)
+        __pyx_t_14 = __Pyx_PyObject_FormatSimple(__pyx_v_e, __pyx_mstate_global->__pyx_empty_unicode); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 421, __pyx_L14_error)
         __Pyx_GOTREF(__pyx_t_14);
         __pyx_t_15[0] = __pyx_mstate_global->__pyx_kp_u_Failed_to_kill_process;
         __pyx_t_15[1] = __pyx_t_7;
         __pyx_t_15[2] = __pyx_mstate_global->__pyx_kp_u__2;
         __pyx_t_15[3] = __pyx_t_14;
         __pyx_t_16 = __Pyx_PyUnicode_Join(__pyx_t_15, 4, 23 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_7) + 2 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_14), 127 | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_14));
-        if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 383, __pyx_L14_error)
+        if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 421, __pyx_L14_error)
         __Pyx_GOTREF(__pyx_t_16);
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
         __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
@@ -9819,12 +10904,12 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
           __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
           __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
           __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
-          if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 383, __pyx_L14_error)
+          if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 421, __pyx_L14_error)
           __Pyx_GOTREF(__pyx_t_5);
         }
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-        /* "ram_booster/memory.py":384
+        /* "ram_booster/memory.py":422
  *     except Exception as e:
  *         logger.error(f"Failed to kill process {pid}: {e}")
  *         return False             # <<<<<<<<<<<<<<
@@ -9840,7 +10925,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
         goto __pyx_L13_return;
       }
 
-      /* "ram_booster/memory.py":382
+      /* "ram_booster/memory.py":420
  *         logger.info(f"Process {pid} ({proc.name()}) terminated")
  *         return True
  *     except Exception as e:             # <<<<<<<<<<<<<<
@@ -9895,7 +10980,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
     }
     goto __pyx_L5_except_error;
 
-    /* "ram_booster/memory.py":376
+    /* "ram_booster/memory.py":414
  * def kill_process(pid: int) -> bool:
  *     """Kill a specific process by PID."""
  *     try:             # <<<<<<<<<<<<<<
@@ -9922,7 +11007,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
     goto __pyx_L0;
   }
 
-  /* "ram_booster/memory.py":374
+  /* "ram_booster/memory.py":412
  * 
  * 
  * def kill_process(pid: int) -> bool:             # <<<<<<<<<<<<<<
@@ -9951,7 +11036,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
   return __pyx_r;
 }
 
-/* "ram_booster/memory.py":387
+/* "ram_booster/memory.py":425
  * 
  * 
  * def is_admin() -> bool:             # <<<<<<<<<<<<<<
@@ -9960,23 +11045,23 @@ static PyObject *__pyx_pf_11ram_booster_6memory_18kill_process(CYTHON_UNUSED PyO
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11ram_booster_6memory_21is_admin(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-PyDoc_STRVAR(__pyx_doc_11ram_booster_6memory_20is_admin, "Check if the current process has administrator privileges.");
-static PyMethodDef __pyx_mdef_11ram_booster_6memory_21is_admin = {"is_admin", (PyCFunction)__pyx_pw_11ram_booster_6memory_21is_admin, METH_NOARGS, __pyx_doc_11ram_booster_6memory_20is_admin};
-static PyObject *__pyx_pw_11ram_booster_6memory_21is_admin(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_11ram_booster_6memory_23is_admin(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+PyDoc_STRVAR(__pyx_doc_11ram_booster_6memory_22is_admin, "Check if the current process has administrator privileges.");
+static PyMethodDef __pyx_mdef_11ram_booster_6memory_23is_admin = {"is_admin", (PyCFunction)__pyx_pw_11ram_booster_6memory_23is_admin, METH_NOARGS, __pyx_doc_11ram_booster_6memory_22is_admin};
+static PyObject *__pyx_pw_11ram_booster_6memory_23is_admin(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("is_admin (wrapper)", 0);
   __pyx_kwvalues = __Pyx_KwValues_VARARGS(__pyx_args, __pyx_nargs);
-  __pyx_r = __pyx_pf_11ram_booster_6memory_20is_admin(__pyx_self);
+  __pyx_r = __pyx_pf_11ram_booster_6memory_22is_admin(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11ram_booster_6memory_20is_admin(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_11ram_booster_6memory_22is_admin(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -9993,7 +11078,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_20is_admin(CYTHON_UNUSED PyObjec
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("is_admin", 0);
 
-  /* "ram_booster/memory.py":389
+  /* "ram_booster/memory.py":427
  * def is_admin() -> bool:
  *     """Check if the current process has administrator privileges."""
  *     try:             # <<<<<<<<<<<<<<
@@ -10009,7 +11094,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_20is_admin(CYTHON_UNUSED PyObjec
     __Pyx_XGOTREF(__pyx_t_3);
     /*try:*/ {
 
-      /* "ram_booster/memory.py":390
+      /* "ram_booster/memory.py":428
  *     """Check if the current process has administrator privileges."""
  *     try:
  *         return ctypes.windll.shell32.IsUserAnAdmin() != 0             # <<<<<<<<<<<<<<
@@ -10017,12 +11102,12 @@ static PyObject *__pyx_pf_11ram_booster_6memory_20is_admin(CYTHON_UNUSED PyObjec
  *         return False
 */
       __Pyx_XDECREF(__pyx_r);
-      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_ctypes); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 390, __pyx_L3_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_ctypes); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 428, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_windll); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 390, __pyx_L3_error)
+      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_windll); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 428, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_shell32); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 390, __pyx_L3_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_shell32); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 428, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       __pyx_t_5 = __pyx_t_6;
@@ -10033,17 +11118,17 @@ static PyObject *__pyx_pf_11ram_booster_6memory_20is_admin(CYTHON_UNUSED PyObjec
         __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_IsUserAnAdmin, __pyx_callargs+__pyx_t_8, (1-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
         __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 390, __pyx_L3_error)
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 428, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_4);
       }
-      __pyx_t_6 = __Pyx_PyLong_NeObjC(__pyx_t_4, __pyx_mstate_global->__pyx_int_0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 390, __pyx_L3_error)
+      __pyx_t_6 = __Pyx_PyLong_NeObjC(__pyx_t_4, __pyx_mstate_global->__pyx_int_0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 428, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __pyx_r = __pyx_t_6;
       __pyx_t_6 = 0;
       goto __pyx_L7_try_return;
 
-      /* "ram_booster/memory.py":389
+      /* "ram_booster/memory.py":427
  * def is_admin() -> bool:
  *     """Check if the current process has administrator privileges."""
  *     try:             # <<<<<<<<<<<<<<
@@ -10057,7 +11142,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_20is_admin(CYTHON_UNUSED PyObjec
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-    /* "ram_booster/memory.py":391
+    /* "ram_booster/memory.py":429
  *     try:
  *         return ctypes.windll.shell32.IsUserAnAdmin() != 0
  *     except Exception:             # <<<<<<<<<<<<<<
@@ -10068,7 +11153,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_20is_admin(CYTHON_UNUSED PyObjec
     if (__pyx_t_9) {
       __Pyx_ErrRestore(0,0,0);
 
-      /* "ram_booster/memory.py":392
+      /* "ram_booster/memory.py":430
  *         return ctypes.windll.shell32.IsUserAnAdmin() != 0
  *     except Exception:
  *         return False             # <<<<<<<<<<<<<<
@@ -10082,7 +11167,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_20is_admin(CYTHON_UNUSED PyObjec
     }
     goto __pyx_L5_except_error;
 
-    /* "ram_booster/memory.py":389
+    /* "ram_booster/memory.py":427
  * def is_admin() -> bool:
  *     """Check if the current process has administrator privileges."""
  *     try:             # <<<<<<<<<<<<<<
@@ -10109,7 +11194,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_20is_admin(CYTHON_UNUSED PyObjec
     goto __pyx_L0;
   }
 
-  /* "ram_booster/memory.py":387
+  /* "ram_booster/memory.py":425
  * 
  * 
  * def is_admin() -> bool:             # <<<<<<<<<<<<<<
@@ -10131,7 +11216,7 @@ static PyObject *__pyx_pf_11ram_booster_6memory_20is_admin(CYTHON_UNUSED PyObjec
   return __pyx_r;
 }
 
-/* "ram_booster/memory.py":395
+/* "ram_booster/memory.py":433
  * 
  * 
  * def request_admin_restart() -> None:             # <<<<<<<<<<<<<<
@@ -10140,23 +11225,23 @@ static PyObject *__pyx_pf_11ram_booster_6memory_20is_admin(CYTHON_UNUSED PyObjec
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11ram_booster_6memory_23request_admin_restart(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-PyDoc_STRVAR(__pyx_doc_11ram_booster_6memory_22request_admin_restart, "Restart the application with administrator privileges.");
-static PyMethodDef __pyx_mdef_11ram_booster_6memory_23request_admin_restart = {"request_admin_restart", (PyCFunction)__pyx_pw_11ram_booster_6memory_23request_admin_restart, METH_NOARGS, __pyx_doc_11ram_booster_6memory_22request_admin_restart};
-static PyObject *__pyx_pw_11ram_booster_6memory_23request_admin_restart(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_11ram_booster_6memory_25request_admin_restart(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+PyDoc_STRVAR(__pyx_doc_11ram_booster_6memory_24request_admin_restart, "Restart the application with administrator privileges.");
+static PyMethodDef __pyx_mdef_11ram_booster_6memory_25request_admin_restart = {"request_admin_restart", (PyCFunction)__pyx_pw_11ram_booster_6memory_25request_admin_restart, METH_NOARGS, __pyx_doc_11ram_booster_6memory_24request_admin_restart};
+static PyObject *__pyx_pw_11ram_booster_6memory_25request_admin_restart(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("request_admin_restart (wrapper)", 0);
   __pyx_kwvalues = __Pyx_KwValues_VARARGS(__pyx_args, __pyx_nargs);
-  __pyx_r = __pyx_pf_11ram_booster_6memory_22request_admin_restart(__pyx_self);
+  __pyx_r = __pyx_pf_11ram_booster_6memory_24request_admin_restart(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11ram_booster_6memory_22request_admin_restart(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_11ram_booster_6memory_24request_admin_restart(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_v_sys = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -10173,49 +11258,49 @@ static PyObject *__pyx_pf_11ram_booster_6memory_22request_admin_restart(CYTHON_U
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("request_admin_restart", 0);
 
-  /* "ram_booster/memory.py":397
+  /* "ram_booster/memory.py":435
  * def request_admin_restart() -> None:
  *     """Restart the application with administrator privileges."""
  *     import sys             # <<<<<<<<<<<<<<
  *     ctypes.windll.shell32.ShellExecuteW(
  *         None, "runas", sys.executable, " ".join(sys.argv), None, 1
 */
-  __pyx_t_2 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_sys, 0, 0, NULL, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 397, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_sys, 0, 0, NULL, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 435, __pyx_L1_error)
   __pyx_t_1 = __pyx_t_2;
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_sys = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "ram_booster/memory.py":398
+  /* "ram_booster/memory.py":436
  *     """Restart the application with administrator privileges."""
  *     import sys
  *     ctypes.windll.shell32.ShellExecuteW(             # <<<<<<<<<<<<<<
  *         None, "runas", sys.executable, " ".join(sys.argv), None, 1
  *     )
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_ctypes); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 398, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_ctypes); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 436, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_windll); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 398, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_windll); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 436, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_mstate_global->__pyx_n_u_shell32); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 398, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_mstate_global->__pyx_n_u_shell32); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 436, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_t_3 = __pyx_t_4;
   __Pyx_INCREF(__pyx_t_3);
 
-  /* "ram_booster/memory.py":399
+  /* "ram_booster/memory.py":437
  *     import sys
  *     ctypes.windll.shell32.ShellExecuteW(
  *         None, "runas", sys.executable, " ".join(sys.argv), None, 1             # <<<<<<<<<<<<<<
  *     )
  *     sys.exit(0)
 */
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_sys, __pyx_mstate_global->__pyx_n_u_executable); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 399, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_sys, __pyx_mstate_global->__pyx_n_u_executable); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 437, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_sys, __pyx_mstate_global->__pyx_n_u_argv); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 399, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_sys, __pyx_mstate_global->__pyx_n_u_argv); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 437, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_7 = PyUnicode_Join(__pyx_mstate_global->__pyx_kp_u__5, __pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 399, __pyx_L1_error)
+  __pyx_t_7 = PyUnicode_Join(__pyx_mstate_global->__pyx_kp_u__6, __pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 437, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __pyx_t_8 = 0;
@@ -10226,12 +11311,12 @@ static PyObject *__pyx_pf_11ram_booster_6memory_22request_admin_restart(CYTHON_U
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 398, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 436, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "ram_booster/memory.py":401
+  /* "ram_booster/memory.py":439
  *         None, "runas", sys.executable, " ".join(sys.argv), None, 1
  *     )
  *     sys.exit(0)             # <<<<<<<<<<<<<<
@@ -10243,12 +11328,12 @@ static PyObject *__pyx_pf_11ram_booster_6memory_22request_admin_restart(CYTHON_U
     PyObject *__pyx_callargs[2] = {__pyx_t_4, __pyx_mstate_global->__pyx_int_0};
     __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_exit, __pyx_callargs+__pyx_t_8, (2-__pyx_t_8) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 401, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 439, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "ram_booster/memory.py":395
+  /* "ram_booster/memory.py":433
  * 
  * 
  * def request_admin_restart() -> None:             # <<<<<<<<<<<<<<
@@ -11077,87 +12162,102 @@ __Pyx_RefNannySetupContext("PyInit_memory", 0);
   if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_smart_clean, __pyx_t_2) < (0)) __PYX_ERR(0, 309, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "ram_booster/memory.py":348
+  /* "ram_booster/memory.py":347
+ * 
+ * 
+ * def _extract_proc_icon_b64(exe_path):             # <<<<<<<<<<<<<<
+ *     """Extract 32x32 PNG Base64 icon from running process executable path."""
+ *     if not exe_path or not isinstance(exe_path, str) or not os.path.exists(exe_path):
+*/
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_6memory_17_extract_proc_icon_b64, 0, __pyx_mstate_global->__pyx_n_u_extract_proc_icon_b64, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_memory, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[9])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 347, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
+  PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
+  #endif
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_extract_proc_icon_b64, __pyx_t_2) < (0)) __PYX_ERR(0, 347, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+  /* "ram_booster/memory.py":382
  * 
  * 
  * def get_top_memory_processes(count: int = 15) -> list[dict]:             # <<<<<<<<<<<<<<
- *     """Get the top N processes by memory usage."""
+ *     """Get the top N processes by memory usage with real icons."""
  *     processes = []
 */
-  __pyx_t_2 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 348, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 382, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_count, __pyx_mstate_global->__pyx_n_u_int) < (0)) __PYX_ERR(0, 348, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_return, __pyx_mstate_global->__pyx_kp_u_list_dict) < (0)) __PYX_ERR(0, 348, __pyx_L1_error)
-  __pyx_t_7 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_6memory_17get_top_memory_processes, 0, __pyx_mstate_global->__pyx_n_u_get_top_memory_processes, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_memory, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[9])); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 348, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_count, __pyx_mstate_global->__pyx_n_u_int) < (0)) __PYX_ERR(0, 382, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_return, __pyx_mstate_global->__pyx_kp_u_list_dict) < (0)) __PYX_ERR(0, 382, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_6memory_19get_top_memory_processes, 0, __pyx_mstate_global->__pyx_n_u_get_top_memory_processes, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_memory, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[10])); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 382, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_7);
   #endif
-  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_7, __pyx_mstate_global->__pyx_tuple[0]);
+  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_7, __pyx_mstate_global->__pyx_tuple[1]);
   __Pyx_CyFunction_SetAnnotationsDict(__pyx_t_7, __pyx_t_2);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_get_top_memory_processes, __pyx_t_7) < (0)) __PYX_ERR(0, 348, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_get_top_memory_processes, __pyx_t_7) < (0)) __PYX_ERR(0, 382, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "ram_booster/memory.py":374
+  /* "ram_booster/memory.py":412
  * 
  * 
  * def kill_process(pid: int) -> bool:             # <<<<<<<<<<<<<<
  *     """Kill a specific process by PID."""
  *     try:
 */
-  __pyx_t_7 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 374, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 412, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_pid, __pyx_mstate_global->__pyx_n_u_int) < (0)) __PYX_ERR(0, 374, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_return, __pyx_mstate_global->__pyx_n_u_bool) < (0)) __PYX_ERR(0, 374, __pyx_L1_error)
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_6memory_19kill_process, 0, __pyx_mstate_global->__pyx_n_u_kill_process, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_memory, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[10])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 374, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_pid, __pyx_mstate_global->__pyx_n_u_int) < (0)) __PYX_ERR(0, 412, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_return, __pyx_mstate_global->__pyx_n_u_bool) < (0)) __PYX_ERR(0, 412, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_6memory_21kill_process, 0, __pyx_mstate_global->__pyx_n_u_kill_process, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_memory, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[11])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 412, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
   #endif
   __Pyx_CyFunction_SetAnnotationsDict(__pyx_t_2, __pyx_t_7);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_kill_process, __pyx_t_2) < (0)) __PYX_ERR(0, 374, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_kill_process, __pyx_t_2) < (0)) __PYX_ERR(0, 412, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "ram_booster/memory.py":387
+  /* "ram_booster/memory.py":425
  * 
  * 
  * def is_admin() -> bool:             # <<<<<<<<<<<<<<
  *     """Check if the current process has administrator privileges."""
  *     try:
 */
-  __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 387, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 425, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_return, __pyx_mstate_global->__pyx_n_u_bool) < (0)) __PYX_ERR(0, 387, __pyx_L1_error)
-  __pyx_t_7 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_6memory_21is_admin, 0, __pyx_mstate_global->__pyx_n_u_is_admin, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_memory, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[11])); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 387, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_return, __pyx_mstate_global->__pyx_n_u_bool) < (0)) __PYX_ERR(0, 425, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_6memory_23is_admin, 0, __pyx_mstate_global->__pyx_n_u_is_admin, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_memory, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[12])); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 425, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_7);
   #endif
   __Pyx_CyFunction_SetAnnotationsDict(__pyx_t_7, __pyx_t_2);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_is_admin, __pyx_t_7) < (0)) __PYX_ERR(0, 387, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_is_admin, __pyx_t_7) < (0)) __PYX_ERR(0, 425, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "ram_booster/memory.py":395
+  /* "ram_booster/memory.py":433
  * 
  * 
  * def request_admin_restart() -> None:             # <<<<<<<<<<<<<<
  *     """Restart the application with administrator privileges."""
  *     import sys
 */
-  __pyx_t_7 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 395, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 433, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_return, __pyx_mstate_global->__pyx_n_u_None) < (0)) __PYX_ERR(0, 395, __pyx_L1_error)
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_6memory_23request_admin_restart, 0, __pyx_mstate_global->__pyx_n_u_request_admin_restart, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_memory, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[12])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 395, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_7, __pyx_mstate_global->__pyx_n_u_return, __pyx_mstate_global->__pyx_n_u_None) < (0)) __PYX_ERR(0, 433, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_11ram_booster_6memory_25request_admin_restart, 0, __pyx_mstate_global->__pyx_n_u_request_admin_restart, NULL, __pyx_mstate_global->__pyx_n_u_ram_booster_memory, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[13])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 433, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
   #endif
   __Pyx_CyFunction_SetAnnotationsDict(__pyx_t_2, __pyx_t_7);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_request_admin_restart, __pyx_t_2) < (0)) __PYX_ERR(0, 395, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_request_admin_restart, __pyx_t_2) < (0)) __PYX_ERR(0, 433, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "ram_booster/memory.py":1
@@ -11230,20 +12330,31 @@ static int __Pyx_InitCachedConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "ram_booster/memory.py":348
+  /* "ram_booster/memory.py":370
+ *         bmpbits = hbmp.GetBitmapBits(True)
+ * 
+ *         im = Image.frombuffer('RGBA', (32, 32), bmpbits, 'raw', 'BGRA', 0, 1)             # <<<<<<<<<<<<<<
+ * 
+ *         for h in large: win32gui.DestroyIcon(h)
+*/
+  __pyx_mstate_global->__pyx_tuple[0] = PyTuple_Pack(2, __pyx_mstate_global->__pyx_int_32, __pyx_mstate_global->__pyx_int_32); if (unlikely(!__pyx_mstate_global->__pyx_tuple[0])) __PYX_ERR(0, 370, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[0]);
+  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[0]);
+
+  /* "ram_booster/memory.py":382
  * 
  * 
  * def get_top_memory_processes(count: int = 15) -> list[dict]:             # <<<<<<<<<<<<<<
- *     """Get the top N processes by memory usage."""
+ *     """Get the top N processes by memory usage with real icons."""
  *     processes = []
 */
-  __pyx_mstate_global->__pyx_tuple[0] = PyTuple_Pack(1, ((PyObject*)__pyx_mstate_global->__pyx_int_15)); if (unlikely(!__pyx_mstate_global->__pyx_tuple[0])) __PYX_ERR(0, 348, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[0]);
-  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[0]);
+  __pyx_mstate_global->__pyx_tuple[1] = PyTuple_Pack(1, ((PyObject*)__pyx_mstate_global->__pyx_int_15)); if (unlikely(!__pyx_mstate_global->__pyx_tuple[1])) __PYX_ERR(0, 382, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[1]);
+  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[1]);
   #if CYTHON_IMMORTAL_CONSTANTS
   {
     PyObject **table = __pyx_mstate->__pyx_tuple;
-    for (Py_ssize_t i=0; i<1; ++i) {
+    for (Py_ssize_t i=0; i<2; ++i) {
       #if PY_VERSION_HEX >= 0x030F0000
       PyUnstable_SetImmortal(table[i]);
       #elif CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
@@ -11274,34 +12385,34 @@ static int __Pyx_InitCachedConstants(__pyx_mstatetype *__pyx_mstate) {
 static int __Pyx_InitConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   {
-    const struct { const unsigned int length: 10; } index[] = {{1},{34},{37},{35},{29},{25},{27},{23},{28},{44},{3},{4},{179},{42},{10},{19},{8},{17},{30},{40},{46},{38},{24},{2},{0},{2},{1},{1},{1},{8},{9},{7},{12},{10},{9},{31},{25},{10},{21},{12},{8},{11},{12},{11},{12},{12},{21},{10},{4},{11},{5},{15},{17},{12},{6},{8},{13},{4},{7},{4},{19},{21},{7},{4},{10},{33},{23},{22},{13},{4},{22},{11},{16},{8},{7},{18},{25},{17},{14},{10},{7},{20},{20},{6},{24},{31},{24},{22},{13},{9},{27},{23},{16},{11},{7},{13},{8},{5},{13},{13},{12},{15},{8},{4},{18},{9},{12},{6},{14},{14},{4},{5},{5},{8},{8},{13},{6},{26},{24},{18},{18},{7},{5},{6},{15},{11},{9},{11},{4},{7},{1},{17},{31},{46},{43},{5},{10},{4},{8},{5},{23},{11},{8},{8},{9},{15},{24},{42},{6},{9},{7},{6},{4},{3},{8},{13},{5},{8},{3},{12},{8},{6},{7},{5},{4},{8},{3},{6},{11},{9},{14},{13},{16},{10},{15},{4},{8},{5},{2},{7},{3},{3},{11},{14},{4},{12},{9},{17},{9},{5},{6},{12},{18},{8},{6},{21},{7},{6},{6},{7},{5},{3},{5},{12},{10},{7},{6},{11},{4},{15},{6},{3},{10},{3},{6},{9},{8},{7},{5},{8},{2},{27},{7},{6},{4},{7},{6},{14},{4},{7},{6},{8},{1},{166},{157},{108},{209},{338},{205},{108},{639},{95},{123},{51},{33},{8}};
-    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (2984 bytes) */
-const char* const cstring = "BZh91AY&SYIe\326\237\000\001\334\377\377\357\377\377\377\377\377\377\367\377\377\377\376\377\377\377\374@@@@@@@@@@@@@\000@\000`\013\034\371W\207\251^ \031\035\026l\250\245\275\307\002\273\033\275\240\007\200i\244\2214\320\214i\251\3524zj<\230h&\320\223FM<\243\311\r\244i\350e\032hhi\243\t\352\031\244\301\0316\2202\tDLM\000\230\202zh\t\2223S)?*?J=OP\036\246\231=CA\220\032\000\000\0002\001\240\365\000h\002i\023I\224F\310\232zM\007\250\323 \036\211\246\200h\017P\003 \003!\246\203A\241\246\200yOH\002SD\0224\236\211\225?!\225?J?Jz\236I\351\017S\324\032\032hh\000\000\000\000\000\000\000\014\322z\232\020d\300\t\200\000\230\0024\3020\000\000\000L\232bh0\0020\000\000\000\002ET\363T\332j&\233\3254\320\321\223L&Fi\000\030\214#\002dbd\310d\003#M\000hi\246\021\210\323'xMb\034L:H\016@oh\376\333\241\3218\370\372R\230\321\021$;\377\224\242i\273\362;\301X\244\372lt\320\2012\0312\004\245\\ \325\213%\214o\370\021\001AK\303P\202\236\211X\330!\264\3064\306\3041\241\260\033\020\310\215\342w\002\225\013\204H\023NJ%$\370\322\224 @\030\021\244\211\241\t\231\222`\330%%\254\326\354\226\326\373\337\2556\231\240\206\010\277YH\t\266\345e\023%\200\251\006\233%\033\021'\036I\302Utd\010\205%\"EAO6\310\371f\"\224\211\t\237H\363\223\345P\362\235\230\365\313P\\\231\304\300\261\314Y2-CG,\331g\032Li\250\2603 \240\261E2\265\262B\324\222\030Y\231\303\007\002I\030\245\331\303\213L\347\026\026'q!\000\025`\201@;YKy\254\362\375\220\324jW<(P\276(\257\026\327\363G\333\335\365\266\377^W+\037\301\350\n=\263\375\371c\036\246/''\265xqq\266V{y0\353\374~l\323T\231i\203I\261\356=\305\242\274\364\335\266;\233\231}H\265\243\312\322\201\305\032&\251\256c\201\355\225\266\352\321\307js\354\3478\034\374<G_oj$\300\315(\004<\214i\3109\273\241\346\202\307\035\203\025\203\215\213d\267\251\276A\300f\310I \217<\243\350\010\025a\321\030\204H\031\034P\243\200\345\360>\016D\310|\334~s,\236\234\226\035\214*R\277\315\013l\312\230\353\366W\"E\243\005\360\311\277s9pa#\016\r\247\325\363z\232\241\351\333\247\271\346v\017\254\332\273\362""\3100\256\027\017_\\h\216\326\325\303\252\206\210\263\263\023\243\242\020\243\023\234\257\251\273\375\316\262\004\323|\237\253\335vD\201\nY\247H\346\203\256F\367\320X7\345\333\307V\335\303O\325\340\036_y2\"\220\031^\351\341\270\t\177X\274\002\007\020\257u\203y\364\252\233\004Z\372\250Q\201E\374\347\327\257\241>\002\nA\204\320F\335\002Zl\253HQ\332\311,\370_\335Y\024\035\313\274\270\327\332HX\3606\214i\017\355=\205{\363x\241\200\337\311\277\227x\023\261\266\005\354=\300_\201\266\024\313'\203o\244\202\0066\036\003@a\026m7\342o4\204\263sh\352\343\321\256WQE\007G\002\247\3570\017\336\032\370\342\340\323\236\315\374\306r\203N\014-\321He_\331\300%\343\323\272\331;\016\212\362\034\225\231}\254\255\273$\371\243\233\315\002]\233nK\363\0137\260\340\306:8O\231h\261:u\205Z+\2337\356\335\252\245\333\206\323\206Z3\370z\315\001~\316\237s\327%5\370\355\365\3566=en\265k\332qJ\215\326\014I3'\023q\243G6\341\31798j=\031#!\311\314{\332\257\223\1779\020V15\246[\272\375\263qo\261\312]\252\024\nq\206trH\354\354\371\214U\244QW\n\372X\331\372\275\354\022Ly\263\363h\260\343q\303t\226-\342\274\320\360n]\326\027\352\322xAg=\276F'\361\233<s\235\365\366\006\022t\032\006\356\203-\236d%\305\0301\031\021\236*\325i\365\252\306C>\273\241\026\377!\330\230j\206P\306hiy'\242-\225\312\354:\343\033\341\374\255m\251\354\357\031\324\340w\207\337\232\230t:\033\"]\2701\003K\344}\274\324\323\331\020\356j\267\031\263K7&&\231o\220\301D\2315\254\246%\331\337e@I|W\336HP\247eS\275\361x\311\311jX>Y8\357\327\206Bk'\005V,\363\034\0253\271?\235\205P\223\332\314z\016\357\"h\346\365\254\217\330,\0107\341M\325Qy\0244\351\361\304\n\3757e\373>\314\264\347\235\251\231HH\304\313?\224W\323+\333\n\320\352\236\255DH\226\360\241$L)\243\264\354C\210\3474oC\313\262\216\214\237\2257t\2705\255sp\202.\336\335\227=\201\021\244\255\232\252\373\003TM/\2543h\317Q)\214e\200y),\300+pt*\"(\243\234&\252\230\226\213L\364x\253\222EF\177\2467\312\372&\317Z*\251V\311\346d\206\274\311\206\223[\260R\205\004\240TJ\225\227\215\235\3008[\337UL\357\206@""\223\230\224\202\262R\370\314:\226\021W\243\026\255%\004\353\266\301\235\341\260\311\346\245GS\342\203\001-iNg!;#mg\264\236\240\346\025_L\256,%@\244@@\317],\017\255\234Z3\275\324\264\346\245X\016\211\234\221\024DJB\3259R\361u\233~W\202\000)\312\032\341\026Q@\014\000\332 \250\0147\034\356b0\2741\033\337Iz\252;,\322\n\263*\245\312\226\316\206c\224\206\n?\202g\321*\242\305s\305VY\222\314\207\232\312\212\200\321\243\010M\351O\013\002\265\330P\215w\332\207/5\355\346t7Rsro\357\360\033\255\335Wm\033\001\246\t\271\232\034Z\001G\243\021l\177\024`\372\004\342u\365DA\310E%Q.\024U\030\271EIJ\375\274\344\330k[\304\252\351ci\351\336\276c\242$\020\310\306\372$\352OfS'/n\270\325\266\256*\335\305\262\247\016\273\224\037\000\367t`8\357Q\201J\001\264\2460T^\017SR\236\013\\I\212\364\312:fZ\304\323\251\267N\253\034\2541\244I\222\031m\324\350\324\235\240\251M>\013_})\025@2\033\016\020\254\327m\342?\307ol\341c\315\321.\262\226\014\347Q\216t\013\230\262\204\233\016W\322\2651Q\204\340\204\300O=g=v\215\202\256*\222\224\354\2448\335t\365y-mY'\017B\323[\030)=HD\261oN\206\233`\300QH\321\317\253\032\022H\034\314\030\017\006d\376\275m\302\n\301\253<\254\301& \344\246g\243\000%\336w1r\345\267T\370\005T\225\367\346;\303\013$\003\300\312\3232:\215\232\013W\r\240\0235\202i\322\210pdd`\213\000\250<s\261G\010\261\342M\342\2602\024\222\212\031f\207\311\350\317\232\251\205\020\221Y\325j\235E,\226\263\225\010\251K\324\346X\221\332\234\371\271\214-\026z8y\224\345Im\250R**J\310\246\317TW%dxf\000\211\222\344\324\3155\215K\226\275\253\342\245\206\023\346\024\204\305\t~\2500c}A\211\222\224M\215\260h\333{\266\317\t\325U\024QE\310\263)\222F`\370\023aUT\365F^\356\223\263\307\351y\334\003\272\330\367\222I\224\240\210\356\034\224EvF\274\302d\261\016\225\313\006Wcjt6\026H9\233\206\203k;nE\327\256zk'\323;\232x\t\207)\016\327\371\352\254\234L Bg\n\t\221U7\321J!3$\230\026\263\003\322\242\243vl8\221\223n\333X\252Y\"t\2233B\3303\314\245(\224:B\022KP8\354%\302\214j/\324\266R\025\317bhO\202\267\007\016,\3260e\314%~\005WM""\211`\237o\233f\314x\\\317k\230\222\303d0B\023&HhX'\207%\344U\004\305C\021\213\010\326\334\342 E$\204\316\204\204\3520\310\251C\344\235\231\215{5\347\226xT_CjQ\212\224\334N\322#w|p\223fi\271J\314\222,\312\367\311H\342\260Ba\331(\320\201 \332$\302\006\272\210\"\243S-R\325\336\275o\261\247\001rw\320\202\000\353\326\272b\211\004\206z\337\320\351\307\276\307\316\366\226\254g\226-\247\271\256\220\252\304\235c[\373\026\242\255<C\023\317\242\377\367B\031m\313\"\362\\\364`Je\225\263\247\237\274\247\300\212_\330\267\224f\255\007\374Q\345\226R\237\373=\243\247\236\030c{\020\006\327\024\342t\366T\033\355e\024\323\351^\327m\246\224\360\360\340\276\035\202`\305<T\340\307x\273)\217,C\255\0168\202RQ\002@\357\202\270\243A\034\016\\+\333\006GY\tj\202\304\230\373\350\236\345\355\006&h\260l\n\n\2333\016\360\264P\002\211\244\016\211M`Q\024+\362\202\354YRx\341\313\345t\007\r\205\034\350o\331q\241\207M\337!\247\017\271\272\217\336C\016\217\213\356v\317\315\033\341#\340\237II\001\204\036Q\303o|\331Hu\324\020F\375}{V\016XPy\177)pQ\264Y\033\244\214\274U\\\327m\246\360Fd\023\303\252\351\030\300x\022P \035,@\316D\232\256\213LJ!\343\232\350\223B\013h\264\303\034\233\247\271\263>\203\245\024w\375\374\232\n\301=J\255\222\354\177h~\264\201\240\245I\007\342\025\324\264\231:n\267\340+(~\362\334O\3108\245{:\265q\247\214%\031\226\261'Ov\263TJ\233O\231\213T\264\252\034w\260'\035\365\236\325F\346\010\217hK\231S\020\314\245-I9\322.\263\246K\210\212@[\231\234\177>8b\341\274\254\226\026\316V\26759R\215\225\344\223'f<\252\326\3058\3275\326A\221`A\002\243\330\346L\004\254b\322\031\361\343\210\333\324\211\324\345\242p\366\267\241\305\212W\0320\316\335\330\005\275\323M\256y=\374s\241\231\037?\242\264\251G\034\327\325\024C\211Z\266h\213\337\354D\311\204\235\177f\235\022FD\021T/\020\301\301\352S\235\305\213a\374\353g\236\337\206\255t\367\325\233b\003\352\232\212\336\235\367\243\017\032G]L\373\267\270N[\304z\003X7\205\2146nQ+\374\203\362A\001\320\326\212\021\301=.\303\235\247\036\021v\003\354\300\362\206\235""\247~\234\207\037_t\242F\241\267\243\004E\325\376{\206\350\357F\356[[\335\0329\346\313\301\006#\266t\362\3165\035\314 \246\005jh\203Ce\346\010\014\326\213\204V2V\034\271\225d\211qr\225W\017\t$\233\007\027\273\254\177kf\370\312\305c\262qs\334\262\030U\327\003\233\213\331\315LF\030+rf.\022\320\301]\024\357`sf\243CSJH\202\006\014g\272\033\025B\224\204s\2475\202\212x\224\204guT\037\370\273\222)\302\204\202K.\264\370";
-    PyObject *data = __Pyx_DecompressString(cstring, 2984, 2);
+    const struct { const unsigned int length: 10; } index[] = {{1},{34},{37},{35},{29},{25},{27},{23},{28},{44},{3},{4},{179},{42},{10},{19},{8},{17},{30},{40},{46},{38},{24},{2},{0},{1},{2},{1},{1},{8},{9},{22},{7},{12},{10},{9},{31},{25},{10},{21},{12},{8},{11},{12},{11},{12},{12},{21},{10},{4},{4},{7},{11},{12},{22},{18},{18},{9},{5},{11},{10},{15},{13},{13},{17},{5},{15},{7},{12},{6},{8},{5},{13},{4},{7},{4},{19},{21},{7},{4},{10},{33},{23},{22},{13},{4},{22},{11},{16},{8},{3},{3},{7},{18},{25},{17},{14},{10},{7},{20},{4},{20},{6},{24},{31},{12},{24},{22},{13},{9},{27},{23},{16},{11},{7},{13},{8},{5},{13},{13},{12},{15},{8},{4},{18},{9},{12},{9},{6},{6},{14},{14},{7},{7},{4},{3},{5},{5},{8},{8},{13},{6},{26},{24},{18},{18},{7},{5},{6},{15},{11},{9},{11},{6},{4},{7},{1},{17},{31},{46},{43},{5},{3},{8},{10},{6},{4},{22},{8},{5},{23},{6},{11},{8},{10},{8},{3},{9},{15},{24},{42},{6},{8},{1},{9},{7},{6},{4},{3},{7},{5},{8},{2},{4},{3},{2},{8},{13},{5},{8},{3},{12},{8},{5},{6},{7},{5},{4},{8},{3},{6},{11},{9},{14},{13},{16},{10},{15},{4},{8},{5},{2},{4},{7},{3},{3},{11},{14},{4},{12},{9},{17},{9},{5},{6},{12},{18},{3},{8},{6},{21},{7},{6},{6},{7},{5},{3},{5},{4},{12},{10},{7},{6},{5},{11},{4},{15},{6},{3},{10},{3},{6},{9},{8},{7},{5},{8},{2},{27},{7},{6},{4},{7},{6},{14},{4},{7},{8},{8},{7},{6},{8},{1},{166},{157},{108},{209},{338},{229},{108},{639},{95},{123},{51},{332},{33},{8}};
+    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (3422 bytes) */
+const char* const cstring = "BZh91AY&SY\006\0247\241\000\002\020\377\377\357\377\377\377\377\377\377\377\377\377\377\376\377\377\377\377@@@@@@@@@@@@@\000@\000`\014\274\370K\303\326\333n\366\016\354x\355u\335\261rp\333g\\\264\322[8\341\340\001\340\032\236\222\232\236\221\222=\010=&\215\030a'\351\220\231\014\247\240\233(\314\022h\321\2234 \321\246i3Dz\214 \311\264\2154\320J\"\000\230MOM4\247\214\215\002\032\nyA\2654\032\r\0004h\000\000\000\r\032\003@\000\001\240\023$A\t\244\364\312zO!\031\036SCj\033SL@h\032\001\240\000\000\000\000\r\007\244\304\001)\242\021\006\223L\010\312hz\247\3524\236\232\023\3214\r\r42\032\000\006\200\000\320\032z\200\001\246\230\230\232\020d\300\t\200LL\2310\000&\004\300LL\023\000\000\000\000&F\002`C\010\001)\250\021\240\023)=4\325=\242OS57\245\032b2\006 \0004\000\000\000\000\000\003@\032\r'hMZ\034L:H\016\3207\274u[\255\327o\363\261\330S\232\031\347'%4;\366gD\323w\355v`\211\025\305T;lv\304\310\022Hd\310\022\225V\347|\032\226\214\344O&n\2301!\244\321\217\t\244N\206\254k\023$\220$\220\t3\t2\022L BC\010@$\002C\010\201\323*\251\257-a\253\310\2501\233=\002j\253 \315hD\213\010\n\342\314\304\220\204\000\222L%%\240\223II\254\300~\323[L\335\\Z\215,\317\036\314>\272\n\2471\212$\256!\323\027\025\006\272&I\252\022\030\257=t\000\330\2412\006\256\3431x\325\233b|s\021JD\204\317\275y\311\361I\345\021:\360j\227\004\204\327&p\230\0261\037B\003\004\350\265\267Yy\2121\252\211\211\005\n\000Z\350\031S\346B\317b\030\3133\223\007!bG\016V\214`XXT\316qED\356,\020\001y\321\244`\340\032\322\226\226\253\304\307\010h\273\253\2364(_\"+\304\354x\237_7\251\275\321\346F\037\1776\030\n=\343\375\360\035\327\343\213\330\354|\374!\305\306\361K\317\201\016\277\307\350\315j\244\313\243\006\226\223\351=\304\305x\311\323\234z],\276\245*\210\031\213\020\343\035K\345WG\002\026\006\321\227\026\274\311\242\335\006\223F\235\323\213\220\344D\210$}\200\363\257\227\241u\007U\327X\262<\230\343\3051XD\r\2565c\231\300\307\033\305f(\001\3370f\005a\313\021\224\013\014\372\334Z\230L\353i/\221j$\0078\307\237\333b\331\036>\347""\220\354l\273#\022\356K\316;\334f\371)\341_+Gm\317\351\255\010\301E\332\335ZY\305\261\203\21466O\006\317\002\307\344\357\250\311\303\346ew\023\225\363\222bb\255\236\036\306\300\321\201\305\232^\035U3\332\325\014\304\350\346Pdf-\230\025\370+\303\376u\316@\251*\257\303\361}\037C\261\316\340\330\t\223\302\367\345\273\272j\375\022' \236\206~\327\006E\204\017\",Y\364\352\034>\215\363\362\206l\035N^\216\325\007<\351cXD\207\313X\003-\343\315\242\331\272\275n\231\363\256\222?\037\242PA\255\315\327\333\307\203\036\234lo\303\204h\340Lh\230\224\222\334O&MGx\010\225\2556\256\016\350\201p'\314\371\274\266\3026u\253WR\0103\236\272 =\026V\260\036\277~\310b\365-o\256:\273\214\032-Tq\333/&HD\323\326\014:\276\241p\205\243\027\211W\257\374\343C\024\347p\315\211\256\267\203J\310\356\261\354\306\002\334\241\021\266l\244r\367\3718\245\321\267M0K\003\364P\233w\212^\244\312\037h[\237z\254\357\206mz\374\252s.\025s\010\306\316Q\006f\2301\316\025\341f\366m\340\211\272u\271\201\336y\275E'\032\262\277\272\246\323A\031\\5\352|\202\355\024\245\025f\314\306\336\363\337\007b\305\236\366\025\222\372G&p\226\267\"\253{\354\3255\223\254\327c\270\317T\325\355e\335\201\316\n\363\356~\273\010\213y\251\345\300g\222\245\371\323\344\363}\2567\260\034\320\321\2407\333y\264\206\235\342\017\211\256#\340\311\235\007\246\334\336\035\351HT\226m=\016\tp\024\016\333\366\277\227\037\033\3674\230\3668\226\264 \260F\313\367\221\324q\334C;\231\025\254\024U\3116\373\033\036\336g\321\3131\342\306Y\212\371\256\222\253\234\276\270\005x\255\340mW_0[\214\335\005\214\353\360\031O\302*\310k%\354\270\303\033\233\n\333s\314\2428\204\203*lh\324lC8gU\227\2513r\272\302\2723S\017>7?\021\373\014\226\301XY\034\360k\330>\355\326\234\335\206\241\215Q\340\255or\217wQ\235N\303p\373\223\001\370\016\230\t\033\242\254\3736\260\323|\347\267n]\346\361H\207\220\3273b\023%\231\263\305\251\245\260\3160Q&MT\246\207.\256\373\252\002-\242\347\311q\220\307#&\021\027\200\227\023\224\355\022\333\034N6\377_\032\361\026kA'+l8\311\266\242\320:3/|>\355\234""\342\351\035\2379\241\247\306\302~\274V\000\373\235\324G\004\245$Hd\311\320\204\t:H\356\017c\324\201\344\223\014n%JI\013\255L\020tE~]$\237D\352A\307\262\375MT\301Pe\277m\200\232-\324QiA\3139Lr\316\277\230\320\343I\3478~\264\243jN\351k\345[vt\323\234\003\001\0308\27321\370psX$]\317\227_P\266\355\312x\225\303P\3646\335:t\005z\224e\260Rd\371\3109\367\231n\005\361\ri\231\214\030y\200[\031P\267\340\362c\035\256fc$\266\257M\267K1vs\336a\236\367\310bI\021\014\237\034\2621\302\272\3236sK\266)\"\202^\025\022eeC\033\033\240Z\342\253'~\373\313\014!\332\323\020\206\3310\241:g\nt\221\271\304\324\227\343\2167\360\312D\345\315\273S\236\330\262 76h\006\025\002\033\362X\262\206\031\231\334uC\322\354\236\265\303\361\003\236Cf\215\364\256F\031i\200\301\020\0202\007\302\340)\335\272\210\311aO\240\370)i\345\245X\016\211\240H\224\303\t\232I[\261Z\347\310\226\353J\360@\005=)Slw\323v\0328\200.c\240\302`q\3047\344\346q\2347\rp\346\340hI\245\265\\\004\253I\266u\271\266lb\371\307\221eO\3171\354J\244V\265\036*\026Y\222\326C\315eE@4k\337\304\232\221U\\\366\2615\327aB0\276x\034\264:\265\264\333\334\357$\304Qs3d\341\360\367\016F\266\353\247\274\263\256\033\266\302\310\2248\322\367\013ldR\016ha\303\243\201\236S\200\330k5\346U\263\022b\306\232d\231g\034$9;hs\\\373-\243\272\343=\261\234\353!>C\330\263\245\367\364d\224\231\365\215\333\232\300u\024\251\231\334\036\316\343^c/\031\n\370\343v\345/\352\256{\370u+\326\025\306\226[\n\203\317\2074\226\016\235\005\030\023 \032\t!\367\340\340j3jc\205JTn\007J\035up@=y\21712\332\332cU\206\246\031dD\211\037\253r\330!\2259\340\251&\374\253\235\356\220d\252d\235P\014E%\306\213\240\216\222\343a^\001!\325\207\263\2301\320\262\331\227\r\347\037\204\207s\252mj1j\242f\005\201\321\2322)1P\302\244\003\204\300KT#\034Y\372J\034*.S\035\304\270%\226U[\333\342\373p\254:J6\336\326\n\221\312\203\244\213Jo\264\271\366`T`\244G\014\270\365\346L\315\230!\036\211E`T\020a\352nFz\223\220\254\255\357gk\204\353M+tg\000\221i\227;\304\225\345\270\032\036\301T\222\270\351\271N\316\241\205""\216\034L\240et\326F,\324\026\232\265\256\014N\364\023KI\020\340\030\006FE\327\031\024\301\272\216q\321N\311d\333\265Ebd)*x\021<;\306#|rm\341\214\361\000\206c\202o\273\364\330\032VW\305\255\270\321v\303\310e\203O\277R\273X\271S\340{8B2\034\345m\334^J5^es\027\t\223R\352\233\251\350\n!a>.\310\004\314\333\r\272\355W\217l\225\373\313=\2564\327\234E\020\253u\225\255\217}i\307\325\325g\2370v\301}\232v\345\200\211\022~\357oE\225\330\222d&B\302\257!\235\223Z,0\326\317\233)\355T\356\016 \343\215\316\320s\334\200s\343\237*\326\016\345\344$\006\014\"\217\\\345(\3165\266\023$\265D\225\346Vd\177\007;\206\305U\231\264\003\345\221\312\340\226\266v7\255\263-[z\257MD\372g}\254\242&\033hv\267\316U2q0\201\t\234$ E\n.\335\221$&d\223\002\303\013\330!L\312\2356\3460\341#'q;\030\251,Q:I\231\241f6&R\224J\035!\t%\302\007\036\023\246K\220\214J(\\\210\025\347\255En:\213\245\325x9\027\365\253`\313\254%r\344\205K\223=Y\036\323F{\347\216\0166\354q\231,&\366\007\241\002d\206z\2668e4P\202\"\221\230\315\200\367\345\022`M\241D\252\220\350\025\241\306)\254\224+vCF\235\376\2159-\331j\371\222\364_C\262X\226J\236Hwh\241-\250\342\020\023hi\240\211p\316\202\367\272\250v\035\275\003\006A\010\324i H6\202\0260\201\245I3M=6\226\323\2363\332,\231T\201\320W\"R\314\342\350\006\205umS5-N\325\223\340\256[\005\2454\346\246\352\036\331*\356\270|\352\215\234\307\321\003\005KV\247\204\271J\342\355_V\370Z\226d\307W\365*\030i\3028\270\216F2\213\247\260\210\305\023dN\23716\372)_\n\326^\226t\036\351\031_(\277)\312\270\361\322D\374\222Cc\326\324\324\001\313\361&\351\267\222h\2255\314\311.\274M7.\026\277\246{\323\206\215\274D\367\220b\242\n\256\353\245\372`\340\251\362z\312\253kX\266\341\202\004\023\232\210\022\007{\325\341\223\004\346\266'\262\220#\275\236\212]\314\030\214%\374Z\177S\244n\267\330\t\231\037Za,)\233\272\2067w\027\354\205\272\231\217q\300B<\2217\324&\007\023\346M\311Mx\373s@\353\251\263\307\350\314?\211\035\0109ro\345u\223\014\351\274d4\342q\257\264\216\234\331\207G\317\371;o9c|\304tg\327\024\220B\r\201\367""\033\332GqW\371\354, #\206MZ\376s\024 6\017\"\221\224\016\212\332S\246\267\311\036)H\2233\234v\322\234\340\nu\027e\023\355Q\225-\350t\023\211QA\000\351\310\013\375*J0]-S\226]\307\331R\244\005\016U&P\\\231\031\032\037M\254IVA\004\337\367\026\277.\202,\231HP&\342\321\221\217\317\2113\367\252\014\300\205\t\007`%\226\022\260\245\312\252?!\026fW\314\226\256BqQ1\246l\314\303\304\027\2503]\n\362p\361\031I(#I\237\320\264\362\027R\326\261\206\316\330\241( \341\224\303\033\016F\020K\311q\360iS\220\221\306\\d$\350D\265\320\217\026\022\212 \tgy\037\216\234N6\003\266\347\nee\303I\212\251\321GJ4b+'\351\3076\332rw(\242\330\240\323\312\210\215\243s\305\343g\245\272\213U%\276\212Y\273V\211\211\226*8\252&(o\353<\232\234\323\313U\307G\026\003q\021\016Cb\246\376\3501\270c%6:phM\007O\320\330\250\371\305\345\264\320\271\270\244\322\306\\\030p\3759\342\021\267\300\237\002\010\206\223\204\005A\367\303\347\314\312&q\233\000yBq\3157\367\323o\250\336\313\344\305\330\325\315\273\274\346=5{\331\271\332\212yu+S\267Q\376f\035U\277\326\327\353\373[,\304\333\233#\001\016=\261=Hp\261\267h\330|\240\305\355\271Z\316\363\305+G\327\261\274.\311\004\006F\215^\344p\254\201\222\247\335\362|8\366\204>\002\347D;\311\253\301e\360\205Jgb\336\351\250\331\033\372\364\004\227\272\337\337\210\347\0269\203\241\325\320\340\370\372\232zc\2626W\006#m\322a\017F\321\006\246\210\347P\n(4X\320\303/@@\223'u\213\204V2V\306Py\225K\t4\343\002\262\253\207\204\274\222\355\035\256\356\261\344\254\267\314RRr\235\267\241v1\224aW\\\016o2\346\246#\014\230\263\363\246\330\004\243\206\010\350\247\204\203\263K\335\021\215)\001\203\265\205\214\231B\014\327C\202\204\265\245B\205\203\2505\261E\236,\220\214\356\252\203\377\027rE8P\220\006\0247\241";
+    PyObject *data = __Pyx_DecompressString(cstring, 3422, 2);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (2929 bytes) */
-const char* const cstring = "x\332\265V\317_\333V\022\207O \353&\220\330\341g\233_2I\200\264\r\215\003\315\266\371$\331\025`\002\251\20312!m\272\237WYz\306*\262dK\317\006\332=\354\321G\035u\324QG\035}\344\310QG\037\375'\364O\330\231'\3318$\333\335\313~\022\344\247y\363\346\315|\347;3z(\252\2776lV4\017\251\261ciMM\247\007\324\026\3122,T\241lZ\317\204\254e\231\226\240\350T\2664\343@\320\315#\241fi\246\245\261\023\301f\262\241\226N>R\252\232\252V\326\300BM>\240\202\256\331\354#\225\370\350\007\233\324\220K:n\326z\256\304\033e\275aWp\243\014RA\221\225\n}&lDN2S8\324t\035\316\230\n\265\355\001\261n\232\207\215\332\271\261\301#f\215\032\375#\014\303\307h\007u\2057\253\333\246A\267MF\005V\221\231\260v\302*\246!h\266\240R]+QKfTG\014,Ma\324B%C\330\311\356<Z\371nE\200\340\004\213\376J\025f\013v\243\244\350\262m\003\260fY(54\235i\206\300Nj\324^\022\266\312\302\211\331\020\014\032\371U\003\275\301\003\254\002\236\331\224\341BX\220\r\303d2\323L\203\300q\000dAP5\013.\321\232\024Oo\310\272M\227\266\231D\231tb3Z\3352 \252*?\001\356\260\206e\3005\333E\251(\026\367\244gB?\345\003+\236\004\252\342f\204\316\256\\]5M\260f-Ui\325\264N\244\252l1\236ICP\314jM\247\214\252K\302\206E\361\230d\3105\273b2\214UiX\0265\230`sg\204\3508\246\236\321%i\200\000\021-\3005\273\241\340\235\345\206\016\310.\366\034}\361\370a\024\316@\376#N\\8R\264\264j\025dG\246u\310IF\031\307\034\262\271(,\375MVU\002\000R\305\266l{\211\036S\365\250\212?\364\270\246\233\026\304\007kt\347\275\n\031\375\207n\313\221\226\000g\204\n\325U\001\334\215\270\262H\221\227/2\313\217\037?\024\036A\326,\246\311:@l7t\326\333\355\361\213\332\226\\%\245\010\303o\"\020\226j'6\265\232\032\354\343\025v5\272\312n*\025P\303\345C\001\264\253\232\001X\251G\232\001\377\270\030\226\272y`\032\270\026y\344\353\324\200R\373d!\213\014\310Yj0j\257\346\363\2715\335\264\351&\240\256\323\365\375\374\356z\266Zc'\373\021T\300\230W\224\255E\371\2123\017\202\234l3^\202\233\342\366z.\273\251\035Tv \326-{\017\274\027\rQ\005\007s\371\355W\271\235\265}\251\270\233\333\333Z\307?\002\332D,""\026w\267V\367\212Y)\307\013\261\357\326[Yo\320\375\234y\204\246r\rM}\303!A\256F\253\235\206u@q?\35631Ur\220\232\001\2057q\223\271 \036P\3366\245\206R\211\243\341\305\374\311\312\310\327\0203\2564\260\344P\346k\250 \353;\371\255\355bvwg7\277\226\225$\"\346rD\\\303eOR\330\313\356\376H\266\2667\362\273o\304\342V~\273\267!e\213\260\231/\212\375\360\327\314\006B\334\313Q|\035!;'\307\360\267\016\324#\333\364\230\355\322\262\224%;\273[o\267r\331WY\222\335\026Ws\331ui\353\247,)Jt\313P,*\333\264\320\200\216\320\267&Q0\207E\"ANu\032\333\036\330\356\345\366<\355\222\366\033\355\243\262\001jkX^\\\n\234\327\263\307T\001\002\355K\314j(\320@h\244\030\001\216 \017\000Y\314\377\220\335&\342\372\353=\251x\356\271\024\211/\276s\304\366\214C\303<2~2\253%\255\347\255\2546\345\232\266\374D.C\001\360\007\251QK\001^F/\r\233\252\344\240DH\334\r)!\37558\001H\312\326\001\357\256\360\333\224\355\023C\321\314%\305\264\314\006\364]\2206a\n`\217\353/\300Z\211B\0244z\366\256\213\337\342\373\240~\365\322\211E\313\n\321\014\246\020\033\020\"\360\33345\225\324xO\"qO\342/*\357i\004\346%\351\315K\022\017\275h\2477$\t\016I\202}'\222\307J\261\004<\206\373\010\263d\205\226d\345\020\032n\025\366\025$\221\302\243\214\236K\320\030\242\327\250\206IMSU\231\311|\220\364\027\324\306\326F\210j*\204P\022\365z\322\237z\037\t\226\236\353\246\002C\345\345\022/\353\377\262\375a\325\377\211\366EF\360~I9\323\360\010=\326\030\001ht\325\006HM\231q\\I4E\010\322\233p\210\3138qH\351\004\372[\264\254\002+\312\r\003b;\200\336e\036\034Ph\010\214D-\027`,\233\370\312\314ZO\324\357\320\377I~\356\363s]\256\226T\371%h\002\264\225\236J\205\360\211P\341m\025o\2004h6\221\2613\022X\364y\247\201\357\366!\205\t\254/?9\244'\370\321\3223\322\263\255s\227\361\211\345k\036\301\032\332#!U\031\214\241o\360\037\202\034\210'^\366e1uQ9N99'ZLO.i\350\274n\252\226\ty\202)AA\321\220\253\264\377d\252\016\363\"\266\007\021\327\000\035\360\227\302\254\243d\2002\250\216a\304\241\020\210\323\352\303\327_\000\201\371h\006\001\314_\030i5\033\212\274f\0034:!""\365\206\254G\327\016L\312\370k\303\242\007P\010\370[3-f\321z\203\332,\306\027\346-\223Qh#\365\243\351\033}\346X\264I-\230QP&*\014{\253a\310\020 |\017\304\341\301J\245e\031\364m\354r\313O\260\234\315\262\215\2376\204\177\332\330p[\257\024\343\317\023\374pi\330\340\014|\240\305\221\001'#Z\366\2075!\014\035$L\253R\310<\203\266\244\363\007\364\020VC\030\316\331E\342\017\025t\307\216\021\212>\354\260\351\304\215\247\211\343\322nj\026\003\224b\202\036\311\032;\222-\370*8\200\272\207L\365\252\3778\034J{\251?\256\014\215^\356$>wSn\272\233\230p\236\2723\336\360\037\227\207>\273\341L;\365N\"\031&\027\274\177\006\231`\263\275y\272y&\306\222\337\203\3056\350\247\234\331\360\363\307\301pg\354\2063\347\210\375\237q\2640\326\312\240\340\201Sw\207\273c\223\341\344W~\246\223\234vd\207\271O\275\224w\337\223\273\211\353-\346d\034\261;r\265\365\302\035\356$\256\265\312\216\030N=\t\322A\246\003\273\365p\350\226+r/\273\221\227}g\223\316e\347\300-\340U\023\316\274{\331\225]p8\345L\205\323\217\374\0028\201\267\317\273\303n\n\027\013x(r\353\257\316=\247\320w\25536\341d\272\360\266\350\246\303\233\257N\353g\227\3162g\257Bi/\334{\033m^pn%\020\203B\354\334}\017|\037\355|\332\265N\342\306\377\350\030\002q\344( \271p\327\363\266\330\356\3355\345\024\020\210k-\342\212\035\274\364\013w\336\033\356\377\334t\0011\000\213{\321I\334\306\373'\035\361\217\304\320\350\325V:\274:\027\316\275h#\\\321\253\020\n\200r\3775\035\246\277o\247\372\257w\302;\337\006\\y\274\225\007\303#\210\326\357\336\234\267\341\247;#WP\005\256r%o\324+x:\260a\3414\025\313\357\270\324\313\014\256\273\260~\000\001$\201)\301tPo\017c\224\231p\350\201\307\003\272\336\222;#\327[Mg\037\343\032km &x\365e\004\360k\267\n\274I\314\272\343\036\t \270\331pv\321G\212\216N\000\331^\271`>\321J\000\340U/\343\211\336\276\017:\237!\260\367\035\352f\300\342\330\244\263\356\216\272\005\267\342)\376\204\277\301\203\036O\002\361\226\235\222{\311]qm\357k_\t\246\002\245\235\352$\361\346\3614\000:\006\327t\306\246\234w\356\317~*\374\362y{5|\371c\370\343/""\341/rg\014\022\322M~\356N\205w\226|\331\257w\222\023\316\212S\357N\336v\337B\360\223\267\302[\337\006?\237\246N\027\317\036\206\322\373\360\375\317\261\354\375i\342l\270\003j\357\302\007/\333r\373\370\264y\266{\306B\t,s50\004\347\357\002c\222\263\356\030\004T\350&\247\303\351y\257\354\347\333O\001d\240\317\365$<\373\250~\351\247\001\240\010\321\333\356\276\367&HuG\222\016\200\374!.\233A>\\\343\244F|\270\277\030\007\326_\336[\366d\010\035\303-\002\037\227\374Q\377\035p|\014YY\002:F[\230\237\344\014\224/\302\n\356\215\000\003\336y\022\300\224\274\355\356yi\357;\254\3609\357\201W\367G|1|\364\267\266}z\357\264\320I~\341\336\307*\370(\024L\343\265\326\236\223vV\302\231L0\333\346\005\360\275\263\352\310\341\320\234\227\376\277\326\326\263v\272\335k2\363^\305\227\371mq\017\354\0146\303IX\202\301\031\307roz\233\376\353@\207\304\202\3419o\0369\202\362Yo\326\277\023\034\267\353\335\304]\267\351\025PZ\357\244\356qLRw\303\273\313\301\023(\250\304\320g\251\020 \372\212\343\213\315t\016\310\007\215\020Vi\357&$)j\261i\357\026\2063\351l\001\302\357\374\267\301w\355\014t`\021\275\001\003\363\336!\007\013U\347\241\376\322\250\372\032\030\376kp9\250\000\257\352\177\246\2106\367\241\020\0269\000 \330t7\300\243\267A\206\237r\306\334\037\274c\037\273?,s\376\260?\033\244\2426\273\350.x)l+\233\341- ~'q\265\265\322:\016gx\251\314\2043\337\370Vp\273]>\3358K\237\2357\325\327gi\336H\321\006\326]\246\177\016r\346\227\303\225u80\037\356\024\302\302.\272\223\363\206=\236?~\032\322\324?}-\034\347}\355Jx\205w\272+\255\257\234\00204\201\t\353\275\\\303\301\302G\3237\020\004\347\355\006&\312\237\202*\207\376\303\223\020\025F\024\242\350\026\272\334\243z\377\322\277\237\306\203\001\344O\235\211h\266\301\274\010g1l\334\351\214O@\003\221\343\023\356\013\377\203I\342\276\010\027wz\021}b\206d\302\314\352i\372\264G\277i\247\342F\364\303>\370\016\232\025`;\326z\355\360\237\254\223B\233x\230B\265\276\006\322\003\303<\325\177\200I\002\003\027\231\215=\251\031\024\00296\017\245\203\355b\336\271\356r\335g0""\377@WqRXF8\r\023\343-\tZ\006\300q\t\323\003\005\005s\332\206l\317\37230\337\023S\316\036\004\265\354\036\002\027f\332\\q\024\300V\334i\367\330;\362\371E\rG\304\026\001\235\340K\177\315?\016\216\332P\304\320\311\272W\307p\034,8\263\356\035\257\216\027k`\372\221g\243\377\301%\24064\203\356\310_\376\325h\211\255B8t\303I\367\241\330w7\275\355\340^ \301\235`\006\303q~\203\217\207\264\227\3717\253m\345i";
-    PyObject *data = __Pyx_DecompressString(cstring, 2929, 1);
+    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (3390 bytes) */
+const char* const cstring = "x\332\265VM[\333V\332\016W!\343&Nb\027\010d\232\244r>\010i\033Z\007\232\351\344m:c\300\200S\007c\014!m\372^\247\262|\214\025d\311\226d>f\336\231k\226^j\251\245\226Zj\351%K\226Zz\351\237\320\2370\367s$;$\315|l\336\013#\035\235\317\347\271\237\373\271\237\3630W{\323\261\354\035\343\200\353[\246z\250j|\237[R]F\243&\325\r\363\251\2247M\303\224\024\215\313\246\252\357K\232q$\265L\3250U\373D\262lY\257UO~3\251i\324\324\272\212\035Z\362>\2274\325\262\1773%^\372\316 \327\345\252F\203\255\241)\361@]\353X\r\032\250\243WRd\245\301\237Jk\221\221\266!\035\250\232\2065\206\302-\353\\\267f\030\007\235\326\333\315\316/1Z\\\037-\261\311}\362\366\374\\\351\305\362\246\241\363M\303\346\222\335\220mi\345\304n\030\272\244ZR\215kj\225\233\262\3155\302\300T\025\233\2334I\227\266\362[\217\226\276]\222\340\234d\3627\\\261-\311\352T\025M\266,\000k\324\245jG\325lU\227\354\223\026\267\026\244B]:1:\222\316#\273Z\230w~\201\335\200e\026\267\251!=\220u\335\260e[5t\206\345\000\344\201TSM\034\242\036rZ\275&k\026_\330\264+\334\256\234X6o\026tx\325\024+`\216\3351u\034\263\271S\331\311\355\354V\236J\243\220\237k\211 \360\032\rF\350l\313\315e\303\300n\346B\2237\r\363\244\322\224M[DR\227\024\243\331\322\270\315k\013\322\232\311iYE\227[V\303\260\311W\245c\232\\\267%K\030#E\313)\3646_\250\234#@D\013\230fu\024:\263\336\321\200\354\374\320\320g_?\214\3349\027\377\210\023\357-\3311\325f\023}G\206y H\306m\201\371SiA\232\227\376$\327j\014\000r\3052-k\201\037\363\232l\313O\325&H\372UK\337\377\237\252l\361'K_\326\216\2324\310\217[\232a\302k\264\311\310\3275\304\371\1775K\216\326J\330Ijp\255&\301\211\210A\363\234\330\372,\273\370\365\327\017\245G\210\245i\253\262\006\340\255\216f\017G\207\254\343\226)7Y5B\366\253\010\232\205\326\211\305\315C\025\343t\204\325\214\216\262\016\225\006\246Q\363\241\204\331MU\007\202\265#U\307\237\350FS3\366\r\235\3329\201\307*\327\221\200\037L\357\234\r\312V;6\267\226\327\267s\313\245Rq\371\004\037\205\322\212fX|\003a\321\370\212\311q\304\262j7\345V\324^A\244A$p\343\303\275\253+Q\317""\352\312\232i4\243]V\013l\263\264\375\"W\\\335+m\257\256r\344\212qRP\014}\325\224\217\350\235?\3167[\366\311^\024/\3206\177l\233\262bGc\353\334\216\316\302\323\302\307JD\247\230\230\350X]\301#:\252\324\261[\035\033\237Dy\274\212\262e\013\361\330\310m\256\026\363\033\352~c\013\361(P\260\013\326.`\316\351\271\032\220,\2266\327\213[+{\225\235\355\342na\225\376\031\226\260\334\316\316vayw'_)\n\035\031\341\367R\326:|\257h\034\321~\305\216Z{!bG\347F\255\255\216\271\317i<\226\311\230\351Ep\350\334\204\027\261F\276\327}n\362\246Q\351(\215\330[\241E\037L\354R\213\202+&\235k\212\230\227Z4A\326\266\n\305\255\315\365\255Ras'\277\275\265]Z\311W*,W,\262\334\n5\207=\345\335\374\366\217\254\260\271F1\333)\2246\207\003\225\374\016\006K;\271\021\010+F\207\0021\244T|(c['\307\370_E\246\260M~lo\363\372\366\372r\256\222g[\333\205\227\205b~=\317\362\233\271\345b~\265R\370)\317v*\274\240+\340\215\305\313\035H\333h\307\n\307\226\224\355\025\360B\343\361\376\347\2065\250^\251J\002\013L\342\341\2674\252\250\177\341#\254\326\260d\2054C\364\"e\265\3741W\300\377\275\212mv\024\250\"\217&Fa \350\317\301\273S\372!\277\311r\253\317w+;o\275\250D\335\357\177\013\004w\365\003\3358\322\1772\232Uuh\271\\;\224[\352\342c\271\216\374\025\017\326\342\246\0026G\037\035\213\327\330~\225\261X\3429c\2436\214\000\262\262\271/J\006\336\207\262u\242+\252\261\240\030\246\321A1A\357!J\033\t\367\250\201\335\252O\226\270\256\0305\036\t[\225\303)\036=\207\247\307_\361\361\325f\253\212T\303K\005\000\320&\255\332\251WOL^W\230\252\333\n\263\200 \303\373\320Pk\254%\204\230\305B,>jB\310\031.\tlxI`q\245\217F\2067\003F7\003F\262\032\365\307\223\342\036x\204\363\030I\001lW\016Pe\232\030W\210t\212@!z.@\367\242\317H\031XK\255\221\246\213\3529jp\253\306\t\005\322o\306j\206\302\030gQ\231c\243\202\377\233\216\205\3574CA=\375~AH\302\177\030~W1\376\315\354\367y#\212\202\2506\230.\243\312\013j\322j~\014,,<m\306#UdT:\230\nmd\010-\003\216Z\315\002\376\206l\213 \260\250\3162\312\033&\342\021\261\270N\225\231UI\344\243f\263Z\207F#\266uP""\217\325;: \331\3476~Ec\177\237C\206l\026U$FD\240O\333h\r\273F\005\354_\365\277\365\366;MnVk\362\367\230\211\320\340yH\342\331h\014\3476\230\250\234\r!\341\r\360\256QS\360\243\035\033\344\347\320W\265Iv \330\252\241ZL&\335fh\214\370\257\302m\353\200\343z\243->>\340't#\034\2361\264AC\346pM\370GO\322\025\343\010m(8cM\031;\322\261\370\001\236s\316\307\315Q_\234849\346\027{\313\3528\027DOG\023I\3344\r\320\001\025\227c\242.7\371\350i\3274\024\\\nz\274' j\001N\030\316qw\340\354\034;i\t\371\023\373\304\340\2609\302{\324@\306\210\013\020:p\313\301\025\241eAuZ\0260\322\030kwd-:\372\334\315#\276\323\241\036\233|\037\204C\223\267\014\3236y\273\203z\035c\215+\214-S\247E\351\026]h\242\373\244\311\017\271\211j\212\324\254\341Vevt \"\037\342\020\\\276bO\321\252\361\272\2145\026\251\357\342c\222\021\243n5eM\263\3502\311\304e\322\302\261C\035\210/\204tU\354X\260\nW\342\330Kp<\242\371\350\"\304\230M\2262[mr\320\301\206fj\342\001E\263[\004\311[j\262\370jH6Y1Z\321U\232$0\226AAR\353P5m \026\263\373HV\355#\331\304\215k\037\242\263\370\030\304\024\357\375\216*\336\342\205\200\016\025\3518\274\220\361\322\277^\2720q\261\237\270\341\246\335\314 1\351<qg\274\261_/^\370\370\023\347\272\323\356'Ra\352\201\367\177A6\330\350m\234n\234\345\342\236\277\006\363=\314O;\263\341\215\257\203\261~\362\023\347\216\223\033\275\256\320\016\311n\226:\356;mwl\220\234\n\247\276\360\263\375\324uGvl\367\211\227\366\356y\362 q\255k;Y'7\030\277\334}\346\216\365\023W\273u'\027N?\0162A\266\217\321vx\341\246\233\023V\016\"+G\306\246\234\213\316\276[\246\243&\2359\367\242+\27308\355L\207\327\037\371e\030A\247\317\271cn\232\032\017hQd\326\037\234\273NydZ?9\351d\007\370\232w3\341\247\353\247\355\263\217\316\262g\353ae7\334}\031\r\276g\334R\220\013\312\261q\367<\330>\321\377\260i\375\304'\377\245a\004\304\221\243\240\347\275\263\276\353\345z\303\263\246\2352\001q\265\313\334\\\237\016\375\275;\347\215\215^\237\272@\014`\t+\372\211[t\376\224\223\3735qa\342r7\023^\276\023\336y\326#\270\242O)\224\200\362\3503\023f\376\330K""\217>o\207\267\277\t\304\344+\335\0226\036'\264\376\352\335\361\326\374L\177\374\022M\301Qn\305\233\360\312\236\0066<8M\307\375\267]\356e\337o\337\207\003)0%\270\036\264{c\344e6\274p\337\023\016]\353\312\375\361k\335Cg\217\374Jv\327\010\023:\372\"\001\370\245\333\004o\022\263\356\025\217\005pn6\234\235\367\211\242\023\223 \333\272\213\360$\272\t\000\336\364\262^\316\333\3631\347c\002\366\236\303\335,vLN9\253\356\204[v\033\236\342O\372k\302\351+)\020o\321\251\272\037\271K\256\345}\351+\301t\240\364\322\375\024\235|%\003@\2238\246\237\234v^\271?\373\351\360\363\357z\313\341\367?\206?\376\022\376\"\367\223\010\310 u\303\235\016o/\370\262\337\356\247&\235%\247=\230\272\345\276\204\303S7\303\233\337\004?\237\246O\347\317\036\206\225\327\341\353\237\343\276\327\247\211\263\261>\246\275\n\357\177\337\223{\307\247\207g\333gvX\301\316b\0326\302\372\317\300\230\324\254\233\204C\345A\352zx}\316\253\373\245\336\023\200\014\372\\K\3419\030\242\372\271\237\001@\021\242\267\334=\357E\220\036\214\247\034\200\374..\033A)\\\001\251Y\310~\021\020\t\223\311\025J\301\222\267\350\311\360\236<\336\001%\027\374\t\377\025h\236$bV\301\310Tz\220\234\tg\300`\277\026\334\013\344\240=\300T\nYj\006\031MH\303\342q\220\342\225W\001r\251[\356\256\227\361\276\245\244\277\343\335\367\332\376\270\237\013\037\375\251g\235\336=-\367S\277w\357\211\304H\201G\277q\221\302{\265\273\353d\234\245p&\033\314\366Db\374\321Yv\344\360\302\035/\363\377\232sO{\231\336P|\346\274\206/\213\323bm\354\237\027\311)4\261\341\214c\272\237z\033\376\363@C\300\261\361\035o\216\270C\375\263\336\254\177;8\356\265\007\211\317\334C\257L\275\355~\372\256\000&\375Y\370\331b\360\030\211\226\270\360q:\004N_\010\320Id\357\200\224\020H\2642\336\247\010^$\275\031\357&\2713\345\024\000\363+\377e\360m/\013e\316\2215\330`\316;\020`\321\3249\344e\206\246>\007\363\337\004\027\203\006\370\326\376w\023i\317=$\310\274\000\000\035\033\356\032,z\031d\305*'\351\376\340\035\373T\025\320,\372c\376l\220\216\344w\336}\340\245In6\302\233H\210~\342rw\251{""\034\316\210\024\002k\276\362\315\340V\257~\272v\2269{+\266\317\3172B`i\017\312\307\354h\035\261\254\036.\255b\301\\\270U\016\313\333dN\321\033\363D\374\304j\204i\264\372jxE\350\335\245\360\222P\300K\335/\2342h\233\240\200\r?\256R\301\021%\353+8!\310\273F\201\362\247\221\375\320%\021\204(a\"\027sny ,j\217\016\375\363i\\0\320\377\304\231\214j\036\352H8Kn\323H\377\312$\204E\216W\270\317\374w*\214\373,\234\337\032z\364\201\332\222\r\263\313\247\231\323!\375\256;\r7\242\037\351\343+\210\030\260Mv\237;\342\225w\322\264'-\346H\341\347 =\030\346\325\374\373\024$l\360>\263I\253\016\203r \307\333#uHF\346\234k\256\230\373\024u\021s\025'MiDU2q\245[\201\224\000\216\217(<H(\324o\013\321\236\365gP\367\023\323\316.\234Zt\017\300\205\231\236\2308\001\260\025\367\272{\354\035\371\342\240\216\223#\235\200\034|\356\257\370\307\301Q\017I\014\205\033\\NRix\340\314\272\267\2756\035\254b\353G\236E\366\007\037\201\332\020\203\301\370\357\376\321\351\346\272\345\177\214Q\323\206\010\254@n\236\302\3177\301DP\351\215\367\226{\374\364\017D\254\330\347\211\376\265\033\356\r\034&\222\346J\3675\356\037\0309v\216\335\277\203Wo\336\232Y\007\213'\210j\301\017\275v\177\030j\021\336\253\335\375pz^p<*YB-\0045\222a\362.45\357O\371Bn\356\212\2114\341o\021eR\316e\350\341zxw1X\n\254\336\335\336\336\351\352\331\370\331\312\231\025n\377\024\376\364\232\026\335\243\310F\r]\250<\014\335u\276@\204U\317\366\277\t>\356\315\240T\340*2\020\201\236\001\225\223~\216\016|\347\223\014\255:\tW\320\034\345\000n\221$'\256\205\327\036@r/\222\267\275\311^\341\264r\366\273\263v\037\210G\221\377\304\311\214h\265\347nx\233\301]`96\234\340\374\005\027\264\214\227\375'9M\r\257";
+    PyObject *data = __Pyx_DecompressString(cstring, 3390, 1);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #else /* compression: none (5266 bytes) */
-const char* const bytes = ")AdjustTokenPrivileges failed for: Error clearing low priority standby: Error clearing modified page list: Error clearing standby list: Error enabling privilege Error flushing file cache: Failed to kill process Failed to lookup privilege: Failed to open process token for privilege:  MBNoneNote that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the 'annotation_typing' directive to False.NtSetSystemInformation returned NTSTATUS: Privilege Privilege enabled: Process RamBooster.memorySmart clean completed. Freed: Snapshot of current system memory state.Standby list cleared successfully (NTSTATUS=0)System file cache flushed successfullyTrimmed working sets of :  ( .?add_notecsrss.exedwm.exeexplorer.exelist[dict]lsass.exe not held by token (error=1300) - partial result (error= processesram_booster/memory.pyservices.exesmss.exesvchost.exe) terminatedwininit.exewinlogon.exeAccessDeniedAdjustTokenPrivilegesAttributesBOOLCloseHandleDWORDEmptyWorkingSetGetCurrentProcessGetLastErrorHANDLEHighPartIsUserAnAdminLONGLPCWSTRLUIDLUID_AND_ATTRIBUTESLookupPrivilegeValueWLowPartLuidMemoryInfoMemoryPurgeLowPriorityStandbyListMemoryPurgeModifiedListMemoryPurgeStandbyListNoSuchProcessNoneNtSetSystemInformationOpenProcessOpenProcessTokenOptionalPOINTERPROCESS_ALL_ACCESSPROCESS_QUERY_INFORMATIONPROCESS_SET_QUOTAPrivilegeCountPrivilegesProcess__Pyx_PyDict_NextRefSE_PRIVILEGE_ENABLEDSIZE_TSeIncreaseQuotaPrivilegeSeProfileSingleProcessPrivilegeSetProcessWorkingSetSizeSetSystemFileCacheSizeShellExecuteWStructureSystemMemoryListInformationTOKEN_ADJUST_PRIVILEGESTOKEN_PRIVILEGESTOKEN_QUERYUnknownZombieProcessadvapi32afterafter_percentafter_used_gb__annotate____annotations__argtypesargvasyncio.coroutinesavailableavailable_gbbeforebefore_percentbefore_used_gbboolbyrefc_intc_size_tc_void_pcache_flushedcachedclear_low_priority_standbyclear_modified_page_listclear_standby_listcline_in_tracebackcommandcountctypesctypes.winty""pescurrent_piddataclassdataclassesdict__doc__e_enable_privilege_enable_privilege.<locals>.LUID_enable_privilege.<locals>.LUID_AND_ATTRIBUTES_enable_privilege.<locals>.TOKEN_PRIVILEGESerrorexecutableexit_fields_floatflush_system_file_cachefreed_bytesfreed_mb__func__getLoggerget_memory_infoget_top_memory_processesget_top_memory_processes.<locals>.<lambda>getpidh_processh_tokenhandleinfointis_admin_is_coroutineitemskernel32keykill_process<lambda>loggerlogginglowerluid__main__memmem_mbmemory_infomemory_mbmemory_percent__metaclass__modified_flushed__module____mro_entries__name__name__ntdllospercentpidpop__prepare__privilege_nameprocprocess_iterprocessesprocesses_trimmedprotectedpsapipsutil__qualname__ram_booster.memoryregistryreportrequest_admin_restartrestyperesultreturnreverseroundrssrunas__set_name__setdefaultshell32sizeofsmart_cleansortstandby_clearedstatusstrsubprocesssyssystemterminate__test__timeouttotaltotal_gbtptrim_processes_working_setstrimmedtypingusedused_gbvaluesvirtual_memorywaitwarningwindllwintypesx\320\000!\240\021\360\n\000\005\006\330\010\031\230\021\230!\340\010\023\2206\230\027\240\001\360\006\000\t\022\220\026\220q\330\010\020\320\020'\240|\2601\260H\270H\300H\310A\330\010\020\320\020'\240{\260(\270!\340\010\021\220\030\320\0310\260\001\330\014\022\220\"\220A\330\014\022\220\"\220A\330\014\r\360\006\000\t\014\2101\330\014\022\220%\220q\230\001\340\014\024\320\024+\2501\330\020\026\220a\220t\2306\240\021\240$\240a\340\010\017\210t\2201\220A\340\004\013\210=\230\001\330\010\016\210f\220A\320\0252\260!\2601\330\010\017\210q\320\000\034\230A\360\n\000\005\006\340\010\031\230\021\230!\330\010\031\230\021\230!\340\010\020\220\006\220g\230Q\360\006\000\t\023\220&\230\006\230a\230q\330\010\021\220\025\320\026-\250Q\330\014\r\330\014\022\220&\230\001\230\021\330\014\022\220'\230\021\230!\360\006\000\t\014\2107\220#\220Q\330\014\022\220%\220q\230\001\330\014\023\2201\340\014\022\220(\230!\320\033G\300q\310\003\3101\310G\320SU\320UV\330\014\023\2201\340\004""\013\210=\230\001\330\010\016\210f\220A\320\0254\260A\260Q\330\010\017\210q\320\000$\240A\340\004\005\330\010\031\230\021\230!\330\010\031\230\021\230!\340\010\020\220\006\220g\230Q\330\010\022\220&\230\006\230a\230q\330\010\021\220\025\320\026-\250Q\330\014\r\330\014\022\220&\230\001\230\021\330\014\022\220'\230\021\230!\340\010\017\210w\220c\230\021\330\004\013\210=\230\001\330\010\016\210f\220A\320\025<\270A\270Q\330\010\017\210q\320\000\025\220Q\360\n\000\005\016\210_\230A\330\004\005\330\010\032\230&\240\001\330\010\032\230&\240\001\330\010\033\2301\330\010\034\230A\330\010\031\230\021\330\010\035\230Q\330\010\024\220A\360\010\000\005\013\210!\320\013\"\320\"=\270Q\360\006\000\005\013\210!\320\013 \320 2\260!\360\006\000\005\013\210!\320\013!\320!9\270\021\360\006\000\005\013\210!\320\013\036\320\0365\260Q\360\006\000\005\r\210O\2301\330\004\022\220%\220{\240\"\240F\250!\330\004\n\210!\320\013\034\230A\230S\240\005\240Q\240l\260(\270'\300\021\330\004\n\210!\320\013\036\230e\2401\330\004\n\210!\320\013\036\230e\2401\340\004\n\210%\210q\320\0200\260\001\260\026\260q\270\001\330\004\013\2101\320\000%\240Q\360\n\000\005\017\210a\330\004\017\210v\220W\230A\330\004\014\210F\220'\230\021\360\006\000\005\006\330\010\022\220,\230m\2501\330\010\030\230\r\240_\260A\330\010\030\320\030(\250\001\360\006\000\005\023\220\"\220G\2301\340\004\010\210\010\220\006\220m\2401\240A\240W\250A\330\010\t\330\014\022\220$\220e\2301\230A\330\014\024\220D\230\005\230Q\230h\240c\250\023\250F\260!\360\006\000\r\020\210t\2203\220b\230\003\2304\230s\240,\250c\260\025\260c\270\021\330\020\021\360\006\000\r!\240\001\330\014(\250\001\330\014\025\220X\230\\\250\021\320*<\270B\320>Y\320Y`\320`a\330\014\017\210q\340\020\031\230\025\320\036.\250a\250q\330\020\023\2204\220q\340\024\035\230V\2401\330\024\034\320\0345\260\\\300\021\300(\310)\320S[\320[\\\330\024\034\320\0345\260[\300\010\310\001\330\024\035\230X\320%>\270a\270x\300v\310R\310t\320SY\320Y[\320[\\\330\020\023\2201\330\024\037\230q\330""\020\030\230\014\240A\240Q\340\020\026\320\026&\240f\250O\2706\300\021\330\014\r\330\017\020\330\014\r\340\004\n\210%\210q\320\020*\250!\2501\330\004\013\2101\320\000\035\230W\240M\260\021\340\004\020\220\001\330\004\010\210\010\220\006\220m\2401\240A\240W\250H\260O\320CU\320UV\330\010\t\330\014\023\2204\220q\330\014\017\210t\2201\220O\2403\240a\330\020\021\330\014\025\220T\230\021\230.\250\005\250X\260Q\330\014\017\210w\220b\230\001\330\020\021\330\014\025\220W\230A\330\020\027\220t\2301\230A\330\020\030\230\004\230A\230X\240S\250\001\330\020\035\230U\240!\2408\2501\330\020\"\240%\240q\250\004\250A\320-?\270s\300#\300Q\330\020\032\230$\230a\230q\340\020\026\320\026&\240f\250O\2706\300\021\330\014\r\360\006\000\005\016\210U\220!\2204\320\0271\260\030\270\021\330\004\013\2109\220B\220a\320\000\"\240!\340\004\005\330\010\031\230\021\230!\330\010\031\230\021\230!\340\010\020\220\006\220g\230Q\330\010\022\220&\230\006\230a\230q\330\010\021\220\025\320\026-\250Q\330\014\r\330\014\022\220&\230\001\230\021\330\014\022\220'\230\021\230!\340\010\017\210w\220c\230\021\330\004\013\210=\230\001\330\010\016\210f\220A\320\025:\270!\2701\330\010\017\210q\320\000&\240h\250a\340\004\005\330\010\023\2206\230\027\240\001\330\010\023\2206\230\027\240\001\360\006\000\t\024\2206\230\021\330\014\027\220r\230\033\240H\250J\260l\300(\310!\340\010\"\240&\250\001\330\014\027\220r\230\030\240\030\250\036\260x\270q\340\010\037\230v\240Q\330\014\027\220q\330\021#\2408\2501\330\021\037\320\0373\2602\260Q\360\010\000\t\021\320\020\"\240+\250X\260Q\330\010\020\320\020\"\240,\250a\340\010\020\320\020!\240\033\250H\260A\330\010\020\320\020!\240\034\250Q\330\014\024\220I\230X\240X\250V\2608\2701\270H\300A\360\006\000\t\021\320\020&\240k\260\030\270\021\330\010\020\320\020&\240l\260!\330\014\024\220J\230h\240j\260\006\260h\270a\270q\360\006\000\t\021\320\020&\240k\260\030\270\021\330\010\020\320\020&\240l\260!\330\014\024\220I\230X\240W\250F\260(\270!\2701\330\014\024\220H\230F\240+\250V\2601\360\006""\000\t\021\220\014\230K\240x\250q\330\010\020\220\014\230L\250\001\250\030\260\021\360\006\000\t\023\220(\230'\240\021\330\010\024\220H\320\034.\250a\330\010\013\2104\210x\320\027(\250\001\330\014\027\320\027/\250r\260\035\270f\300F\310!\3101\340\014\022\220(\230!\320\033J\310!\330\014\023\2201\360\006\000\t\020\210t\2201\330\010\013\2104\210x\320\027-\250Q\250f\3204D\300F\310&\320PQ\320QR\330\014\024\220L\240\001\240\021\330\014\022\220(\230!\320\033:\270!\330\014\023\2201\360\006\000\t\016\320\r\035\230Q\330\010\n\320\n\034\230A\330\010\n\210+\220Q\220b\230\010\240\001\330\010\n\210+\220Q\220b\230\016\240a\340\010\021\220\030\320\031/\250q\330\014\025\220W\230F\240&\250\001\250\025\250c\260\026\260q\360\010\000\t\021\220\006\220m\2401\330\010\020\220\014\230A\230Q\340\010\013\2104\210q\330\014\022\220(\230!\320\033@\300\001\330\014\023\2201\340\010\013\2106\220\023\220A\330\014\022\220%\220q\320\030.\250a\330\014\023\2201\330\r\023\2203\220a\330\014\022\220(\230!\230=\250\001\330\014\023\2201\340\014\022\220(\230!\230=\320(P\320PQ\320QR\330\014\023\2201\340\004\013\210=\230\001\330\010\016\210f\220A\320\0251\3201B\300!\3001\330\010\017\210q\320\000\026\220h\230a\340\004\005\330\010\017\210v\220X\230Q\230a\330\010\014\210J\220a\330\010\014\210E\220\021\220(\230!\330\010\016\210e\2201\220J\230a\230v\240Q\240d\250%\250q\330\010\017\210q\330\004\013\210=\230\001\330\010\016\210f\220A\320\025.\250a\250v\260Q\260a\330\010\017\210q\320\000\031\230\021\340\004\n\210&\220\017\230q\330\004\013\210:\220Q\330\010\016\210c\220\021\330\010\022\220#\220Q\330\010\r\210S\220\001\330\010\020\220\003\2201\330\010\021\220\025\220a\220s\230'\240\030\250\027\260\001\330\010\025\220U\230!\2303\230k\250\030\260\027\270\001\330\010\020\220\005\220Q\220c\230\026\230x\240w\250a\330\010\017\210u\220A\220W\230A\230U\240*\250C\250x\260w\270a\320\000\037\230q\340\013\014\330\004\n\210'\220\030\230\036\240q\330\010\016\210i\220s\230-\240s\250%\250q\260\003\2608\2706\300\021\340\004\007\200u\210A""\210Q\320\000\022\220!\340\004\005\330\010\017\210v\220W\230H\240N\260#\260S\270\001\330\013\014\330\010\017\210q\220z\240\021\240!\2401";
+    #else /* compression: none (6015 bytes) */
+const char* const bytes = ")AdjustTokenPrivileges failed for: Error clearing low priority standby: Error clearing modified page list: Error clearing standby list: Error enabling privilege Error flushing file cache: Failed to kill process Failed to lookup privilege: Failed to open process token for privilege:  MBNoneNote that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the 'annotation_typing' directive to False.NtSetSystemInformation returned NTSTATUS: Privilege Privilege enabled: Process RamBooster.memorySmart clean completed. Freed: Snapshot of current system memory state.Standby list cleared successfully (NTSTATUS=0)System file cache flushed successfullyTrimmed working sets of : . ( ?add_notecsrss.exedata:image/png;base64,dwm.exeexplorer.exelist[dict]lsass.exe not held by token (error=1300) - partial result (error= processesram_booster/memory.pyservices.exesmss.exesvchost.exe) terminatedwininit.exewinlogon.exeAccessDeniedAdjustTokenPrivilegesAttributesBGRABOOLBytesIOCloseHandleCreateBitmapCreateCompatibleBitmapCreateCompatibleDCCreateDCFromHandleDI_NORMALDWORDDestroyIconDrawIconExEmptyWorkingSetExtractIconExGetBitmapBitsGetCurrentProcessGetDCGetHandleOutputGetInfoGetLastErrorHANDLEHighPartImageIsUserAnAdminLONGLPCWSTRLUIDLUID_AND_ATTRIBUTESLookupPrivilegeValueWLowPartLuidMemoryInfoMemoryPurgeLowPriorityStandbyListMemoryPurgeModifiedListMemoryPurgeStandbyListNoSuchProcessNoneNtSetSystemInformationOpenProcessOpenProcessTokenOptionalPILPNGPOINTERPROCESS_ALL_ACCESSPROCESS_QUERY_INFORMATIONPROCESS_SET_QUOTAPrivilegeCountPrivilegesProcess__Pyx_PyDict_NextRefRGBASE_PRIVILEGE_ENABLEDSIZE_TSeIncreaseQuotaPrivilegeSeProfileSingleProcessPrivilegeSelectObjectSetProcessWorkingSetSizeSetSystemFileCacheSizeShellExecuteWStructureSystemMemoryListInformationTOKEN_ADJUST_PRIVILEGESTOKEN_PRIVILEGESTOKEN_QUERYUnknownZombieProcessadvapi32afterafter_percentafter_used_gb__annotate____annotations__argtypesargvasyncio.coroutinesavailab""leavailable_gbb64encodebase64beforebefore_percentbefore_used_gbbmpbitsbmpinfoboolbufbyrefc_intc_size_tc_void_pcache_flushedcachedclear_low_priority_standbyclear_modified_page_listclear_standby_listcline_in_tracebackcommandcountctypesctypes.wintypescurrent_piddataclassdataclassesdecodedict__doc__e_enable_privilege_enable_privilege.<locals>.LUID_enable_privilege.<locals>.LUID_AND_ATTRIBUTES_enable_privilege.<locals>.TOKEN_PRIVILEGESerrorexeexe_pathexecutableexistsexit_extract_proc_icon_b64_fields_floatflush_system_file_cacheformatfreed_bytesfreed_mbfrombuffer__func__getgetLoggerget_memory_infoget_top_memory_processesget_top_memory_processes.<locals>.<lambda>getpidgetvaluehh_processh_tokenhandlehbmphdchdc_memhiconicon_b64iminfointiois_admin_is_coroutineitemskernel32keykill_process<lambda>largeloggerlogginglowerluid__main__memmem_mbmemory_infomemory_mbmemory_percent__metaclass__modified_flushed__module____mro_entries__name__name__ntdllospathpercentpidpop__prepare__privilege_nameprocprocess_iterprocessesprocesses_trimmedprotectedpsapipsutil__qualname__ram_booster.memoryrawregistryreportrequest_admin_restartrestyperesultreturnreverseroundrssrunassave__set_name__setdefaultshell32sizeofsmallsmart_cleansortstandby_clearedstatusstrsubprocesssyssystemterminate__test__timeouttotaltotal_gbtptrim_processes_working_setstrimmedtypingusedused_gbvaluesvirtual_memorywaitwarningwin32conwin32guiwin32uiwindllwintypesx\320\000!\240\021\360\n\000\005\006\330\010\031\230\021\230!\340\010\023\2206\230\027\240\001\360\006\000\t\022\220\026\220q\330\010\020\320\020'\240|\2601\260H\270H\300H\310A\330\010\020\320\020'\240{\260(\270!\340\010\021\220\030\320\0310\260\001\330\014\022\220\"\220A\330\014\022\220\"\220A\330\014\r\360\006\000\t\014\2101\330\014\022\220%\220q\230\001\340\014\024\320\024+\2501\330\020\026\220a\220t\2306\240\021\240$\240a\340\010\017\210t\2201\220A\340\004\013\210=\230\001\330\010\016\210f\220A\320\0252\260!\2601\330\010\017\210q\320\000\034\230A\360\n\000\005\006\340""\010\031\230\021\230!\330\010\031\230\021\230!\340\010\020\220\006\220g\230Q\360\006\000\t\023\220&\230\006\230a\230q\330\010\021\220\025\320\026-\250Q\330\014\r\330\014\022\220&\230\001\230\021\330\014\022\220'\230\021\230!\360\006\000\t\014\2107\220#\220Q\330\014\022\220%\220q\230\001\330\014\023\2201\340\014\022\220(\230!\320\033G\300q\310\003\3101\310G\320SU\320UV\330\014\023\2201\340\004\013\210=\230\001\330\010\016\210f\220A\320\0254\260A\260Q\330\010\017\210q\320\000$\240A\340\004\005\330\010\031\230\021\230!\330\010\031\230\021\230!\340\010\020\220\006\220g\230Q\330\010\022\220&\230\006\230a\230q\330\010\021\220\025\320\026-\250Q\330\014\r\330\014\022\220&\230\001\230\021\330\014\022\220'\230\021\230!\340\010\017\210w\220c\230\021\330\004\013\210=\230\001\330\010\016\210f\220A\320\025<\270A\270Q\330\010\017\210q\320\000\025\220Q\360\n\000\005\016\210_\230A\330\004\005\330\010\032\230&\240\001\330\010\032\230&\240\001\330\010\033\2301\330\010\034\230A\330\010\031\230\021\330\010\035\230Q\330\010\024\220A\360\010\000\005\013\210!\320\013\"\320\"=\270Q\360\006\000\005\013\210!\320\013 \320 2\260!\360\006\000\005\013\210!\320\013!\320!9\270\021\360\006\000\005\013\210!\320\013\036\320\0365\260Q\360\006\000\005\r\210O\2301\330\004\022\220%\220{\240\"\240F\250!\330\004\n\210!\320\013\034\230A\230S\240\005\240Q\240l\260(\270'\300\021\330\004\n\210!\320\013\036\230e\2401\330\004\n\210!\320\013\036\230e\2401\330\004\n\210%\210q\320\0200\260\001\260\026\260q\270\001\330\004\013\2101\320\000%\240Q\360\n\000\005\017\210a\330\004\017\210v\220W\230A\330\004\014\210F\220'\230\021\360\006\000\005\006\330\010\022\220,\230m\2501\330\010\030\230\r\240_\260A\330\010\030\320\030(\250\001\360\006\000\005\023\220\"\220G\2301\340\004\010\210\010\220\006\220m\2401\240A\240W\250A\330\010\t\330\014\022\220$\220e\2301\230A\330\014\024\220D\230\005\230Q\230h\240c\250\023\250F\260!\360\006\000\r\020\210t\2203\220b\230\003\2304\230s\240,\250c\260\025\260c\270\021\330\020\021\360\006\000""\r!\240\001\330\014(\250\001\330\014\025\220X\230\\\250\021\320*<\270B\320>Y\320Y`\320`a\330\014\017\210q\340\020\031\230\025\320\036.\250a\250q\330\020\023\2204\220q\340\024\035\230V\2401\330\024\034\320\0345\260\\\300\021\300(\310)\320S[\320[\\\330\024\034\320\0345\260[\300\010\310\001\330\024\035\230X\320%>\270a\270x\300v\310R\310t\320SY\320Y[\320[\\\330\020\023\2201\330\024\037\230q\330\020\030\230\014\240A\240Q\340\020\026\320\026&\240f\250O\2706\300\021\330\014\r\330\017\020\330\014\r\340\004\n\210%\210q\320\020*\250!\2501\330\004\013\2101\320\000\035\230W\240M\260\021\340\004\020\220\001\330\004\010\210\010\220\006\220m\2401\240A\240W\250H\260O\320CU\320U_\320_`\330\010\t\330\014\023\2204\220q\330\014\017\210t\2201\220O\2403\240a\330\020\021\330\014\025\220T\230\021\230.\250\005\250X\260Q\330\014\017\210w\220b\230\001\330\020\021\340\014\027\320\027-\250Q\250d\260$\260a\260q\340\014\025\220W\230A\330\020\027\220t\2301\230A\330\020\030\230\004\230A\230X\240S\250\001\330\020\035\230U\240!\2408\2501\330\020\"\240%\240q\250\004\250A\320-?\270s\300#\300Q\330\020\032\230$\230a\230q\330\020\034\230A\340\020\026\320\026&\240f\250O\2706\300\021\330\014\r\360\006\000\005\016\210U\220!\2204\320\0271\260\030\270\021\330\004\013\2109\220B\220a\320\000\"\240!\340\004\005\330\010\031\230\021\230!\330\010\031\230\021\230!\340\010\020\220\006\220g\230Q\330\010\022\220&\230\006\230a\230q\330\010\021\220\025\320\026-\250Q\330\014\r\330\014\022\220&\230\001\230\021\330\014\022\220'\230\021\230!\340\010\017\210w\220c\230\021\330\004\013\210=\230\001\330\010\016\210f\220A\320\025:\270!\2701\330\010\017\210q\320\000&\240h\250a\340\004\005\330\010\023\2206\230\027\240\001\330\010\023\2206\230\027\240\001\360\006\000\t\024\2206\230\021\330\014\027\220r\230\033\240H\250J\260l\300(\310!\340\010\"\240&\250\001\330\014\027\220r\230\030\240\030\250\036\260x\270q\340\010\037\230v\240Q\330\014\027\220q\330\021#\2408\2501\330\021\037\320\0373\2602\260Q\360\010\000\t\021\320\020\"\240+\250X""\260Q\330\010\020\320\020\"\240,\250a\340\010\020\320\020!\240\033\250H\260A\330\010\020\320\020!\240\034\250Q\330\014\024\220I\230X\240X\250V\2608\2701\270H\300A\360\006\000\t\021\320\020&\240k\260\030\270\021\330\010\020\320\020&\240l\260!\330\014\024\220J\230h\240j\260\006\260h\270a\270q\360\006\000\t\021\320\020&\240k\260\030\270\021\330\010\020\320\020&\240l\260!\330\014\024\220I\230X\240W\250F\260(\270!\2701\330\014\024\220H\230F\240+\250V\2601\360\006\000\t\021\220\014\230K\240x\250q\330\010\020\220\014\230L\250\001\250\030\260\021\360\006\000\t\023\220(\230'\240\021\330\010\024\220H\320\034.\250a\330\010\013\2104\210x\320\027(\250\001\330\014\027\320\027/\250r\260\035\270f\300F\310!\3101\340\014\022\220(\230!\320\033J\310!\330\014\023\2201\360\006\000\t\020\210t\2201\330\010\013\2104\210x\320\027-\250Q\250f\3204D\300F\310&\320PQ\320QR\330\014\024\220L\240\001\240\021\330\014\022\220(\230!\320\033:\270!\330\014\023\2201\360\006\000\t\016\320\r\035\230Q\330\010\n\320\n\034\230A\330\010\n\210+\220Q\220b\230\010\240\001\330\010\n\210+\220Q\220b\230\016\240a\340\010\021\220\030\320\031/\250q\330\014\025\220W\230F\240&\250\001\250\025\250c\260\026\260q\360\010\000\t\021\220\006\220m\2401\330\010\020\220\014\230A\230Q\340\010\013\2104\210q\330\014\022\220(\230!\320\033@\300\001\330\014\023\2201\340\010\013\2106\220\023\220A\330\014\022\220%\220q\320\030.\250a\330\014\023\2201\330\r\023\2203\220a\330\014\022\220(\230!\230=\250\001\330\014\023\2201\340\014\022\220(\230!\230=\320(P\320PQ\320QR\330\014\023\2201\340\004\013\210=\230\001\330\010\016\210f\220A\320\0251\3201B\300!\3001\330\010\017\210q\320\000\026\220h\230a\340\004\005\330\010\017\210v\220X\230Q\230a\330\010\014\210J\220a\330\010\014\210E\220\021\220(\230!\330\010\016\210e\2201\220J\230a\230v\240Q\240d\250%\250q\330\010\017\210q\330\004\013\210=\230\001\330\010\016\210f\220A\320\025.\250a\250v\260Q\260a\330\010\017\210q\320\000\031\230\021\340\004\n\210&\220\017\230q\330\004\013\210:\220Q\330\010\016\210c""\220\021\330\010\022\220#\220Q\330\010\r\210S\220\001\330\010\020\220\003\2201\330\010\021\220\025\220a\220s\230'\240\030\250\027\260\001\330\010\025\220U\230!\2303\230k\250\030\260\027\270\001\330\010\020\220\005\220Q\220c\230\026\230x\240w\250a\330\010\017\210u\220A\220W\230A\230U\240*\250C\250x\260w\270a\320\000\037\230q\340\013\014\330\004\n\210'\220\030\230\036\240q\330\010\016\210i\220s\230-\240s\250%\250q\260\003\2608\2706\300\021\340\004\007\200u\210A\210Q\200\001\340\004\007\200t\2109\220C\220t\230:\240Q\240j\260\005\260S\270\004\270B\270e\3007\310!\3101\330\010\017\210q\330\004\005\330\017\031\230\031\240*\250H\260A\330\010\r\210[\230\001\340\010\017\210x\220x\230~\250Q\250j\270\001\330\010\020\220\005\220Q\220f\230L\250\005\250Q\250f\260K\270q\330\010\013\2104\210q\330\014\023\2201\340\010\016\210g\320\025(\250\001\250\030\260\026\260q\270\001\330\010\017\210w\220m\2401\330\010\014\320\014#\2401\240E\250\024\250Q\330\010\022\220#\320\025(\250\001\330\010\017\210}\230A\230Q\340\010\020\220\013\2301\230G\320#3\2604\260s\270#\270W\300D\310\004\310C\310s\320RZ\320Z[\330\010\022\220$\220h\230a\330\010\022\220$\220n\240A\240Q\340\010\r\210U\220+\230Q\230i\240t\2505\260\t\270\027\300\010\310\003\3101\340\010\014\210E\220\027\230\010\240\014\250A\250Q\330\010\014\210E\220\027\230\010\240\014\250A\250Q\340\010\016\210b\220\010\230\001\330\010\n\210%\210q\220\005\220W\230A\330\010\017\320\017'\240q\250\006\250j\270\001\270\023\270I\300S\310\007\310q\330\013\014\330\010\017\210q\320\000\022\220!\340\004\005\330\010\017\210v\220W\230H\240N\260#\260S\270\001\330\013\014\330\010\017\210q\220z\240\021\240!\2401";
     PyObject *data = NULL;
     CYTHON_UNUSED_VAR(__Pyx_DecompressString);
     #endif
     PyObject **stringtab = __pyx_mstate->__pyx_string_tab;
     Py_ssize_t pos = 0;
-    for (int i = 0; i < 233; i++) {
+    for (int i = 0; i < 283; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyUnicode_DecodeUTF8(bytes + pos, bytes_length, NULL);
-      if (likely(string) && i >= 45) PyUnicode_InternInPlace(&string);
+      if (likely(string) && i >= 46) PyUnicode_InternInPlace(&string);
       if (unlikely(!string)) {
         Py_XDECREF(data);
         __PYX_ERR(0, 1, __pyx_L1_error)
@@ -11309,7 +12420,7 @@ const char* const bytes = ")AdjustTokenPrivileges failed for: Error clearing low
       stringtab[i] = string;
       pos += bytes_length;
     }
-    for (int i = 233; i < 246; i++) {
+    for (int i = 283; i < 297; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyBytes_FromStringAndSize(bytes + pos, bytes_length);
       stringtab[i] = string;
@@ -11320,15 +12431,15 @@ const char* const bytes = ")AdjustTokenPrivileges failed for: Error clearing low
       }
     }
     Py_XDECREF(data);
-    for (Py_ssize_t i = 0; i < 246; i++) {
+    for (Py_ssize_t i = 0; i < 297; i++) {
       if (unlikely(PyObject_Hash(stringtab[i]) == -1)) {
         __PYX_ERR(0, 1, __pyx_L1_error)
       }
     }
     #if CYTHON_IMMORTAL_CONSTANTS
     {
-      PyObject **table = stringtab + 233;
-      for (Py_ssize_t i=0; i<13; ++i) {
+      PyObject **table = stringtab + 283;
+      for (Py_ssize_t i=0; i<14; ++i) {
         #if PY_VERSION_HEX >= 0x030F0000
         PyUnstable_SetImmortal(table[i]);
         #elif CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
@@ -11392,7 +12503,7 @@ typedef struct {
     unsigned int argcount : 1;
     unsigned int num_posonly_args : 1;
     unsigned int num_kwonly_args : 1;
-    unsigned int nlocals : 4;
+    unsigned int nlocals : 5;
     unsigned int flags : 10;
     unsigned int first_line : 9;
 } __Pyx_PyCode_New_function_description;
@@ -11411,7 +12522,7 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
   PyObject* tuple_dedup_map = PyDict_New();
   if (unlikely(!tuple_dedup_map)) return -1;
   {
-    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 1, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 370};
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 1, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 408};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_x};
     __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_memory_py, __pyx_mstate->__pyx_n_u_lambda, __pyx_mstate->__pyx_kp_b_iso88591_z_1, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
   }
@@ -11456,24 +12567,29 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
     __pyx_mstate_global->__pyx_codeobj_tab[8] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_memory_py, __pyx_mstate->__pyx_n_u_smart_clean, __pyx_mstate->__pyx_kp_b_iso88591_Q__A_1_A_Q_A_Q_2_9_5Q_O1_F_AS_Q, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[8])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 5, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 348};
-    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_count, __pyx_mstate->__pyx_n_u_processes_2, __pyx_mstate->__pyx_n_u_proc, __pyx_mstate->__pyx_n_u_info, __pyx_mstate->__pyx_n_u_mem_mb};
-    __pyx_mstate_global->__pyx_codeobj_tab[9] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_memory_py, __pyx_mstate->__pyx_n_u_get_top_memory_processes, __pyx_mstate->__pyx_kp_b_iso88591_WM_m1AWHOCUUV_4q_t1O3a_T_XQ_wb, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[9])) goto bad;
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 18, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 347};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_exe_path, __pyx_mstate->__pyx_n_u_win32gui, __pyx_mstate->__pyx_n_u_win32ui, __pyx_mstate->__pyx_n_u_win32con, __pyx_mstate->__pyx_n_u_base64, __pyx_mstate->__pyx_n_u_io, __pyx_mstate->__pyx_n_u_Image, __pyx_mstate->__pyx_n_u_large, __pyx_mstate->__pyx_n_u_small, __pyx_mstate->__pyx_n_u_hicon, __pyx_mstate->__pyx_n_u_hdc, __pyx_mstate->__pyx_n_u_hbmp, __pyx_mstate->__pyx_n_u_hdc_mem, __pyx_mstate->__pyx_n_u_bmpinfo, __pyx_mstate->__pyx_n_u_bmpbits, __pyx_mstate->__pyx_n_u_im, __pyx_mstate->__pyx_n_u_h, __pyx_mstate->__pyx_n_u_buf};
+    __pyx_mstate_global->__pyx_codeobj_tab[9] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_memory_py, __pyx_mstate->__pyx_n_u_extract_proc_icon_b64, __pyx_mstate->__pyx_kp_b_iso88591_t9Ct_Qj_S_Be7_1_q_HA_xx_Qj_QfL, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[9])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 374};
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 6, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 382};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_count, __pyx_mstate->__pyx_n_u_processes_2, __pyx_mstate->__pyx_n_u_proc, __pyx_mstate->__pyx_n_u_info, __pyx_mstate->__pyx_n_u_mem_mb, __pyx_mstate->__pyx_n_u_icon_b64};
+    __pyx_mstate_global->__pyx_codeobj_tab[10] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_memory_py, __pyx_mstate->__pyx_n_u_get_top_memory_processes, __pyx_mstate->__pyx_kp_b_iso88591_WM_m1AWHOCUU___4q_t1O3a_T_XQ_wb, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[10])) goto bad;
+  }
+  {
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 412};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_pid, __pyx_mstate->__pyx_n_u_proc, __pyx_mstate->__pyx_n_u_e};
-    __pyx_mstate_global->__pyx_codeobj_tab[10] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_memory_py, __pyx_mstate->__pyx_n_u_kill_process, __pyx_mstate->__pyx_kp_b_iso88591_ha_vXQa_Ja_E_e1JavQd_q_q_fA_avQ, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[10])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[11] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_memory_py, __pyx_mstate->__pyx_n_u_kill_process, __pyx_mstate->__pyx_kp_b_iso88591_ha_vXQa_Ja_E_e1JavQd_q_q_fA_avQ, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[11])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {0, 0, 0, 0, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 387};
+    const __Pyx_PyCode_New_function_description descr = {0, 0, 0, 0, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 425};
     PyObject* const varnames[] = {0};
-    __pyx_mstate_global->__pyx_codeobj_tab[11] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_memory_py, __pyx_mstate->__pyx_n_u_is_admin, __pyx_mstate->__pyx_kp_b_iso88591_vWHN_S_q, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[11])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[12] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_memory_py, __pyx_mstate->__pyx_n_u_is_admin, __pyx_mstate->__pyx_kp_b_iso88591_vWHN_S_q, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[12])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {0, 0, 0, 1, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 395};
+    const __Pyx_PyCode_New_function_description descr = {0, 0, 0, 1, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 433};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_sys};
-    __pyx_mstate_global->__pyx_codeobj_tab[12] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_memory_py, __pyx_mstate->__pyx_n_u_request_admin_restart, __pyx_mstate->__pyx_kp_b_iso88591_q_q_is_s_q_86_uAQ, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[12])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[13] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_ram_booster_memory_py, __pyx_mstate->__pyx_n_u_request_admin_restart, __pyx_mstate->__pyx_kp_b_iso88591_q_q_is_s_q_86_uAQ, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[13])) goto bad;
   }
   Py_DECREF(tuple_dedup_map);
   return 0;
@@ -14194,6 +15310,234 @@ bad:
     return -1;
 }
 
+/* HasAttr (used by ImportImpl) */
+#if __PYX_LIMITED_VERSION_HEX < 0x030d0000
+static CYTHON_INLINE int __Pyx_HasAttr(PyObject *o, PyObject *n) {
+    PyObject *r;
+    if (unlikely(!PyUnicode_Check(n))) {
+        PyErr_SetString(PyExc_TypeError,
+                        "hasattr(): attribute name must be string");
+        return -1;
+    }
+    r = __Pyx_PyObject_GetAttrStrNoError(o, n);
+    if (!r) {
+        return (unlikely(PyErr_Occurred())) ? -1 : 0;
+    } else {
+        Py_DECREF(r);
+        return 1;
+    }
+}
+#endif
+
+/* ImportImpl (used by Import) */
+static int __Pyx__Import_GetModule(PyObject *qualname, PyObject **module) {
+    PyObject *imported_module = PyImport_GetModule(qualname);
+    if (unlikely(!imported_module)) {
+        *module = NULL;
+        if (PyErr_Occurred()) {
+            return -1;
+        }
+        return 0;
+    }
+    *module = imported_module;
+    return 1;
+}
+static int __Pyx__Import_Lookup(PyObject *qualname, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject **module) {
+    PyObject *imported_module;
+    PyObject *top_level_package_name;
+    Py_ssize_t i;
+    int status, module_found;
+    Py_ssize_t dot_index;
+    module_found = __Pyx__Import_GetModule(qualname, &imported_module);
+    if (unlikely(!module_found || module_found == -1)) {
+        *module = NULL;
+        return module_found;
+    }
+    if (imported_names) {
+        for (i = 0; i < len_imported_names; i++) {
+            PyObject *imported_name = imported_names[i];
+#if __PYX_LIMITED_VERSION_HEX < 0x030d0000
+            int has_imported_attribute = PyObject_HasAttr(imported_module, imported_name);
+#else
+            int has_imported_attribute = PyObject_HasAttrWithError(imported_module, imported_name);
+            if (unlikely(has_imported_attribute == -1)) goto error;
+#endif
+            if (!has_imported_attribute) {
+                goto not_found;
+            }
+        }
+        *module = imported_module;
+        return 1;
+    }
+    dot_index = PyUnicode_FindChar(qualname, '.', 0, PY_SSIZE_T_MAX, 1);
+    if (dot_index == -1) {
+        *module = imported_module;
+        return 1;
+    }
+    if (unlikely(dot_index == -2)) goto error;
+    top_level_package_name = PyUnicode_Substring(qualname, 0, dot_index);
+    if (unlikely(!top_level_package_name)) goto error;
+    Py_DECREF(imported_module);
+    status = __Pyx__Import_GetModule(top_level_package_name, module);
+    Py_DECREF(top_level_package_name);
+    return status;
+error:
+    Py_DECREF(imported_module);
+    *module = NULL;
+    return -1;
+not_found:
+    Py_DECREF(imported_module);
+    *module = NULL;
+    return 0;
+}
+static PyObject *__Pyx__Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, PyObject *moddict, int level) {
+    PyObject *module = 0;
+    PyObject *empty_dict = 0;
+    PyObject *from_list = 0;
+    int module_found;
+    if (!qualname) {
+        qualname = name;
+    }
+    module_found = __Pyx__Import_Lookup(qualname, imported_names, len_imported_names, &module);
+    if (likely(module_found == 1)) {
+        return module;
+    } else if (unlikely(module_found == -1)) {
+        return NULL;
+    }
+    empty_dict = PyDict_New();
+    if (unlikely(!empty_dict))
+        goto bad;
+    if (imported_names) {
+#if CYTHON_COMPILING_IN_CPYTHON
+        from_list = __Pyx_PyList_FromArray(imported_names, len_imported_names);
+        if (unlikely(!from_list))
+            goto bad;
+#else
+        from_list = PyList_New(len_imported_names);
+        if (unlikely(!from_list)) goto bad;
+        for (Py_ssize_t i=0; i<len_imported_names; ++i) {
+            if (PyList_SetItem(from_list, i, __Pyx_NewRef(imported_names[i])) < 0) goto bad;
+        }
+#endif
+    }
+    if (level == -1) {
+        const char* package_sep = strchr(__Pyx_MODULE_NAME, '.');
+        if (package_sep != (0)) {
+            module = PyImport_ImportModuleLevelObject(
+                name, moddict, empty_dict, from_list, 1);
+            if (unlikely(!module)) {
+                if (unlikely(!PyErr_ExceptionMatches(PyExc_ImportError)))
+                    goto bad;
+                PyErr_Clear();
+            }
+        }
+        level = 0;
+    }
+    if (!module) {
+        module = PyImport_ImportModuleLevelObject(
+            name, moddict, empty_dict, from_list, level);
+    }
+bad:
+    Py_XDECREF(from_list);
+    Py_XDECREF(empty_dict);
+    return module;
+}
+
+/* Import */
+static PyObject *__Pyx_Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, int level) {
+    return __Pyx__Import(name, imported_names, len_imported_names, qualname, __pyx_mstate_global->__pyx_d, level);
+}
+
+/* ImportFrom */
+static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name) {
+    PyObject* value = __Pyx_PyObject_GetAttrStr(module, name);
+    if (unlikely(!value) && PyErr_ExceptionMatches(PyExc_AttributeError)) {
+        const char* module_name_str = 0;
+        PyObject* module_name = 0;
+        PyObject* module_dot = 0;
+        PyObject* full_name = 0;
+        PyErr_Clear();
+        module_name_str = PyModule_GetName(module);
+        if (unlikely(!module_name_str)) { goto modbad; }
+        module_name = PyUnicode_FromString(module_name_str);
+        if (unlikely(!module_name)) { goto modbad; }
+        module_dot = PyUnicode_Concat(module_name, __pyx_mstate_global->__pyx_kp_u__4);
+        if (unlikely(!module_dot)) { goto modbad; }
+        full_name = PyUnicode_Concat(module_dot, name);
+        if (unlikely(!full_name)) { goto modbad; }
+        #if (CYTHON_COMPILING_IN_PYPY && PYPY_VERSION_NUM  < 0x07030400) ||\
+                CYTHON_COMPILING_IN_GRAAL
+        {
+            PyObject *modules = PyImport_GetModuleDict();
+            if (unlikely(!modules))
+                goto modbad;
+            value = PyObject_GetItem(modules, full_name);
+        }
+        #else
+        value = PyImport_GetModule(full_name);
+        #endif
+      modbad:
+        Py_XDECREF(full_name);
+        Py_XDECREF(module_dot);
+        Py_XDECREF(module_name);
+    }
+    if (unlikely(!value)) {
+        PyErr_Format(PyExc_ImportError, "cannot import name %S", name);
+    }
+    return value;
+}
+
+/* RaiseTooManyValuesToUnpack */
+static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected) {
+    PyErr_Format(PyExc_ValueError,
+                 "too many values to unpack (expected %" CYTHON_FORMAT_SSIZE_T "d)", expected);
+}
+
+/* RaiseNeedMoreValuesToUnpack */
+static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index) {
+    PyErr_Format(PyExc_ValueError,
+                 "need more than %" CYTHON_FORMAT_SSIZE_T "d value%.1s to unpack",
+                 index, (index == 1) ? "" : "s");
+}
+
+/* IterFinish */
+static CYTHON_INLINE int __Pyx_IterFinish(void) {
+    PyObject* exc_type;
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    exc_type = __Pyx_PyErr_CurrentExceptionType();
+    if (unlikely(exc_type)) {
+        if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration)))
+            return -1;
+        __Pyx_PyErr_Clear();
+        return 0;
+    }
+    return 0;
+}
+
+/* UnpackItemEndCheck */
+static int __Pyx_IternextUnpackEndCheck(PyObject *retval, Py_ssize_t expected) {
+    if (unlikely(retval)) {
+        Py_DECREF(retval);
+        __Pyx_RaiseTooManyValuesError(expected);
+        return -1;
+    }
+    return __Pyx_IterFinish();
+}
+
+/* PyObjectVectorCallMethodKwBuilder */
+#if !CYTHON_VECTORCALL || PY_VERSION_HEX < 0x03090000
+static PyObject *__Pyx_Object_VectorcallMethod_CallFromBuilder(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames) {
+    PyObject *result;
+    PyObject *obj = PyObject_GetAttr(args[0], name);
+    if (unlikely(!obj))
+        return NULL;
+    result = __Pyx_Object_Vectorcall_CallFromBuilder(obj, args+1, nargsf-1, kwnames);
+    Py_DECREF(obj);
+    return result;
+}
+#endif
+
 /* dict_setdefault (used by FetchCommonType) */
 static CYTHON_INLINE PyObject *__Pyx_PyDict_SetDefault(PyObject *d, PyObject *key, PyObject *default_value) {
     PyObject* value;
@@ -15851,19 +17195,6 @@ static PyObject *__Pyx_CyFunction_New(PyMethodDef *ml, int flags, PyObject* qual
     return op;
 }
 
-/* PyObjectVectorCallMethodKwBuilder */
-#if !CYTHON_VECTORCALL || PY_VERSION_HEX < 0x03090000
-static PyObject *__Pyx_Object_VectorcallMethod_CallFromBuilder(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames) {
-    PyObject *result;
-    PyObject *obj = PyObject_GetAttr(args[0], name);
-    if (unlikely(!obj))
-        return NULL;
-    result = __Pyx_Object_Vectorcall_CallFromBuilder(obj, args+1, nargsf-1, kwnames);
-    Py_DECREF(obj);
-    return result;
-}
-#endif
-
 /* SliceTupleAndList */
 #if CYTHON_COMPILING_IN_CPYTHON
 static CYTHON_INLINE void __Pyx_crop_slice(Py_ssize_t* _start, Py_ssize_t* _stop, Py_ssize_t* _length) {
@@ -15965,183 +17296,6 @@ static CYTHON_INLINE PyObject* __Pyx_PyLong_NeObjC(PyObject *op1, PyObject *op2,
     }
     return (
         PyObject_RichCompare(op1, op2, Py_NE));
-}
-
-/* HasAttr (used by ImportImpl) */
-#if __PYX_LIMITED_VERSION_HEX < 0x030d0000
-static CYTHON_INLINE int __Pyx_HasAttr(PyObject *o, PyObject *n) {
-    PyObject *r;
-    if (unlikely(!PyUnicode_Check(n))) {
-        PyErr_SetString(PyExc_TypeError,
-                        "hasattr(): attribute name must be string");
-        return -1;
-    }
-    r = __Pyx_PyObject_GetAttrStrNoError(o, n);
-    if (!r) {
-        return (unlikely(PyErr_Occurred())) ? -1 : 0;
-    } else {
-        Py_DECREF(r);
-        return 1;
-    }
-}
-#endif
-
-/* ImportImpl (used by Import) */
-static int __Pyx__Import_GetModule(PyObject *qualname, PyObject **module) {
-    PyObject *imported_module = PyImport_GetModule(qualname);
-    if (unlikely(!imported_module)) {
-        *module = NULL;
-        if (PyErr_Occurred()) {
-            return -1;
-        }
-        return 0;
-    }
-    *module = imported_module;
-    return 1;
-}
-static int __Pyx__Import_Lookup(PyObject *qualname, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject **module) {
-    PyObject *imported_module;
-    PyObject *top_level_package_name;
-    Py_ssize_t i;
-    int status, module_found;
-    Py_ssize_t dot_index;
-    module_found = __Pyx__Import_GetModule(qualname, &imported_module);
-    if (unlikely(!module_found || module_found == -1)) {
-        *module = NULL;
-        return module_found;
-    }
-    if (imported_names) {
-        for (i = 0; i < len_imported_names; i++) {
-            PyObject *imported_name = imported_names[i];
-#if __PYX_LIMITED_VERSION_HEX < 0x030d0000
-            int has_imported_attribute = PyObject_HasAttr(imported_module, imported_name);
-#else
-            int has_imported_attribute = PyObject_HasAttrWithError(imported_module, imported_name);
-            if (unlikely(has_imported_attribute == -1)) goto error;
-#endif
-            if (!has_imported_attribute) {
-                goto not_found;
-            }
-        }
-        *module = imported_module;
-        return 1;
-    }
-    dot_index = PyUnicode_FindChar(qualname, '.', 0, PY_SSIZE_T_MAX, 1);
-    if (dot_index == -1) {
-        *module = imported_module;
-        return 1;
-    }
-    if (unlikely(dot_index == -2)) goto error;
-    top_level_package_name = PyUnicode_Substring(qualname, 0, dot_index);
-    if (unlikely(!top_level_package_name)) goto error;
-    Py_DECREF(imported_module);
-    status = __Pyx__Import_GetModule(top_level_package_name, module);
-    Py_DECREF(top_level_package_name);
-    return status;
-error:
-    Py_DECREF(imported_module);
-    *module = NULL;
-    return -1;
-not_found:
-    Py_DECREF(imported_module);
-    *module = NULL;
-    return 0;
-}
-static PyObject *__Pyx__Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, PyObject *moddict, int level) {
-    PyObject *module = 0;
-    PyObject *empty_dict = 0;
-    PyObject *from_list = 0;
-    int module_found;
-    if (!qualname) {
-        qualname = name;
-    }
-    module_found = __Pyx__Import_Lookup(qualname, imported_names, len_imported_names, &module);
-    if (likely(module_found == 1)) {
-        return module;
-    } else if (unlikely(module_found == -1)) {
-        return NULL;
-    }
-    empty_dict = PyDict_New();
-    if (unlikely(!empty_dict))
-        goto bad;
-    if (imported_names) {
-#if CYTHON_COMPILING_IN_CPYTHON
-        from_list = __Pyx_PyList_FromArray(imported_names, len_imported_names);
-        if (unlikely(!from_list))
-            goto bad;
-#else
-        from_list = PyList_New(len_imported_names);
-        if (unlikely(!from_list)) goto bad;
-        for (Py_ssize_t i=0; i<len_imported_names; ++i) {
-            if (PyList_SetItem(from_list, i, __Pyx_NewRef(imported_names[i])) < 0) goto bad;
-        }
-#endif
-    }
-    if (level == -1) {
-        const char* package_sep = strchr(__Pyx_MODULE_NAME, '.');
-        if (package_sep != (0)) {
-            module = PyImport_ImportModuleLevelObject(
-                name, moddict, empty_dict, from_list, 1);
-            if (unlikely(!module)) {
-                if (unlikely(!PyErr_ExceptionMatches(PyExc_ImportError)))
-                    goto bad;
-                PyErr_Clear();
-            }
-        }
-        level = 0;
-    }
-    if (!module) {
-        module = PyImport_ImportModuleLevelObject(
-            name, moddict, empty_dict, from_list, level);
-    }
-bad:
-    Py_XDECREF(from_list);
-    Py_XDECREF(empty_dict);
-    return module;
-}
-
-/* Import */
-static PyObject *__Pyx_Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, int level) {
-    return __Pyx__Import(name, imported_names, len_imported_names, qualname, __pyx_mstate_global->__pyx_d, level);
-}
-
-/* ImportFrom */
-static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name) {
-    PyObject* value = __Pyx_PyObject_GetAttrStr(module, name);
-    if (unlikely(!value) && PyErr_ExceptionMatches(PyExc_AttributeError)) {
-        const char* module_name_str = 0;
-        PyObject* module_name = 0;
-        PyObject* module_dot = 0;
-        PyObject* full_name = 0;
-        PyErr_Clear();
-        module_name_str = PyModule_GetName(module);
-        if (unlikely(!module_name_str)) { goto modbad; }
-        module_name = PyUnicode_FromString(module_name_str);
-        if (unlikely(!module_name)) { goto modbad; }
-        module_dot = PyUnicode_Concat(module_name, __pyx_mstate_global->__pyx_kp_u__6);
-        if (unlikely(!module_dot)) { goto modbad; }
-        full_name = PyUnicode_Concat(module_dot, name);
-        if (unlikely(!full_name)) { goto modbad; }
-        #if (CYTHON_COMPILING_IN_PYPY && PYPY_VERSION_NUM  < 0x07030400) ||\
-                CYTHON_COMPILING_IN_GRAAL
-        {
-            PyObject *modules = PyImport_GetModuleDict();
-            if (unlikely(!modules))
-                goto modbad;
-            value = PyObject_GetItem(modules, full_name);
-        }
-        #else
-        value = PyImport_GetModule(full_name);
-        #endif
-      modbad:
-        Py_XDECREF(full_name);
-        Py_XDECREF(module_dot);
-        Py_XDECREF(module_name);
-    }
-    if (unlikely(!value)) {
-        PyErr_Format(PyExc_ImportError, "cannot import name %S", name);
-    }
-    return value;
 }
 
 /* CLineInTraceback (used by AddTraceback) */

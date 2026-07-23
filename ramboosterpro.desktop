@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=RAM Booster Pro
+Comment=Elite System & Memory Optimizer for Linux
+Exec=bash -c "cd %k && ./RamBoosterPro-Linux.sh"
+Icon=utilities-system-monitor
+Terminal=false
+Categories=System;Monitor;Settings;
+Keywords=ram;booster;optimizer;memory;cleaner;network;
